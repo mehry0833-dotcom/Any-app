@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Music Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    audio {
+      margin: 10px 0;
+      width: 80%;
+    }
+    input[type="file"] {
+      margin: 20px 0;
+      color: #fff;
+    }
+    .song-list {
+      margin-top: 20px;
+    }
+    .song-item {
+      margin: 5px 0;
+      cursor: pointer;
+      color: #1db954;
+    }
+  </style>
+</head>
+<body>
+  <h1>Local Music Player</h1>
+  <input type="file" id="fileInput" accept="audio/*" multiple>
+  <div class="song-list" id="songList"></div>
+  <audio id="player" controls></audio>
 
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const songList = document.getElementById('songList');
+    const player = document.getElementById('player');
+
+    let songs = [];
+
+    fileInput.addEventListener('change', (e) => {
+      songs = Array.from(e.target.files);
+      songList.innerHTML = '';
+      songs.forEach((song, index) => {
+        const div = document.createElement('div');
+        div.textContent = song.name;
+        div.classList.add('song-item');
+        div.addEventListener('click', () => {
+          const url = URL.createObjectURL(song);
+          player.src = url;
+          player.play();
+        });
+        songList.appendChild(div);
+      });
+    });
+  </script>
+</body>
+    </html>
