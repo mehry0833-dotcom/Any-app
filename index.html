@@ -3,103 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultra Clean Photo Editor</title>
+<title>Henicks Auto Photo Enhance</title>
+
 <style>
 body{
-    font-family: Arial, sans-serif;
-    text-align:center;
-    background:#111;
-    color:white;
     margin:0;
-    padding:20px;
-}
-h1{margin-bottom:20px;}
-button,input{
-    padding:12px;
-    margin:10px;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-}
-button{
-    background:#00c853;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
     color:white;
-    cursor:pointer;
+    text-align:center;
 }
-button:hover{
-    opacity:0.9;
+header{
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+.container{
+    padding:15px;
 }
 canvas{
     max-width:100%;
-    margin-top:20px;
-    border-radius:12px;
-    box-shadow:0 0 20px rgba(0,0,0,0.5);
+    border-radius:15px;
+    margin-top:15px;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
 }
+button,input{
+    padding:10px 15px;
+    margin:6px;
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+}
+button{
+    background:#00e5ff;
+    cursor:pointer;
+}
+button:hover{opacity:0.85;}
 </style>
 </head>
+
 <body>
 
-<h1>Ultra Clean Editor</h1>
+<header>Henicks Auto Photo Enhance</header>
 
-<input type="file" id="upload" accept="image/*">
-<br>
-<button onclick="cleanImage()">Ultra Clean</button>
-<button onclick="downloadImage()">Download</button>
+<div class="container">
+
+<input type="file" id="upload" accept="image/*"><br>
+
+<button onclick="autoEnhance()">Auto Enhance</button>
+<button onclick="blackWhite()">Black & White</button>
+<button onclick="vivid()">Vivid Mode</button>
+<button onclick="softSkin()">Soft Skin</button>
+<button onclick="downloadImage()">Save Photo</button>
 
 <br>
 <canvas id="canvas"></canvas>
 
-<script>
-const upload = document.getElementById('upload');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let originalImage = new Image();
+</div>
 
-upload.addEventListener('change', function(e){
+<script>
+const upload = document.getElementById("upload");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let original = new Image();
+
+upload.addEventListener("change", function(e){
     const reader = new FileReader();
     reader.onload = function(event){
-        originalImage.onload = function(){
-            canvas.width = originalImage.width;
-            canvas.height = originalImage.height;
-            ctx.drawImage(originalImage,0,0);
+        original.onload = function(){
+            canvas.width = original.width;
+            canvas.height = original.height;
+            ctx.drawImage(original,0,0);
         }
-        originalImage.src = event.target.result;
+        original.src = event.target.result;
     }
     reader.readAsDataURL(e.target.files[0]);
 });
 
-function cleanImage(){
-    ctx.drawImage(originalImage,0,0);
-    let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-    let data = imageData.data;
+function getPixels(){
+    return ctx.getImageData(0,0,canvas.width,canvas.height);
+}
 
-    // Brightness + Contrast + Slight Sharpen
-    let contrast = 1.1;   // 1 = normal
-    let brightness = 10;  // add light
+function putPixels(data){
+    ctx.putImageData(data,0,0);
+}
 
-    for(let i=0;i<data.length;i+=4){
-        // Brightness
-        data[i] += brightness;     // Red
-        data[i+1] += brightness;   // Green
-        data[i+2] += brightness;   // Blue
+function autoEnhance(){
+    ctx.drawImage(original,0,0);
+    let img = getPixels();
+    let d = img.data;
+
+    for(let i=0;i<d.length;i+=4){
+        // Brightness balance
+        d[i]+=8;
+        d[i+1]+=8;
+        d[i+2]+=8;
 
         // Contrast
-        data[i] = ((data[i]-128)*contrast)+128;
-        data[i+1] = ((data[i+1]-128)*contrast)+128;
-        data[i+2] = ((data[i+2]-128)*contrast)+128;
+        let contrast=1.15;
+        d[i]=((d[i]-128)*contrast)+128;
+        d[i+1]=((d[i+1]-128)*contrast)+128;
+        d[i+2]=((d[i+2]-128)*contrast)+128;
+
+        // Slight noise reduction
+        d[i]=Math.min(255,Math.max(0,d[i]));
+        d[i+1]=Math.min(255,Math.max(0,d[i+1]));
+        d[i+2]=Math.min(255,Math.max(0,d[i+2]));
     }
 
-    ctx.putImageData(imageData,0,0);
+    putPixels(img);
 
-    // Extra sharpness using CSS filter (non-destructive)
-    canvas.style.filter = "contrast(110%) saturate(105%)";
+    // Sharpen
+    canvas.style.filter="contrast(110%) saturate(105%)";
+}
+
+function blackWhite(){
+    let img = getPixels();
+    let d = img.data;
+
+    for(let i=0;i<d.length;i+=4){
+        let avg=(d[i]+d[i+1]+d[i+2])/3;
+        d[i]=d[i+1]=d[i+2]=avg;
+    }
+    putPixels(img);
+}
+
+function vivid(){
+    canvas.style.filter="contrast(125%) saturate(140%)";
+}
+
+function softSkin(){
+    canvas.style.filter="blur(1px) contrast(105%)";
 }
 
 function downloadImage(){
-    const link = document.createElement('a');
-    link.download = "ultra_clean_photo.png";
-    link.href = canvas.toDataURL("image/png");
+    const link=document.createElement("a");
+    link.download="henicks_enhanced.png";
+    link.href=canvas.toDataURL("image/png");
     link.click();
+
+    // Clear after save
+    setTimeout(()=>{
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        upload.value="";
+        canvas.style.filter="none";
+    },500);
 }
 </script>
 
