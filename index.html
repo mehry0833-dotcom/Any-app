@@ -1,9 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>localSocial · all in one</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>localSocial · working</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
-#app{width:100%;max-width:450px;background:white;height:95vh;border-radius:28px 28px 0 0;box-shadow:0 0 20px rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden;position:relative}
-.app-header{background:#075e54;color:#fff;padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1.2rem}
-.app-header i{font-size:1.3rem}
+#app{width:100%;max-width:450px;background:#fff;height:95vh;border-radius:28px 28px 0 0;box-shadow:0 0 20px rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.app-header{background:#075e54;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1.2rem}
+.app-header i{font-size:1.3rem;cursor:pointer}
 .top-tabs{display:flex;background:#075e54;color:#fff;padding:0 16px;gap:24px}
 .top-tab{padding:8px 0 12px;font-weight:500;opacity:.7;border-bottom:3px solid transparent;cursor:pointer}
 .top-tab.active{opacity:1;border-bottom:3px solid #fff}
@@ -41,105 +41,107 @@ body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;displ
 .small{font-size:.75rem;color:gray}
 .hidden{display:none!important}
 </style>
-<body><div id="app"><div class="app-header"><i class="fas fa-user-circle"></i><span>localSocial</span><i class="fas fa-ellipsis-v"></i></div><div id="topTabs" class="top-tabs hidden"><div class="top-tab active" data-tab="chats">Chats</div><div class="top-tab" data-tab="status">Status</div></div><div id="mainContent" class="main-content"></div><div class="bottom-nav" id="bottomNav"><div class="nav-item" data-screen="home"><i class="fas fa-home"></i>Home</div><div class="nav-item active" data-screen="chat"><i class="fas fa-comment-dots"></i>Chat</div><div class="nav-item" data-screen="posts"><i class="fas fa-newspaper"></i>Posts</div><div class="nav-item" data-screen="pictures"><i class="fas fa-images"></i>Pics</div><div class="nav-item" data-screen="happy"><i class="fas fa-smile"></i>Happy</div></div></div>
+<body><div id="app"><div class="app-header"><i class="fas fa-user-circle" id="userNameIcon" title="Set name"></i><span>localSocial</span><i class="fas fa-ellipsis-v"></i></div><div id="topTabs" class="top-tabs hidden"><div class="top-tab active" data-tab="chats">Chats</div><div class="top-tab" data-tab="status">Status</div></div><div id="mainContent" class="main-content"></div><div class="bottom-nav" id="bottomNav"><div class="nav-item" data-screen="home"><i class="fas fa-home"></i>Home</div><div class="nav-item active" data-screen="chat"><i class="fas fa-comment-dots"></i>Chat</div><div class="nav-item" data-screen="posts"><i class="fas fa-newspaper"></i>Posts</div><div class="nav-item" data-screen="pictures"><i class="fas fa-images"></i>Pics</div><div class="nav-item" data-screen="happy"><i class="fas fa-smile"></i>Happy</div></div></div>
 
-<div id="statusModal" class="modal-overlay"><div class="modal-card"><h3>Add status <i class="fas fa-music"></i></h3><input type="file" id="statusImageInput" accept="image/*" style="margin:10px 0"><input type="file" id="statusAudioInput" accept="audio/*" style="margin:10px 0"><textarea id="statusText" rows="2" placeholder="write something..." style="width:100%"></textarea><div class="flex" style="justify-content:space-between;margin-top:12px"><button class="btn-outline" id="cancelStatus">Cancel</button><button class="btn" id="postStatusBtn">Post story</button></div></div></div>
+<!-- modals -->
+<div id="statusModal" class="modal-overlay"><div class="modal-card"><h3>Add status <i class="fas fa-music"></i></h3><input type="file" id="statusImageInput" accept="image/*" style="margin:10px 0"><input type="file" id="statusAudioInput" accept="audio/*" style="margin:10px 0"><textarea id="statusText" rows="2" placeholder="write..." style="width:100%"></textarea><div class="flex" style="justify-content:space-between;margin-top:12px"><button class="btn-outline" id="cancelStatus">Cancel</button><button class="btn" id="postStatusBtn">Post</button></div></div></div>
 <div id="postModal" class="modal-overlay"><div class="modal-card"><h3>Create post</h3><textarea id="postText" rows="2" placeholder="What's on your mind?" style="width:100%"></textarea><input type="file" id="postImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelPost">Cancel</button><button class="btn" id="createPostBtn">Post</button></div></div></div>
-<div id="happyModal" class="modal-overlay"><div class="modal-card"><h3>What makes me happy</h3><input type="text" id="happyActivity" placeholder="activity (e.g. hiking)" style="width:100%;margin-bottom:8px"><textarea id="happyText" rows="2" placeholder="why?" style="width:100%"></textarea><input type="file" id="happyImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelHappy">Cancel</button><button class="btn" id="createHappyBtn">Share</button></div></div></div>
+<div id="happyModal" class="modal-overlay"><div class="modal-card"><h3>What makes me happy</h3><input type="text" id="happyActivity" placeholder="activity" style="width:100%;margin-bottom:8px"><textarea id="happyText" rows="2" placeholder="why?" style="width:100%"></textarea><input type="file" id="happyImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelHappy">Cancel</button><button class="btn" id="createHappyBtn">Share</button></div></div></div>
+<div id="nameModal" class="modal-overlay" style="display:none"><div class="modal-card"><h3>Enter your name</h3><input type="text" id="userNameInput" placeholder="Your name" style="width:100%;margin:15px 0"><div class="flex" style="justify-content:flex-end"><button class="btn" id="setNameBtn">Set name</button></div></div></div>
 
 <script>
 (function(){
-let messages=JSON.parse(localStorage.getItem('messages'))||[];
+let msgs=JSON.parse(localStorage.getItem('messages'))||[];
 let statuses=JSON.parse(localStorage.getItem('statuses'))||[];
 let posts=JSON.parse(localStorage.getItem('posts'))||[];
 let happy=JSON.parse(localStorage.getItem('happyItems'))||[];
+let curUser=localStorage.getItem('currentUser')||'';
+if(!curUser) setTimeout(()=>showName(),100);
 function saveAll(){
-localStorage.setItem('messages',JSON.stringify(messages));
+localStorage.setItem('messages',JSON.stringify(msgs));
 let oneDay=Date.now()-24*60*60*1000;
 statuses=statuses.filter(s=>s.timestamp>oneDay);
 localStorage.setItem('statuses',JSON.stringify(statuses));
 localStorage.setItem('posts',JSON.stringify(posts));
 localStorage.setItem('happyItems',JSON.stringify(happy));
+localStorage.setItem('currentUser',curUser);
 }
-const ME='You',FRIEND='Alex';
-let activeBottom='chat',activeTop='chats';
-const main=document.getElementById('mainContent'),topTabs=document.getElementById('topTabs');
+const FRIEND='Alex';
+let active='chat', topTab='chats';
+const main=document.getElementById('mainContent'), topTabs=document.getElementById('topTabs'), userIcon=document.getElementById('userNameIcon');
+function showName(){document.getElementById('nameModal').style.display='flex';}
+document.getElementById('setNameBtn').addEventListener('click',function(){
+let n=document.getElementById('userNameInput').value.trim(); if(n){curUser=n; localStorage.setItem('currentUser',curUser); document.getElementById('nameModal').style.display='none'; render(); updateIcon();}
+});
+function updateIcon(){userIcon.title=curUser?`Logged as ${curUser}`:'Set name';}
+userIcon.addEventListener('click',showName); updateIcon();
 function render(){
-if(activeBottom==='chat')topTabs.classList.remove('hidden');
-else topTabs.classList.add('hidden');
-document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.screen===activeBottom));
-document.querySelectorAll('.top-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===activeTop));
-if(activeBottom==='home')home();
-else if(activeBottom==='chat') activeTop==='chats'?chats():status();
-else if(activeBottom==='posts')postsScreen();
-else if(activeBottom==='pictures')pictures();
-else if(activeBottom==='happy')happyScreen();
+if(active==='chat') topTabs.classList.remove('hidden'); else topTabs.classList.add('hidden');
+document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.screen===active));
+document.querySelectorAll('.top-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===topTab));
+if(active==='home') home();
+else if(active==='chat') topTab==='chats'?chats():status();
+else if(active==='posts') postsScreen();
+else if(active==='pictures') pics();
+else if(active==='happy') happyScreen();
 }
 function home(){
 let h='<h3>🌿 home feed</h3>';
-if(posts.length){
-h+='<h4>Recent posts</h4>';
-posts.slice(-3).reverse().forEach(p=>{h+=`<div class="post-card"><strong>${p.user||ME}</strong> ${p.text||''}`;
-if(p.image)h+=`<br><img src="${p.image}" class="post-image">`;
-h+=`<div class="small">❤️ ${p.likes?.length||0} 💬 ${p.comments?.length||0}</div></div>`;});
-}else h+='<p>No posts yet</p>';
-h+='<h4>✨ happy moments</h4>';
-happy.slice(-2).forEach(hh=>{h+=`<div class="happy-card"><b>${hh.activity||'activity'}</b> – ${hh.text||''}`;
+if(posts.length){h+='<h4>Recent posts</h4>';
+posts.slice(-3).reverse().forEach(p=>{h+=`<div class="post-card"><strong>${p.user||'A'}</strong> ${p.text||''}`;
+if(p.image)h+=`<br><img src="${p.image}" class="post-image">`;h+=`<div class="small">❤️ ${p.likes?.length||0} 💬 ${p.comments?.length||0}</div></div>`;});
+}else h+='<p>No posts</p>';
+h+='<h4>✨ happy</h4>';
+happy.slice(-2).forEach(hh=>{h+=`<div class="happy-card"><b>${hh.activity||'act'}</b> – ${hh.text||''}`;
 if(hh.image)h+=`<br><img src="${hh.image}" style="max-width:100%;max-height:150px">`;h+='</div>';});
 main.innerHTML=h;
 }
 function chats(){
+if(!curUser)showName();
 let h='<div class="chat-container">';
-messages.forEach(m=>{let own=m.sender===ME?'own':'';h+=`<div class="message-bubble ${own}">`;
-if(m.sender!==ME)h+=`<b>${m.sender}</b><br>`;
-if(m.text)h+=m.text;
-if(m.image)h+=`<br><img src="${m.image}" style="max-width:150px;border-radius:10px;">`;
+msgs.forEach(m=>{let own=m.sender===curUser?'own':'';h+=`<div class="message-bubble ${own}">`;
+if(m.sender!==curUser)h+=`<b>${m.sender}</b><br>`;
+if(m.text)h+=m.text; if(m.image)h+=`<br><img src="${m.image}" style="max-width:150px;border-radius:10px;">`;
 if(m.audio)h+=`<br><audio src="${m.audio}" controls style="width:200px;"></audio>`;
 h+=`<div class="small">${new Date(m.timestamp).toLocaleTimeString()}</div></div>`;});
 h+='<div class="typing-indicator"><i class="fas fa-ellipsis-h"></i> Alex is typing...</div></div>';
-h+=`<div class="chat-input-area"><input type="text" id="chatMsg" placeholder="Type a message"><label for="chatImage"><i class="fas fa-camera"></i></label><input type="file" id="chatImage" accept="image/*" style="display:none"><label for="chatAudio"><i class="fas fa-headphones"></i></label><input type="file" id="chatAudio" accept="audio/*" style="display:none"><button id="sendChat"><i class="fas fa-paper-plane"></i></button></div>`;
+h+=`<div class="chat-input-area"><input type="text" id="chatMsg" placeholder="Type"><label for="chatImage"><i class="fas fa-camera"></i></label><input type="file" id="chatImage" accept="image/*" style="display:none"><label for="chatAudio"><i class="fas fa-headphones"></i></label><input type="file" id="chatAudio" accept="audio/*" style="display:none"><button id="sendChat"><i class="fas fa-paper-plane"></i></button></div>`;
 main.innerHTML=h;
 document.getElementById('sendChat').addEventListener('click',()=>{
-let inp=document.getElementById('chatMsg');if(!inp.value.trim())return;
-messages.push({sender:ME,text:inp.value,timestamp:Date.now()});
-setTimeout(()=>{messages.push({sender:FRIEND,text:'👍',timestamp:Date.now()});saveAll();if(activeBottom==='chat'&&activeTop==='chats')chats();},800);
-inp.value='';saveAll();chats();});
-document.getElementById('chatImage').addEventListener('change',function(e){
-let file=e.target.files[0];if(!file)return;let fr=new FileReader();
-fr.onload=ev=>{messages.push({sender:ME,image:ev.target.result,timestamp:Date.now()});saveAll();chats();};
-fr.readAsDataURL(file);});
-document.getElementById('chatAudio').addEventListener('change',function(e){
-let file=e.target.files[0];if(!file)return;let fr=new FileReader();
-fr.onload=ev=>{messages.push({sender:ME,audio:ev.target.result,timestamp:Date.now()});saveAll();chats();};
-fr.readAsDataURL(file);});
+if(!curUser)return showName(); let inp=document.getElementById('chatMsg'); if(!inp.value.trim())return;
+msgs.push({sender:curUser,text:inp.value,timestamp:Date.now()}); inp.value=''; saveAll(); chats();
+setTimeout(()=>{msgs.push({sender:FRIEND,text:'👍',timestamp:Date.now()}); saveAll(); if(active==='chat'&&topTab==='chats')chats();},800);
+});
+document.getElementById('chatImage').addEventListener('change',function(e){if(!curUser)return showName(); let f=e.target.files[0];if(!f)return;let fr=new FileReader();fr.onload=ev=>{msgs.push({sender:curUser,image:ev.target.result,timestamp:Date.now()});saveAll();chats();};fr.readAsDataURL(f);});
+document.getElementById('chatAudio').addEventListener('change',function(e){if(!curUser)return showName(); let f=e.target.files[0];if(!f)return;let fr=new FileReader();fr.onload=ev=>{msgs.push({sender:curUser,audio:ev.target.result,timestamp:Date.now()});saveAll();chats();};fr.readAsDataURL(f);});
 }
 function status(){
-let h='<div style="margin-bottom:12px"><button id="newStatusBtn" class="btn"><i class="fas fa-plus-circle"></i> Add story</button></div><h4>Recent updates</h4>';
+let h='<div style="margin-bottom:12px"><button id="newStatusBtn" class="btn"><i class="fas fa-plus-circle"></i> Add story</button></div><h4>Updates</h4>';
+if(statuses.length===0)h+='<p>No status yet.</p>';
 statuses.sort((a,b)=>b.timestamp-a.timestamp).forEach(s=>{
 h+=`<div class="status-card"><div class="status-media">`;
 if(s.image)h+=`<img src="${s.image}">`;
 if(s.audio)h+=`<div class="status-audio"><audio src="${s.audio}" controls style="width:100%"></audio></div>`;
-h+=`</div><div class="status-info"><div><strong>${s.user||ME}</strong> <span class="small">${new Date(s.timestamp).toLocaleString()}</span><br>${s.text||''}</div>`;
+h+=`</div><div class="status-info"><div><strong>${s.user||'A'}</strong> <span class="small">${new Date(s.timestamp).toLocaleString()}</span><br>${s.text||''}</div>`;
 h+=`<div class="status-actions"><i class="far fa-eye" title="views:${s.views?.length||0}"></i><i class="far fa-heart" title="likes:${s.likes?.length||0}"></i><i class="fas fa-download" data-id="${s.id}" data-save></i></div></div></div>`;
 });
 main.innerHTML=h;
-document.getElementById('newStatusBtn')?.addEventListener('click',()=>document.getElementById('statusModal').style.display='flex');
-document.querySelectorAll('[data-save]').forEach(btn=>btn.addEventListener('click',e=>{
-let id=e.target.dataset.id,stat=statuses.find(s=>s.id==id);if(stat?.image){let a=document.createElement('a');a.href=stat.image;a.download='status.jpg';a.click();}}));
+document.getElementById('newStatusBtn')?.addEventListener('click',()=>{if(!curUser)return showName(); document.getElementById('statusModal').style.display='flex';});
+document.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',e=>{let id=e.target.dataset.id,stat=statuses.find(s=>s.id==id);if(stat?.image){let a=document.createElement('a');a.href=stat.image;a.download='status.jpg';a.click();}}));
 }
 function postsScreen(){
 let h='<button id="newPostBtn" class="btn" style="margin-bottom:12px"><i class="fas fa-pen"></i> new post</button>';
+if(posts.length===0)h+='<p>No posts yet.</p>';
 posts.slice().reverse().forEach(p=>{
-h+=`<div class="post-card"><div class="post-header"><i class="fas fa-user-circle"></i> <b>${p.user||ME}</b> <span class="small">${new Date(p.timestamp).toLocaleString()}</span></div>`;
-if(p.text)h+=`<p>${p.text}</p>`;
-if(p.image)h+=`<img src="${p.image}" class="post-image">`;
+h+=`<div class="post-card"><div class="post-header"><i class="fas fa-user-circle"></i> <b>${p.user||'A'}</b> <span class="small">${new Date(p.timestamp).toLocaleString()}</span></div>`;
+if(p.text)h+=`<p>${p.text}</p>`; if(p.image)h+=`<img src="${p.image}" class="post-image">`;
 h+=`<div class="status-actions"><i class="far fa-heart"></i> ${p.likes?.length||0} <i class="far fa-comment"></i> ${p.comments?.length||0} <i class="fas fa-share"></i></div>`;
 if(p.comments?.length){h+='<div style="background:#f0f0f0;padding:6px;border-radius:12px;">';p.comments.slice(-2).forEach(c=>h+=`<div><b>${c.user}:</b> ${c.text}</div>`);h+='</div>';}
 h+='</div>';});
 main.innerHTML=h;
-document.getElementById('newPostBtn')?.addEventListener('click',()=>document.getElementById('postModal').style.display='flex');
+document.getElementById('newPostBtn')?.addEventListener('click',()=>{if(!curUser)return showName(); document.getElementById('postModal').style.display='flex';});
 }
-function pictures(){
+function pics(){
 let all=[];
 posts.forEach(p=>{if(p.image)all.push(p.image);});
 statuses.forEach(s=>{if(s.image)all.push(s.image);});
@@ -149,94 +151,44 @@ let h='<div class="grid-pictures">';all.forEach(src=>h+=`<img src="${src}">`);h+
 }
 function happyScreen(){
 let h='<button id="newHappyBtn" class="btn" style="margin-bottom:12px"><i class="far fa-smile"></i> add happy moment</button>';
+if(happy.length===0)h+='<p>No happy moments.</p>';
 happy.slice().reverse().forEach(hh=>{
-h+=`<div class="happy-card"><i class="fas fa-heart" style="color:red"></i> <b>${hh.activity||'activity'}</b> <span class="small">${new Date(hh.timestamp).toLocaleString()}</span>`;
-if(hh.text)h+=`<p>${hh.text}</p>`;
-if(hh.image)h+=`<img src="${hh.image}" style="max-width:100%;border-radius:12px;">`;
+h+=`<div class="happy-card"><i class="fas fa-heart" style="color:red"></i> <b>${hh.activity||'act'}</b> <span class="small">${new Date(hh.timestamp).toLocaleString()}</span>`;
+if(hh.text)h+=`<p>${hh.text}</p>`; if(hh.image)h+=`<img src="${hh.image}" style="max-width:100%;border-radius:12px;">`;
 h+=`<div><i class="far fa-comment"></i> comments (${hh.comments?.length||0})</div>`;
 if(hh.comments?.length){h+='<div style="background:#eee;padding:6px;border-radius:12px;">';hh.comments.slice(-1).forEach(c=>h+=`<div><b>${c.user}:</b> ${c.text}</div>`);h+='</div>';}
 h+='</div>';});
 main.innerHTML=h;
-document.getElementById('newHappyBtn')?.addEventListener('click',()=>document.getElementById('happyModal').style.display='flex');
+document.getElementById('newHappyBtn')?.addEventListener('click',()=>{if(!curUser)return showName(); document.getElementById('happyModal').style.display='flex';});
 }
-document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',e=>{activeBottom=e.currentTarget.dataset.screen;if(activeBottom!=='chat')activeTop='chats';render();}));
-document.querySelectorAll('.top-tab').forEach(el=>el.addEventListener('click',e=>{if(activeBottom!=='chat')return;activeTop=e.target.dataset.tab;render();}));
-
+document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',e=>{active=e.currentTarget.dataset.screen;if(active!=='chat')topTab='chats';render();}));
+document.querySelectorAll('.top-tab').forEach(el=>el.addEventListener('click',e=>{if(active!=='chat')return;topTab=e.target.dataset.tab;render();}));
 document.getElementById('cancelStatus').addEventListener('click',()=>document.getElementById('statusModal').style.display='none');
 document.getElementById('cancelPost').addEventListener('click',()=>document.getElementById('postModal').style.display='none');
 document.getElementById('cancelHappy').addEventListener('click',()=>document.getElementById('happyModal').style.display='none');
-
 document.getElementById('postStatusBtn').addEventListener('click',()=>{
-let img=document.getElementById('statusImageInput').files[0];
-let aud=document.getElementById('statusAudioInput').files[0];
-let txt=document.getElementById('statusText').value;
-if(!img&&!aud&&!txt)return;
-let imgD=null,audD=null,pr=[];
+let img=document.getElementById('statusImageInput').files[0],aud=document.getElementById('statusAudioInput').files[0],txt=document.getElementById('statusText').value;
+if(!img&&!aud&&!txt)return; let imgD=null,audD=null,pr=[];
 if(img)pr.push(new Promise(r=>{let fr=new FileReader();fr.onload=e=>{imgD=e.target.result;r();};fr.readAsDataURL(img);}));
 if(aud)pr.push(new Promise(r=>{let fr=new FileReader();fr.onload=e=>{audD=e.target.result;r();};fr.readAsDataURL(aud);}));
-Promise.all(pr).then(()=>{
-statuses.push({id:Date.now(),user:ME,image:imgD,audio:audD,text:txt,timestamp:Date.now(),views:[],likes:[]});
-saveAll();
-document.getElementById('statusModal').style.display='none';
-document.getElementById('statusImageInput').value='';
-document.getElementById('statusAudioInput').value='';
-document.getElementById('statusText').value='';
-if(activeBottom==='chat'&&activeTop==='status')status();
-});});
-
+Promise.all(pr).then(()=>{statuses.push({id:Date.now(),user:curUser||'A',image:imgD,audio:audD,text:txt,timestamp:Date.now(),views:[],likes:[]});saveAll();
+document.getElementById('statusModal').style.display='none';document.getElementById('statusImageInput').value='';document.getElementById('statusAudioInput').value='';document.getElementById('statusText').value='';
+if(active==='chat'&&topTab==='status')status();});});
 document.getElementById('createPostBtn').addEventListener('click',()=>{
-let txt=document.getElementById('postText').value;
-let img=document.getElementById('postImageInput').files[0];
+let txt=document.getElementById('postText').value,img=document.getElementById('postImageInput').files[0];
 if(!txt&&!img)return;
-if(img){
-let fr=new FileReader();
-fr.onload=e=>{
-posts.push({id:Date.now(),user:ME,text:txt,image:e.target.result,timestamp:Date.now(),likes:[],comments:[]});
-saveAll();
-document.getElementById('postModal').style.display='none';
-document.getElementById('postText').value='';
-document.getElementById('postImageInput').value='';
-if(activeBottom==='posts')postsScreen();
-};
-fr.readAsDataURL(img);
-}else{
-posts.push({id:Date.now(),user:ME,text:txt,image:null,timestamp:Date.now(),likes:[],comments:[]});
-saveAll();
-document.getElementById('postModal').style.display='none';
-document.getElementById('postText').value='';
-if(activeBottom==='posts')postsScreen();
-}});
-
+if(img){let fr=new FileReader();fr.onload=e=>{posts.push({id:Date.now(),user:curUser||'A',text:txt,image:e.target.result,timestamp:Date.now(),likes:[],comments:[]});saveAll();
+document.getElementById('postModal').style.display='none';document.getElementById('postText').value='';document.getElementById('postImageInput').value='';if(active==='posts')postsScreen();};fr.readAsDataURL(img);}
+else{posts.push({id:Date.now(),user:curUser||'A',text:txt,image:null,timestamp:Date.now(),likes:[],comments:[]});saveAll();document.getElementById('postModal').style.display='none';document.getElementById('postText').value='';if(active==='posts')postsScreen();}});
 document.getElementById('createHappyBtn').addEventListener('click',()=>{
-let act=document.getElementById('happyActivity').value;
-let txt=document.getElementById('happyText').value;
-let img=document.getElementById('happyImageInput').files[0];
+let act=document.getElementById('happyActivity').value,txt=document.getElementById('happyText').value,img=document.getElementById('happyImageInput').files[0];
 if(!act&&!txt&&!img)return;
-if(img){
-let fr=new FileReader();
-fr.onload=e=>{
-happy.push({id:Date.now(),user:ME,activity:act,text:txt,image:e.target.result,timestamp:Date.now(),comments:[]});
-saveAll();
-document.getElementById('happyModal').style.display='none';
-document.getElementById('happyActivity').value='';
-document.getElementById('happyText').value='';
-document.getElementById('happyImageInput').value='';
-if(activeBottom==='happy')happyScreen();
-};
-fr.readAsDataURL(img);
-}else{
-happy.push({id:Date.now(),user:ME,activity:act,text:txt,image:null,timestamp:Date.now(),comments:[]});
-saveAll();
-document.getElementById('happyModal').style.display='none';
-document.getElementById('happyActivity').value='';
-document.getElementById('happyText').value='';
-if(activeBottom==='happy')happyScreen();
-}});
-
+if(img){let fr=new FileReader();fr.onload=e=>{happy.push({id:Date.now(),user:curUser||'A',activity:act,text:txt,image:e.target.result,timestamp:Date.now(),comments:[]});saveAll();
+document.getElementById('happyModal').style.display='none';document.getElementById('happyActivity').value='';document.getElementById('happyText').value='';document.getElementById('happyImageInput').value='';if(active==='happy')happyScreen();};fr.readAsDataURL(img);}
+else{ happy.push({id:Date.now(),user:curUser||'A',activity:act,text:txt,image:null,timestamp:Date.now(),comments:[]});saveAll();document.getElementById('happyModal').style.display='none';document.getElementById('happyActivity').value='';document.getElementById('happyText').value='';if(active==='happy')happyScreen();}});
 window.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.style.display='none';});
 if('Notification'in window)Notification.requestPermission();
-setInterval(()=>{if(Math.random()>0.8&&messages.length)new Notification('New message from Alex');},20000);
-render();
-})();
+setInterval(()=>{if(Math.random()>0.8&&msgs.length)new Notification('New message from Alex');},20000);
+render();})();
 </script>
 </body></html>
