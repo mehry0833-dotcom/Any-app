@@ -1,67 +1,513 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Chat App Creator</title>
-<style>
-  body { font-family:sans-serif; margin:0; display:flex; flex-direction:column; height:100vh; }
-  #chat { flex:1; padding:10px; border-bottom:1px solid #ccc; overflow-y:auto; background:#f0f0f0; }
-  #chat div { margin:5px 0; padding:5px; background:#fff; border-radius:5px; }
-  #controls { display:flex; padding:5px; gap:5px; flex-wrap:wrap; background:#eee; }
-  #controls input, #controls select { padding:5px; font-size:14px; }
-  button.dynamicBtn { padding:5px 10px; margin:2px; cursor:pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>simple chat app · block builder style</title>
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1f2b3a, #15232e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 12px;
+            margin: 0;
+        }
+
+        /* main app card – looks like a screen */
+        .app-screen {
+            max-width: 500px;
+            width: 100%;
+            background: #f0f4fa;
+            border-radius: 38px 38px 32px 32px;
+            box-shadow: 0 25px 40px -8px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* header / top bar – designer feeling */
+        .designer-bar {
+            background: #2c3e50;
+            padding: 16px 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 4px solid #ffb347;
+        }
+
+        .designer-bar i {
+            font-size: 1.6rem;
+            color: #ffb347;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        }
+
+        .designer-bar h2 {
+            font-weight: 500;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .designer-bar span {
+            background: #3e5a70;
+            padding: 4px 10px;
+            border-radius: 60px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+            color: #ffd966;
+        }
+
+        /* chat area – where messages appear */
+        .chat-area {
+            background: #d9e2ec;
+            padding: 20px 16px 10px 16px;
+            min-height: 320px;
+            max-height: 420px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+            border-bottom: 2px solid #a0b9ce;
+        }
+
+        /* message bubbles */
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .bubble {
+            padding: 10px 16px;
+            border-radius: 22px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-break: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .user .bubble {
+            background: #2b5278;
+            color: white;
+            border-bottom-right-radius: 5px;
+            border: 1px solid #1d3f5c;
+        }
+
+        .bot .bubble {
+            background: white;
+            color: #1f2b3a;
+            border-bottom-left-radius: 5px;
+            border: 1px solid #cbd8e6;
+        }
+
+        .timestamp {
+            font-size: 0.65rem;
+            color: #3f5468;
+            margin-top: 4px;
+            margin-left: 8px;
+            margin-right: 8px;
+            opacity: 0.8;
+        }
+
+        /* input row – text + send button (like classic designer) */
+        .input-row {
+            background: #ecf2f9;
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-top: 2px solid white;
+            border-bottom: 1px solid #b5c8db;
+        }
+
+        .input-row input {
+            flex: 1;
+            background: white;
+            border: 2px solid #b5cfe4;
+            border-radius: 60px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.15s;
+            color: #1a2b3c;
+        }
+
+        .input-row input:focus {
+            border-color: #ffb347;
+        }
+
+        .icon-button {
+            background: #ffb347;
+            border: none;
+            width: 54px;
+            height: 54px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            color: #1f2f3e;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #b16200, 0 8px 12px rgba(0,0,0,0.2);
+            transition: all 0.05s linear;
+            border: 2px solid #ffe6b3;
+        }
+
+        .icon-button:active {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #b16200, 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        /* extra action buttons (colours & functions) */
+        .action-panel {
+            background: #e4edf5;
+            padding: 12px 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 3px solid #a0b9ce;
+        }
+
+        .mini-btn {
+            background: #3f5e7a;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 18px;
+            color: white;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 0 #1d3142;
+            cursor: pointer;
+            transition: 0.05s linear;
+            border: 1px solid #99b8d4;
+        }
+
+        .mini-btn i {
+            font-size: 1.1rem;
+        }
+
+        .mini-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #1d3142;
+        }
+
+        /* special block palette – exactly like “very simple blocks” */
+        .block-panel {
+            background: #cfdbe8;
+            padding: 16px 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            border-top: 3px solid white;
+        }
+
+        .block {
+            background: #ffe0a3;
+            padding: 12px 25px;
+            border-radius: 18px 18px 18px 6px;   /* puzzle-like notch */
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #1f3a4c;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 0 #bb8f4f, 0 12px 18px -8px black;
+            border: 2px solid #ffcf7a;
+            cursor: pointer;
+            transition: 0.05s linear;
+            user-select: none;
+        }
+
+        .block.green {
+            background: #a3d9b5;
+            box-shadow: 0 8px 0 #529b6e;
+            border-color: #bfedd0;
+        }
+
+        .block.purple {
+            background: #c5b0e6;
+            box-shadow: 0 8px 0 #7b5fa7;
+            border-color: #decbff;
+        }
+
+        .block.red {
+            background: #f8a5a5;
+            box-shadow: 0 8px 0 #b14242;
+            border-color: #ffc9c9;
+        }
+
+        .block:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #7b5fa7, 0 8px 12px -4px black;
+        }
+
+        .block i {
+            font-size: 1.5rem;
+        }
+
+        /* hint text for long-press */
+        .long-hint {
+            background: #2c3e50;
+            color: #ffd966;
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            text-align: center;
+            border-top: 1px solid #6082a0;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .long-hint i {
+            font-size: 1rem;
+            color: #ffb347;
+        }
+    </style>
 </head>
 <body>
+    <div class="app-screen">
+        <!-- top designer bar (like "you dragged a button") -->
+        <div class="designer-bar">
+            <i class="fas fa-cubes"></i>
+            <h2>BLOCKS CHAT</h2>
+            <span><i class="fas fa-mouse-pointer"></i> drag & drop style</span>
+        </div>
 
-<div id="chat">Chat messages appear here...</div>
+        <!-- chat messages display (screen) -->
+        <div class="chat-area" id="chatArea">
+            <div class="message bot">
+                <div class="bubble">👋 Hi! this is a simple chat app. press the send button (click / long press)</div>
+                <span class="timestamp">now</span>
+            </div>
+            <div class="message user">
+                <div class="bubble">cool! i see buttons, colours, and blocks</div>
+                <span class="timestamp">just now</span>
+            </div>
+        </div>
 
-<div id="controls">
-  <input id="btnText" placeholder="Button text">
-  <input id="btnColor" type="color" value="#4CAF50">
-  <select id="btnFunc">
-    <option value="send">Send Message</option>
-    <option value="longpress">Long Press Message</option>
-  </select>
-  <button id="addBtn">Add Button</button>
-</div>
+        <!-- text input + main send button (with icon, colours) -->
+        <div class="input-row">
+            <input type="text" id="messageInput" placeholder="type something..." value="hello world">
+            <button class="icon-button" id="sendButton" title="click to send, long-press for custom">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
 
-<script>
-const chat=document.getElementById('chat');
-const btnText=document.getElementById('btnText');
-const btnColor=document.getElementById('btnColor');
-const btnFunc=document.getElementById('btnFunc');
-const addBtn=document.getElementById('addBtn');
+        <!-- small extra function buttons (colours, icons) -->
+        <div class="action-panel">
+            <button class="mini-btn" id="emojiBtn"><i class="fas fa-smile"></i> add 😊</button>
+            <button class="mini-btn" id="clearBtn"><i class="fas fa-trash-can"></i> clear chat</button>
+            <button class="mini-btn" id="statusBtn"><i class="fas fa-info-circle"></i> /status</button>
+        </div>
 
-function addMessage(text){
-  if(!text.trim()) return;
-  const d=document.createElement('div');
-  d.textContent=text;
-  chat.appendChild(d);
-  chat.scrollTop=chat.scrollHeight;
-}
+        <!-- BLOCKS section – exactly like very simple function blocks -->
+        <div class="block-panel">
+            <div class="block" id="blockSend">
+                <i class="fas fa-paper-plane"></i> Send
+            </div>
+            <div class="block green" id="blockEmoji">
+                <i class="fas fa-face-smile"></i> Emoji
+            </div>
+            <div class="block purple" id="blockClear">
+                <i class="fas fa-eraser"></i> Clear
+            </div>
+            <div class="block red" id="blockLongHint">
+                <i class="fas fa-clock"></i> Long-press ?
+            </div>
+        </div>
 
-// Add a new dynamic button
-addBtn.onclick=()=>{
-  if(!btnText.value.trim()) return;
-  const newBtn=document.createElement('button');
-  newBtn.textContent=btnText.value;
-  newBtn.style.backgroundColor=btnColor.value;
-  newBtn.className='dynamicBtn';
-  
-  if(btnFunc.value==='send'){
-    newBtn.onclick=()=>addMessage(btnText.value);
-  }else if(btnFunc.value==='longpress'){
-    let timer;
-    newBtn.onmousedown=()=>{ timer=setTimeout(()=>addMessage(btnText.value+" (long press)"),1000); }
-    newBtn.onmouseup=()=>clearTimeout(timer);
-  }
-  
-  document.getElementById('controls').appendChild(newBtn);
-  btnText.value='';
-}
-</script>
+        <!-- long-press hint area (with icon) -->
+        <div class="long-hint">
+            <i class="fas fa-hand-pointer"></i>
+            <span>long-press <i class="fas fa-paper-plane" style="margin:0 4px;"></i> send button → type your own command</span>
+            <i class="fas fa-keyboard"></i>
+        </div>
+    </div>
 
+    <script>
+        (function() {
+            // ------ get elements ----------
+            const chatArea = document.getElementById('chatArea');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const emojiBtn = document.getElementById('emojiBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const statusBtn = document.getElementById('statusBtn');
+
+            // blocks (they just trigger same actions)
+            const blockSend = document.getElementById('blockSend');
+            const blockEmoji = document.getElementById('blockEmoji');
+            const blockClear = document.getElementById('blockClear');
+            const blockLongHint = document.getElementById('blockLongHint');
+
+            // ---------- helper: add a message (type: 'user' or 'bot') ----------
+            function addMessage(text, sender = 'user') {
+                if (!text.trim()) return;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = text;
+
+                const timestamp = document.createElement('span');
+                timestamp.className = 'timestamp';
+                const now = new Date();
+                timestamp.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                messageDiv.appendChild(bubble);
+                messageDiv.appendChild(timestamp);
+                chatArea.appendChild(messageDiv);
+                // auto-scroll to bottom
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            // send message from input (user)
+            function sendUserMessage() {
+                const msg = messageInput.value.trim();
+                if (msg === '') return;
+                addMessage(msg, 'user');
+                messageInput.value = '';
+            }
+
+            // ---------- long-press handling for send button ----------
+            let longPressTimer = null;
+            const LONG_PRESS_DELAY = 600; // ms
+
+            function startLongPress(e) {
+                e.preventDefault();  // avoid context menu / weirdness
+                if (longPressTimer) clearTimeout(longPressTimer);
+                longPressTimer = setTimeout(() => {
+                    // long press triggered: ask user to type something
+                    const customMsg = prompt('✏️ Long pressed! Type your custom command or message:', '📢 priority message');
+                    if (customMsg !== null && customMsg.trim() !== '') {
+                        // add as bot message (to distinguish)
+                        addMessage('⚡ ' + customMsg + ' ⚡', 'bot');
+                    } else if (customMsg !== null && customMsg.trim() === '') {
+                        // empty -> ignore
+                    }
+                    longPressTimer = null;
+                }, LONG_PRESS_DELAY);
+            }
+
+            function cancelLongPress(e) {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
+
+            // mouse / touch events for long press
+            sendButton.addEventListener('mousedown', startLongPress);
+            sendButton.addEventListener('touchstart', startLongPress, { passive: false });
+            // cancel on mouseup / touchend / mouseleave (if they move out)
+            sendButton.addEventListener('mouseup', cancelLongPress);
+            sendButton.addEventListener('touchend', cancelLongPress);
+            sendButton.addEventListener('mouseleave', cancelLongPress);
+            // also cancel if context menu tries to open (optional)
+            sendButton.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            // normal click: send message
+            sendButton.addEventListener('click', (e) => {
+                // but if it's triggered after long press timer, we don't want double
+                // long press already shows prompt, but click might also fire.
+                // we cancel longpress timer on click anyway, but if timer wasn't cleared we need to avoid double sending.
+                if (longPressTimer) {
+                    // if timer exists but we got click, it's either normal click (<600ms) or after long press prompt.
+                    // we clear timer and just do send (that's the expected: short click = send)
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                sendUserMessage();
+            });
+
+            // ----- other button functions (colours, icons, simple blocks) -----
+            emojiBtn.addEventListener('click', () => {
+                messageInput.value += ' 😊';
+                messageInput.focus();
+            });
+
+            clearBtn.addEventListener('click', () => {
+                // clear all messages from chat area except the initial two? keep at least one welcome?
+                while (chatArea.firstChild) {
+                    chatArea.removeChild(chatArea.firstChild);
+                }
+                // add a system info message as bot
+                addMessage('🧹 Chat cleared by user', 'bot');
+            });
+
+            statusBtn.addEventListener('click', () => {
+                addMessage('📊 status: online · blocks: ready · version: simple 1.0', 'bot');
+            });
+
+            // ----- block functions (exactly same as buttons, because they are simple function blocks) -----
+            blockSend.addEventListener('click', () => {
+                sendUserMessage();
+            });
+
+            blockEmoji.addEventListener('click', () => {
+                messageInput.value += ' 😎';
+                messageInput.focus();
+            });
+
+            blockClear.addEventListener('click', () => {
+                while (chatArea.firstChild) {
+                    chatArea.removeChild(chatArea.firstChild);
+                }
+                addMessage('🧼 Cleared with a block!', 'bot');
+            });
+
+            // long-hint block: just show info about long press
+            blockLongHint.addEventListener('click', () => {
+                addMessage('⏱️ Try LONG-press the main send button (the orange one). You can type anything!', 'bot');
+            });
+
+            // also allow Enter key in input field
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendUserMessage();
+                }
+            });
+
+            // Pre-insert a little extra message so the chat feels alive
+            window.addEventListener('load', () => {
+                // tiny intro after load (as bot)
+                setTimeout(() => {
+                    addMessage('🟠 Buttons work. Blocks work. Long-press the orange plane!', 'bot');
+                }, 400);
+            });
+        })();
+    </script>
 </body>
   </html>
