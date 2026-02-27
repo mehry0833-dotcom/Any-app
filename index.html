@@ -1,277 +1,419 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Zee Social Pro</title>
-<style>
-body{margin:0;background:#0d0d0f;color:#eee;font-family:sans-serif;padding-bottom:70px}
-.screen{display:none;padding:15px}.active{display:block}
-input,textarea,select{width:100%;padding:8px;margin:6px 0;border-radius:8px;
-border:1px solid #333;background:#1a1a1d;color:#eee}
-textarea{min-height:60px}
-button{border:0;cursor:pointer}
-.primary{width:100%;padding:10px;background:#10b981;color:#fff;border-radius:8px;margin-top:8px}
-#chatList,#statusList,#postList,#happyList{max-height:55vh;overflow-y:auto}
-.chatBubble{max-width:80%;padding:8px;border-radius:10px;margin:6px 0;font-size:14px}
-.me{background:#10b981;color:#fff;margin-left:auto}
-.other{background:#1f1f22;margin-right:auto}
-.chatMedia img,video{width:100%;border-radius:10px;margin-top:6px}
-nav{position:fixed;bottom:0;left:0;width:100%;background:#111;display:flex;
-justify-content:space-around;padding:6px 0;border-top:1px solid #222}
-.navBtn{background:none;color:#aaa;font-size:12px;text-align:center}
-.navBtn.active{color:#10b981}
-#moreMenu{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;
-justify-content:flex-end;align-items:flex-end}
-#moreMenu.active{display:flex}
-#moreSheet{width:100%;background:#1a1a1d;padding:20px;border-radius:20px 20px 0 0;
-animation:up .25s}@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.moreItem{width:100%;padding:12px;background:#333;color:#fff;border-radius:10px;margin-bottom:10px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.grid img{width:100%;height:90px;object-fit:cover;border-radius:8px}
-</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Let’s Vibe</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#050509;color:#f5f5f5;font-family:system-ui,sans-serif;padding-bottom:80px}
+    h2{font-size:18px;margin-bottom:8px;color:#10b981}
+    p{font-size:13px;opacity:.8}
+    .screen{display:none;padding:14px}
+    .screen.active{display:block}
+    input,textarea,select{width:100%;padding:8px 10px;margin:6px 0;border-radius:10px;
+      border:1px solid #262626;background:#11121a;color:#f5f5f5;font-size:14px}
+    textarea{min-height:60px}
+    input[type=file]{font-size:11px}
+    button{border:none;cursor:pointer}
+    .primary{width:100%;padding:9px 0;border-radius:999px;background:#10b981;color:#fff;
+      font-size:14px;margin-top:8px}
+    #chatList,#statusList,#postList,#happyList{max-height:55vh;overflow-y:auto;margin:8px 0}
+    .chatBubble{max-width:80%;padding:8px 10px;border-radius:14px;margin:6px 0;font-size:13px}
+    .me{background:#10b981;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+    .other{background:#1b1c24;margin-right:auto;border-bottom-left-radius:4px}
+    .chatMedia img,.chatMedia video{width:100%;border-radius:10px;margin-top:6px}
+    .chatMedia audio{width:100%;margin-top:6px}
+    .statusCard,.postCard{background:#11121a;border-radius:16px;padding:10px;margin-bottom:10px;
+      box-shadow:0 0 12px rgba(0,0,0,.4)}
+    .statusCard img,.postCard img{width:100%;border-radius:12px;margin-top:6px}
+    .statusTop{display:flex;justify-content:space-between;font-size:11px;opacity:.7}
+    .statusActions,.postActions{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+    .statusActions button,.postActions button{background:#1f2933;color:#f5f5f5;border-radius:999px;
+      padding:5px 10px;font-size:11px}
+    .comment{font-size:12px;padding:3px 0;border-bottom:1px solid #1f1f2a}
+    .commentInput{width:100%;padding:7px 9px;border-radius:10px;border:1px solid #262626;
+      background:#050509;color:#f5f5f5;font-size:12px;margin-top:6px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .grid img{width:100%;height:90px;object-fit:cover;border-radius:10px}
+    #typing{font-size:11px;color:#9ca3af;min-height:14px}
+    #recBtn{background:#1f2933;color:#f5f5f5;border-radius:999px;padding:6px 12px;font-size:12px;margin-top:4px}
+    #recState{font-size:11px;color:#10b981;margin-top:2px;min-height:12px}
+    /* bottom nav */
+    nav{position:fixed;left:0;bottom:12px;width:100%;display:flex;justify-content:center;pointer-events:none}
+    .navShell{background:#05060d;border-radius:999px;box-shadow:0 0 18px rgba(0,0,0,.7);
+      padding:6px 10px;display:flex;gap:10px;pointer-events:auto;border:1px solid #111827}
+    .navBtn{background:transparent;color:#9ca3af;font-size:11px;text-align:center;padding:4px 8px;
+      border-radius:999px;min-width:58px}
+    .navBtn span{display:block;font-size:16px;margin-bottom:1px}
+    .navBtn.active{background:#111827;color:#10b981}
+    /* more sheet */
+    #moreOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
+      justify-content:flex-end;align-items:flex-end}
+    #moreOverlay.active{display:flex}
+    #moreSheet{width:100%;background:#0b0c12;border-radius:18px 18px 0 0;padding:16px;
+      box-shadow:0 -10px 25px rgba(0,0,0,.8);animation:up .22s ease-out}
+    .moreItem{width:100%;padding:10px 12px;margin-bottom:8px;border-radius:12px;
+      background:#111827;color:#f5f5f5;font-size:14px;text-align:left}
+    @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  </style>
+</head>
+<body>
 
-<div id="home" class="screen active"><h2>Welcome, Zee Flame</h2>
-<p>Everything is saved locally on your phone.</p></div>
+<div id="home" class="screen active">
+  <h2>Let’s Vibe</h2>
+  <p>Unique social energy. Everything you post stays on this device using local storage.</p>
+</div>
 
-<div id="chats" class="screen"><h2>Chats</h2>
-<div id="typing"></div><div id="chatList"></div>
-<input id="chatName" placeholder="Your name">
-<input id="chatMsg" placeholder="Type a message">
-<input id="chatFile" type="file" accept="image/*,video/*,audio/*">
-<button id="recBtn">🎙 Record</button><div id="recState"></div>
-<button id="sendChat" class="primary">Send</button></div>
+<div id="chats" class="screen">
+  <h2>Chats</h2>
+  <div id="typing"></div>
+  <div id="chatList"></div>
+  <input id="chatName" placeholder="Your name">
+  <input id="chatMsg" placeholder="Type a message">
+  <input id="chatFile" type="file" accept="image/*,video/*,audio/*">
+  <button id="recBtn">🎙 Record</button>
+  <div id="recState"></div>
+  <button id="sendChat" class="primary">Send</button>
+</div>
 
-<div id="status" class="screen"><h2>Status</h2>
-<textarea id="statusText" placeholder="Write something..."></textarea>
-<input id="statusImg" type="file" accept="image/*">
-<input id="statusMusic" type="file" accept="audio/*">
-<select id="statusSticker"><option value="">Sticker</option><option>🔥</option>
-<option>😂</option><option>❤️</option><option>🎧</option><option>💃</option></select>
-<button id="postStatus" class="primary">Post Status</button>
-<div id="statusList"></div></div>
+<div id="status" class="screen">
+  <h2>Status</h2>
+  <textarea id="statusText" placeholder="Write something..."></textarea>
+  <input id="statusImg" type="file" accept="image/*">
+  <input id="statusMusic" type="file" accept="audio/*">
+  <select id="statusSticker">
+    <option value="">Sticker (optional)</option>
+    <option>🔥</option><option>😂</option><option>❤️</option><option>🎧</option><option>💃</option>
+  </select>
+  <button id="postStatus" class="primary">Post Status</button>
+  <div id="statusList"></div>
+</div>
 
-<div id="posts" class="screen"><h2>Posts</h2>
-<textarea id="postText" placeholder="Say something..."></textarea>
-<input id="postImg" type="file" accept="image/*">
-<button id="addPost" class="primary">Post</button>
-<div id="postList"></div></div>
+<div id="posts" class="screen">
+  <h2>Posts</h2>
+  <textarea id="postText" placeholder="Say something..."></textarea>
+  <input id="postImg" type="file" accept="image/*">
+  <button id="addPost" class="primary">Post</button>
+  <div id="postList"></div>
+</div>
 
-<div id="pictures" class="screen"><h2>Pictures</h2>
-<div id="picGrid" class="grid"></div></div>
+<div id="pictures" class="screen">
+  <h2>Pictures</h2>
+  <div id="picGrid" class="grid"></div>
+</div>
 
-<div id="happy" class="screen"><h2>What Makes Me Happy</h2>
-<textarea id="happyText" placeholder="What makes you happy?"></textarea>
-<input id="happyAct" placeholder="Activity">
-<input id="happyImg" type="file" accept="image/*">
-<button id="addHappy" class="primary">Post</button>
-<div id="happyList"></div></div>
+<div id="happy" class="screen">
+  <h2>What Makes Me Happy</h2>
+  <textarea id="happyText" placeholder="What makes you happy?"></textarea>
+  <input id="happyAct" placeholder="Activity (optional)">
+  <input id="happyImg" type="file" accept="image/*">
+  <button id="addHappy" class="primary">Post</button>
+  <div id="happyList"></div>
+</div>
 
-<div id="moreMenu"><div id="moreSheet">
-<button class="moreItem" data-go="pictures">🖼 Pictures</button>
-<button class="moreItem" data-go="happy">⭐ What I Like</button>
-<button id="closeMore" class="moreItem">Close</button></div></div>
+<div id="moreOverlay">
+  <div id="moreSheet">
+    <button class="moreItem" data-go="pictures">🖼 Pictures</button>
+    <button class="moreItem" data-go="happy">⭐ What I Like</button>
+    <button class="moreItem" id="closeMore">Close</button>
+  </div>
+</div>
 
 <nav>
-<button class="navBtn active" data-go="home">🏠<br>Home</button>
-<button class="navBtn" data-go="chats">💬<br>Chats</button>
-<button class="navBtn" data-go="status">🎵<br>Status</button>
-<button class="navBtn" data-go="posts">📝<br>Posts</button>
-<button id="moreBtn" class="navBtn">⋯<br>More</button>
+  <div class="navShell">
+    <button class="navBtn active" data-go="home"><span>🏠</span>Home</button>
+    <button class="navBtn" data-go="chats"><span>💬</span>Chats</button>
+    <button class="navBtn" data-go="status"><span>🎵</span>Status</button>
+    <button class="navBtn" data-go="posts"><span>📝</span>Posts</button>
+    <button class="navBtn" id="moreBtn"><span>⋯</span>More</button>
+  </div>
 </nav>
 
 <script>
-const $=id=>document.getElementById(id);
-let chats=JSON.parse(localStorage.chats||"[]"),
-statuses=JSON.parse(localStorage.statuses||"[]"),
-posts=JSON.parse(localStorage.posts||"[]"),
-happy=JSON.parse(localStorage.happy||"[]"),
-pics=JSON.parse(localStorage.pics||"[]");
+const $ = id => document.getElementById(id);
+const screens = document.querySelectorAll(".screen");
+const navBtns = document.querySelectorAll(".navBtn");
+const moreOverlay = $("moreOverlay");
+const timeNow = () => new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
 
-function save(){localStorage.chats=JSON.stringify(chats);
-localStorage.statuses=JSON.stringify(statuses);
-localStorage.posts=JSON.stringify(posts);
-localStorage.happy=JSON.stringify(happy);
-localStorage.pics=JSON.stringify(pics);}
+let chats = JSON.parse(localStorage.lv_chats || "[]");
+let statuses = JSON.parse(localStorage.lv_statuses || "[]");
+let posts = JSON.parse(localStorage.lv_posts || "[]");
+let happy = JSON.parse(localStorage.lv_happy || "[]");
+let pics = JSON.parse(localStorage.lv_pics || "[]");
 
-function show(id){
-document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-$(id).classList.add("active");
-document.querySelectorAll(".navBtn").forEach(b=>b.classList.remove("active"));
-document.querySelector(`[data-go="${id}"]`)?.classList.add("active");
+function saveAll(){
+  localStorage.lv_chats = JSON.stringify(chats);
+  localStorage.lv_statuses = JSON.stringify(statuses);
+  localStorage.lv_posts = JSON.stringify(posts);
+  localStorage.lv_happy = JSON.stringify(happy);
+  localStorage.lv_pics = JSON.stringify(pics);
 }
 
-document.querySelectorAll(".navBtn").forEach(b=>{
-b.onclick=()=>{if(b.id==="moreBtn")return $("moreMenu").classList.add("active");
-show(b.dataset.go);}
-});
-$("closeMore").onclick=()=>$("moreMenu").classList.remove("active");
-document.querySelectorAll(".moreItem").forEach(b=>{
-b.onclick=()=>{if(b.dataset.go){show(b.dataset.go);} $("moreMenu").classList.remove("active");}
+function showScreen(id){
+  screens.forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active");
+  navBtns.forEach(b => b.classList.remove("active"));
+  document.querySelector(`.navBtn[data-go="${id}"]`)?.classList.add("active");
+}
+
+navBtns.forEach(b=>{
+  b.onclick = () => {
+    if(b.id === "moreBtn"){ moreOverlay.classList.add("active"); return; }
+    showScreen(b.dataset.go);
+  };
 });
 
-function t(){return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});}
+$("closeMore").onclick = () => moreOverlay.classList.remove("active");
+document.querySelectorAll(".moreItem[data-go]").forEach(b=>{
+  b.onclick = () => { showScreen(b.dataset.go); moreOverlay.classList.remove("active"); };
+});
 
 /* CHATS */
 function renderChats(){
-$("chatList").innerHTML="";
-chats.forEach((c,i)=>{
-let d=document.createElement("div");
-d.className="chatBubble "+(i%2?"other":"me");
-let m="";
-if(c.img)m+=`<div class='chatMedia'><img src='${c.img}'></div>`;
-if(c.vid)m+=`<div class='chatMedia'><video controls src='${c.vid}'></video></div>`;
-if(c.aud)m+=`<div class='chatMedia'><audio controls src='${c.aud}'></audio></div>`;
-d.innerHTML=`${c.name?("<b>"+c.name+"</b><br>"):""}${c.text||""}${m}`;
-$("chatList").appendChild(d);
-});
-$("chatList").scrollTop=999999;
+  const box = $("chatList");
+  box.innerHTML = "";
+  chats.forEach((c,i)=>{
+    const div = document.createElement("div");
+    div.className = "chatBubble " + (i%2 ? "other" : "me");
+    let media = "";
+    if(c.img) media += `<div class="chatMedia"><img src="${c.img}"></div>`;
+    if(c.vid) media += `<div class="chatMedia"><video controls src="${c.vid}"></video></div>`;
+    if(c.aud) media += `<div class="chatMedia"><audio controls src="${c.aud}"></audio></div>`;
+    div.innerHTML = (c.name?`<b>${c.name}</b><br>`:"") + (c.text||"") + media;
+    box.appendChild(div);
+  });
+  box.scrollTop = box.scrollHeight;
 }
 renderChats();
 
-$("chatMsg").oninput=()=>$("typing").innerText=$("chatMsg").value?"Typing...":"";
+$("chatMsg").oninput = () => $("typing").innerText = $("chatMsg").value ? "Typing..." : "";
 
-$("sendChat").onclick=()=>{
-let n=$("chatName").value.trim(),m=$("chatMsg").value.trim(),f=$("chatFile").files[0];
-if(!m&&!f)return;
-let o={name:n,text:m,time:t()};
-if(f){
-let r=new FileReader();
-r.onload=()=>{
-if(f.type.startsWith("image")){o.img=r.result;pics.push(r.result);}
-else if(f.type.startsWith("video"))o.vid=r.result;
-else o.aud=r.result;
-chats.push(o);save();renderChats();
-};
-r.readAsDataURL(f);
-}else{chats.push(o);save();renderChats();}
-$("chatMsg").value="";$("chatName").value="";$("chatFile").value="";
-$("typing").innerText="";
+$("sendChat").onclick = () => {
+  const name = $("chatName").value.trim();
+  const text = $("chatMsg").value.trim();
+  const file = $("chatFile").files[0];
+  if(!text && !file) return;
+  const msg = {name,text,time:timeNow()};
+  if(file){
+    const r = new FileReader();
+    r.onload = () => {
+      if(file.type.startsWith("image")){ msg.img = r.result; pics.push(r.result); }
+      else if(file.type.startsWith("video")) msg.vid = r.result;
+      else msg.aud = r.result;
+      chats.push(msg); saveAll(); renderChats(); renderPics();
+    };
+    r.readAsDataURL(file);
+  }else{
+    chats.push(msg); saveAll(); renderChats();
+  }
+  $("chatMsg").value = "";
+  $("chatName").value = "";
+  $("chatFile").value = "";
+  $("typing").innerText = "";
 };
 
-/* RECORDING */
-let rec,chunks=[];
-$("recBtn").onclick=async()=>{
-if(rec&&rec.state==="recording"){rec.stop();$("recState").innerText="Saving...";return;}
-let s=await navigator.mediaDevices.getUserMedia({audio:true});
-rec=new MediaRecorder(s);
-rec.ondataavailable=e=>chunks.push(e.data);
-rec.onstop=()=>{
-let b=new Blob(chunks,{type:"audio/webm"});chunks=[];
-let r=new FileReader();
-r.onload=()=>{chats.push({aud:r.result,time:t()});save();renderChats();$("recState").innerText="Saved";};
-r.readAsDataURL(b);
-};
-rec.start();$("recState").innerText="Recording...";
+/* RECORD AUDIO */
+let recorder = null, recChunks = [];
+$("recBtn").onclick = async () => {
+  if(recorder && recorder.state === "recording"){
+    recorder.stop();
+    $("recState").innerText = "Saving...";
+    return;
+  }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    recorder = new MediaRecorder(stream);
+    recChunks = [];
+    recorder.ondataavailable = e => recChunks.push(e.data);
+    recorder.onstop = () => {
+      const blob = new Blob(recChunks,{type:"audio/webm"});
+      const r = new FileReader();
+      r.onload = () => {
+        chats.push({aud:r.result,time:timeNow()});
+        saveAll(); renderChats();
+        $("recState").innerText = "Saved";
+        setTimeout(()=>$("recState").innerText="",800);
+      };
+      r.readAsDataURL(blob);
+    };
+    recorder.start();
+    $("recState").innerText = "Recording...";
+  }catch(e){
+    $("recState").innerText = "Mic blocked";
+  }
 };
 
 /* STATUS */
 function renderStatus(){
-$("statusList").innerHTML="";
-statuses.forEach((s,i)=>{
-let d=document.createElement("div");
-d.className="statusCard";
-let img=s.img?`<img src='${s.img}'>`:"";
-let mus=s.mus?`<audio controls src='${s.mus}' style='width:100%'></audio>`:"";
-d.innerHTML=`<div class='statusTop'><span>${s.time}</span>
-<span>${s.views||0} views · ${s.likes||0} likes</span></div>
-${img}<div>${s.text||""}</div>${s.sticker||""}${mus}
-<div class='statusActions'>
-<button onclick='likeStatus(${i})'>Like</button>
-<button onclick='viewStatus(${i})'>Viewed</button>
-${s.img?`<a href='${s.img}' download='status.png'><button>Save</button></a>`:""}
-</div>`;
-$("statusList").appendChild(d);
-});
+  const box = $("statusList");
+  box.innerHTML = "";
+  statuses.forEach((s,i)=>{
+    const div = document.createElement("div");
+    div.className = "statusCard";
+    const img = s.img ? `<img src="${s.img}">` : "";
+    const mus = s.mus ? `<audio controls src="${s.mus}" style="width:100%;margin-top:6px"></audio>` : "";
+    div.innerHTML = `
+      <div class="statusTop"><span>${s.time}</span><span>${s.views||0} views · ${s.likes||0} likes</span></div>
+      ${img}
+      <div style="margin-top:4px;font-size:13px">${s.text||""}</div>
+      <div style="font-size:20px;margin-top:2px">${s.sticker||""}</div>
+      ${mus}
+      <div class="statusActions">
+        <button onclick="likeStatus(${i})">Like</button>
+        <button onclick="viewStatus(${i})">Viewed</button>
+        ${s.img?`<a href="${s.img}" download="status.png"><button>Save</button></a>`:""}
+      </div>`;
+    box.appendChild(div);
+  });
 }
+window.likeStatus = i => { statuses[i].likes=(statuses[i].likes||0)+1; saveAll(); renderStatus(); };
+window.viewStatus = i => { statuses[i].views=(statuses[i].views||0)+1; saveAll(); renderStatus(); };
 renderStatus();
 
-function likeStatus(i){statuses[i].likes=(statuses[i].likes||0)+1;save();renderStatus();}
-function viewStatus(i){statuses[i].views=(statuses[i].views||0)+1;save();renderStatus();}
-
-$("postStatus").onclick=()=>{
-let t=$("statusText").value.trim(),fi=$("statusImg").files[0],fm=$("statusMusic").files[0],st=$("statusSticker").value;
-let o={text:t,sticker:st,time:t(),likes:0,views:0};
-let p=[];
-if(fi){let r=new FileReader();p.push(new Promise(res=>{r.onload=()=>{o.img=r.result;pics.push(r.result);res();};}));r.readAsDataURL(fi);}
-if(fm){let r=new FileReader();p.push(new Promise(res=>{r.onload=()=>{o.mus=r.result;res();};}));r.readAsDataURL(fm);}
-Promise.all(p).then(()=>{statuses.unshift(o);save();renderStatus();renderPics();
-$("statusText").value="";$("statusImg").value="";$("statusMusic").value="";$("statusSticker").value="";});
+$("postStatus").onclick = () => {
+  const text = $("statusText").value.trim();
+  const fi = $("statusImg").files[0];
+  const fm = $("statusMusic").files[0];
+  const sticker = $("statusSticker").value;
+  if(!text && !fi && !fm && !sticker) return;
+  const obj = {text,sticker,time:timeNow(),likes:0,views:0};
+  const tasks = [];
+  if(fi){
+    const r = new FileReader();
+    tasks.push(new Promise(res=>{ r.onload=()=>{obj.img=r.result;pics.push(r.result);res();}; }));
+    r.readAsDataURL(fi);
+  }
+  if(fm){
+    const r2 = new FileReader();
+    tasks.push(new Promise(res=>{ r2.onload=()=>{obj.mus=r2.result;res();}; }));
+    r2.readAsDataURL(fm);
+  }
+  Promise.all(tasks).then(()=>{
+    statuses.unshift(obj); saveAll(); renderStatus(); renderPics();
+    $("statusText").value=""; $("statusImg").value=""; $("statusMusic").value=""; $("statusSticker").value="";
+  });
 };
 
 /* POSTS */
 function renderPosts(){
-$("postList").innerHTML="";
-posts.forEach((p,i)=>{
-let d=document.createElement("div");
-d.className="postCard";
-let img=p.img?`<img src='${p.img}'>`:"";
-let c=(p.comments||[]).map(x=>`<div class='comment'>${x}</div>`).join("");
-d.innerHTML=`<div>${p.time}</div><div>${p.text}</div>${img}
-<div class='postActions'>
-<button onclick='likePost(${i})'>Like (${p.likes||0})</button>
-<button onclick='alert("Shared")'>Share</button></div>
-<input class='commentInput' data-i='${i}' placeholder='Comment...'>
-${c}`;
-$("postList").appendChild(d);
-});
+  const box = $("postList");
+  box.innerHTML = "";
+  posts.forEach((p,i)=>{
+    const div = document.createElement("div");
+    div.className = "postCard";
+    const img = p.img ? `<img src="${p.img}">` : "";
+    const comments = (p.comments||[]).map(c=>`<div class="comment">${c}</div>`).join("");
+    div.innerHTML = `
+      <div style="font-size:11px;opacity:.7">${p.time}</div>
+      <div style="margin-top:3px;font-size:13px">${p.text}</div>
+      ${img}
+      <div class="postActions">
+        <button onclick="likePost(${i})">Like (${p.likes||0})</button>
+        <button onclick="alert('Shared (local only)')">Share</button>
+      </div>
+      <input class="commentInput" data-i="${i}" placeholder="Comment...">
+      ${comments}`;
+    box.appendChild(div);
+  });
 }
+window.likePost = i => { posts[i].likes=(posts[i].likes||0)+1; saveAll(); renderPosts(); };
 renderPosts();
 
-function likePost(i){posts[i].likes=(posts[i].likes||0)+1;save();renderPosts();}
-
 $("postList").addEventListener("keydown",e=>{
-if(e.key==="Enter"&&e.target.classList.contains("commentInput")){
-let i=e.target.dataset.i,txt=e.target.value.trim();if(!txt)return;
-posts[i].comments=posts[i].comments||[];posts[i].comments.push(txt);
-e.target.value="";save();renderPosts();
-}});
+  if(e.key==="Enter" && e.target.classList.contains("commentInput")){
+    const i = e.target.dataset.i;
+    const txt = e.target.value.trim();
+    if(!txt) return;
+    posts[i].comments = posts[i].comments || [];
+    posts[i].comments.push(txt);
+    e.target.value = "";
+    saveAll(); renderPosts();
+  }
+});
 
-$("addPost").onclick=()=>{
-let t=$("postText").value.trim(),f=$("postImg").files[0];
-if(!t&&!f)return;
-let o={text:t,time:t(),likes:0,comments:[]};
-if(f){let r=new FileReader();r.onload=()=>{o.img=r.result;pics.push(r.result);
-posts.unshift(o);save();renderPosts();renderPics();};r.readAsDataURL(f);}
-else{posts.unshift(o);save();renderPosts();}
-$("postText").value="";$("postImg").value="";
+$("addPost").onclick = () => {
+  const text = $("postText").value.trim();
+  const f = $("postImg").files[0];
+  if(!text && !f) return;
+  const obj = {text,time:timeNow(),likes:0,comments:[]};
+  if(f){
+    const r = new FileReader();
+    r.onload = () => {
+      obj.img = r.result; pics.push(r.result);
+      posts.unshift(obj); saveAll(); renderPosts(); renderPics();
+    };
+    r.readAsDataURL(f);
+  }else{
+    posts.unshift(obj); saveAll(); renderPosts();
+  }
+  $("postText").value=""; $("postImg").value="";
 };
 
 /* HAPPY */
 function renderHappy(){
-$("happyList").innerHTML="";
-happy.forEach((h,i)=>{
-let d=document.createElement("div");
-d.className="postCard";
-let img=h.img?`<img src='${h.img}'>`:"";
-let c=(h.comments||[]).map(x=>`<div class='comment'>${x}</div>`).join("");
-d.innerHTML=`<div>${h.time}</div><div>${h.text}</div>
-${h.act?`<div>Activity: ${h.act}</div>`:""}${img}
-<input class='commentInput' data-i='${i}' placeholder='Comment...'>${c}`;
-$("happyList").appendChild(d);
-});
+  const box = $("happyList");
+  box.innerHTML = "";
+  happy.forEach((h,i)=>{
+    const div = document.createElement("div");
+    div.className = "postCard";
+    const img = h.img ? `<img src="${h.img}">` : "";
+    const comments = (h.comments||[]).map(c=>`<div class="comment">${c}</div>`).join("");
+    div.innerHTML = `
+      <div style="font-size:11px;opacity:.7">${h.time}</div>
+      <div style="margin-top:3px;font-size:13px">${h.text}</div>
+      ${h.act?`<div style="font-size:11px;color:#10b981;margin-top:2px">Activity: ${h.act}</div>`:""}
+      ${img}
+      <input class="commentInput" data-i="${i}" placeholder="Ask or comment...">
+      ${comments}`;
+    box.appendChild(div);
+  });
 }
 renderHappy();
 
 $("happyList").addEventListener("keydown",e=>{
-if(e.key==="Enter"&&e.target.classList.contains("commentInput")){
-let i=e.target.dataset.i,txt=e.target.value.trim();if(!txt)return;
-happy[i].comments=happy[i].comments||[];happy[i].comments.push(txt);
-e.target.value="";save();renderHappy();
-}});
+  if(e.key==="Enter" && e.target.classList.contains("commentInput")){
+    const i = e.target.dataset.i;
+    const txt = e.target.value.trim();
+    if(!txt) return;
+    happy[i].comments = happy[i].comments || [];
+    happy[i].comments.push(txt);
+    e.target.value = "";
+    saveAll(); renderHappy();
+  }
+});
 
-$("addHappy").onclick=()=>{
-let t=$("happyText").value.trim(),a=$("happyAct").value.trim(),f=$("happyImg").files[0];
-if(!t&&!a&&!f)return;
-let o={text:t,act:a,time:t(),comments:[]};
-if(f){let r=new FileReader();r.onload=()=>{o.img=r.result;pics.push(r.result);
-happy.unshift(o);save();renderHappy();renderPics();};r.readAsDataURL(f);}
-else{happy.unshift(o);save();renderHappy();}
-$("happyText").value="";$("happyAct").value="";$("happyImg").value="";
+$("addHappy").onclick = () => {
+  const text = $("happyText").value.trim();
+  const act = $("happyAct").value.trim();
+  const f = $("happyImg").files[0];
+  if(!text && !act && !f) return;
+  const obj = {text,act,time:timeNow(),comments:[]};
+  if(f){
+    const r = new FileReader();
+    r.onload = () => {
+      obj.img = r.result; pics.push(r.result);
+      happy.unshift(obj); saveAll(); renderHappy(); renderPics();
+    };
+    r.readAsDataURL(f);
+  }else{
+    happy.unshift(obj); saveAll(); renderHappy();
+  }
+  $("happyText").value=""; $("happyAct").value=""; $("happyImg").value="";
 };
 
 /* PICTURES */
 function renderPics(){
-$("picGrid").innerHTML="";
-pics.forEach(s=>{let i=document.createElement("img");i.src=s;$("picGrid").appendChild(i);});
+  const box = $("picGrid");
+  box.innerHTML = "";
+  pics.forEach(src=>{
+    const img = document.createElement("img");
+    img.src = src;
+    box.appendChild(img);
+  });
 }
 renderPics();
 </script>
-</body></html>
+</body>
+  </html>
