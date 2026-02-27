@@ -1,110 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zee Life Guide</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<title>Zee Web to App</title>
+
 <style>
-  body { margin:0; font-family: 'Roboto', sans-serif; background: linear-gradient(135deg,#f0f4f8,#d9e2ec); color:#333; }
-  header { background:#1e3c72; background: linear-gradient(to right, #2a5298, #1e3c72); color:white; padding:25px; font-size:28px; text-align:center; box-shadow:0 4px 6px rgba(0,0,0,0.2);}
-  #app { padding:20px; max-width:900px; margin:auto; }
-  .category, .item { background:white; margin:15px 0; padding:20px; border-radius:12px; cursor:pointer; box-shadow:0 8px 16px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s; }
-  .category:hover, .item:hover { transform: translateY(-5px); box-shadow:0 12px 20px rgba(0,0,0,0.2); }
-  .back { margin:10px 0; cursor:pointer; color:#1e3c72; font-weight:bold; display:inline-block; transition: color 0.2s; }
-  .back:hover { color:#2a5298; }
-  h2 { margin-top:0; font-size:26px; color:#1e3c72; }
-  p { line-height:1.8; font-size:18px; text-align:justify; white-space: pre-wrap; }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    text-align: center;
+}
+
+header {
+    background: #000;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+input {
+    width: 80%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 10px;
+    background: #00ff88;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+iframe {
+    width: 100%;
+    height: 80vh;
+    border: none;
+    margin-top: 10px;
+    background: white;
+}
 </style>
 </head>
+
 <body>
 
-<header>Zee Life Guide</header>
-<div id="app"></div>
+<header>Zee Simple Web → App Viewer</header>
+
+<input id="urlInput" placeholder="Enter full URL (https://example.com)">
+<br>
+<button onclick="loadSite()">Load Website</button>
+
+<iframe id="viewer"></iframe>
 
 <script>
-const data = {
-  "Stories": [
-    { "title": "The Brave Child", "text": `Once in a quiet village, there lived a young child named Aiden. Aiden was small, but he had a heart bigger than anyone else. Every day, he watched people around him face small struggles—neighbors arguing, someone lost on the path, animals in danger—and he felt a strong urge to help.
+function loadSite() {
+    let url = document.getElementById("urlInput").value.trim();
 
-One summer afternoon, a fire broke out in the bakery. The villagers were terrified; flames were shooting from the windows, and smoke filled the streets. Most adults hesitated, unsure how to act without risking their lives. But Aiden didn’t pause. He ran to the bakery, carefully guiding the baker’s cat out of the flames, then found the baker’s apprentice trapped behind a fallen beam. Though his hands trembled, Aiden remembered how he had learned to stay calm and take small steps. He lifted the beam just enough for the apprentice to crawl through, then led them both to safety.
+    if (!url.startsWith("http")) {
+        alert("Enter full URL starting with https://");
+        return;
+    }
 
-The villagers were amazed. “How did a child do what we could not?” they asked. Aiden smiled, saying, “I just stayed calm and did what I could, one step at a time.”
-
-From that day, Aiden became a quiet hero of the village. His courage wasn’t loud or boastful; it was in every small choice he made to help, to listen, and to act despite fear. Over the years, he continued to face challenges: rescuing lost travelers, defending someone being bullied, and comforting those in grief. Each act was different, but the lesson remained the same: bravery is not the absence of fear, but the will to act in spite of it.
-
-By the time Aiden grew into adulthood, the village had learned a vital lesson from him. True courage often comes from those who seem the least powerful, and a single brave heart can inspire an entire community.` },
-    { "title": "The Honest Farmer", "text": "Full 10-minute story text here..." },
-    { "title": "The Lost Traveler", "text": "Full 10-minute story text here..." },
-    { "title": "The Generous Merchant", "text": "Full 10-minute story text here..." },
-    { "title": "The Patient Teacher", "text": "Full 10-minute story text here..." },
-    { "title": "The Courageous Sailor", "text": "Full 10-minute story text here..." },
-    { "title": "The Quiet Leader", "text": "Full 10-minute story text here..." },
-    { "title": "The Healing Friend", "text": "Full 10-minute story text here..." },
-    { "title": "The Determined Athlete", "text": "Full 10-minute story text here..." },
-    { "title": "The Humble Artist", "text": "Full 10-minute story text here..." },
-    { "title": "The Wise Elder", "text": "Full 10-minute story text here..." },
-    { "title": "The Resilient Family", "text": "Full 10-minute story text here..." },
-    { "title": "The Thoughtful Neighbor", "text": "Full 10-minute story text here..." },
-    { "title": "The Explorer", "text": "Full 10-minute story text here..." },
-    { "title": "The Inventor", "text": "Full 10-minute story text here..." },
-    { "title": "The Farmer’s Wisdom", "text": "Full 10-minute story text here..." },
-    { "title": "The Lost Letter", "text": "Full 10-minute story text here..." },
-    { "title": "The Mountain Climber", "text": "Full 10-minute story text here..." },
-    { "title": "The Healing Journey", "text": "Full 10-minute story text here..." },
-    { "title": "The Eternal Learner", "text": "Full 10-minute story text here..." }
-  ],
-  "Guidance": [
-    { "title": "Self-Care Basics", "text": "Eat well, sleep enough, exercise daily. Take time to breathe, reflect, meditate..." },
-    { "title": "Caring for Loved Ones", "text": "Listen attentively, be present, help when needed, encourage growth and safety..." },
-    { "title": "Healthy Habits", "text": "Drink water, manage stress, maintain hygiene, and keep routines consistent..." },
-    { "title": "Time Management", "text": "Prioritize tasks, avoid distractions, plan your day, review nightly progress..." },
-    { "title": "Emotional Balance", "text": "Recognize feelings, practice patience, and communicate calmly with empathy..." }
-  ],
-  "Growth": [
-    { "title": "Daily Growth Habits", "text": "Morning reading, reflection, journaling, planning, practicing new skills consistently..." },
-    { "title": "Overcoming Challenges", "text": "View problems as lessons, break down tasks, persist with focus, and learn from mistakes..." },
-    { "title": "Mindset Training", "text": "Practice gratitude, visualize success, repeat affirmations, and embrace failures as growth..." }
-  ],
-  "WayOfLife": [
-    { "title": "Living Simply", "text": "Focus on essentials, avoid clutter, appreciate small joys, maintain gratitude, and embrace mindfulness..." },
-    { "title": "Gratitude Practice", "text": "Daily reflection on blessings, writing notes of thanks, and expressing appreciation..." },
-    { "title": "Mindful Presence", "text": "Stay present in each moment, engage fully with people, and minimize multitasking distractions..." }
-  ]
-};
-
-const app = document.getElementById('app');
-
-function showCategories() {
-  app.innerHTML = '';
-  for (let cat in data) {
-    const div = document.createElement('div');
-    div.className = 'category';
-    div.textContent = cat;
-    div.onclick = () => showItems(cat);
-    app.appendChild(div);
-  }
+    document.getElementById("viewer").src = url;
 }
-
-function showItems(cat) {
-  app.innerHTML = `<div class="back" onclick="showCategories()">← Back to Categories</div>`;
-  data[cat].forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.textContent = item.title;
-    div.onclick = () => showContent(cat, item.title);
-    app.appendChild(div);
-  });
-}
-
-function showContent(cat, title) {
-  const item = data[cat].find(i => i.title === title);
-  app.innerHTML = `<div class="back" onclick="showItems('${cat}')">← Back to ${cat}</div>
-                   <h2>${item.title}</h2>
-                   <p>${item.text}</p>`;
-}
-
-showCategories();
 </script>
 
 </body>
