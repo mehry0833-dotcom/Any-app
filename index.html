@@ -3,344 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Henicks Auto Photo Enhance</title>
+<title>Henicks Boxing Dodge</title>
 <style>
-body {
+  body {
     margin:0;
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    overflow: hidden;
     color: #fff;
     text-align: center;
-}
-header {
-    font-size: 24px;
-    font-weight: bold;
-    padding: 20px;
-}
-.container {
-    padding: 15px;
-    position: relative;
-}
-button, input, select {
-    padding: 10px 14px;
-    margin: 6px;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-}
-button {
-    background: #00e5ff;
-    color: #000;
-    cursor: pointer;
-}
-button:hover { opacity: 0.85; }
-canvas {
-    max-width: 100%;
+  }
+  canvas {
+    background: #101820;
+    display: block;
+    margin: 0 auto;
+    border: 3px solid #00e5ff;
     border-radius: 15px;
-    margin-top: 15px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.6);
-}
-#messageBox{
-    position:absolute;
-    top:50px;
-    left:50%;
-    transform:translateX(-50%);
-    background:rgba(0,0,0,0.7);
-    padding:12px 20px;
-    border-radius:12px;
-    font-size:16px;
-    display:none;
-}
-.tabButtons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+  }
+  .controls {
     margin-top:10px;
-}
-.tabButtons button {
+  }
+  button {
+    padding:12px 16px;
     margin:4px;
-}
-.sliderContainer {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 10px;
-}
-.sliderBox {
-    margin:5px;
-    background: rgba(255,255,255,0.1);
-    padding:5px 10px;
-    border-radius:8px;
-    width:90%;
-}
-.sliderBox label {
-    font-size:14px;
-}
-.sliderBox input {
-    width:100%;
-    height:25px;
-}
-.colorContainer {
-    display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    background:#00e5ff;
+    color:#000;
+    cursor:pointer;
+  }
+  button:hover {opacity:0.85;}
+  #scoreBoard {
+    font-size:18px;
     margin-top:10px;
-}
-.colorBox{
-    margin:5px;
-    background: rgba(255,255,255,0.1);
-    padding:5px 10px;
-    border-radius:8px;
-}
-.colorBox label{
-    font-size:12px;
-}
+  }
 </style>
 </head>
 <body>
 
-<header>Henicks Auto Photo Enhance</header>
-
-<div class="container">
-<input type="file" id="upload" accept="image/*"><br>
-
-<!-- Filter Buttons -->
-<button onclick="autoEnhance()">Ultra Clean Enhance</button>
-<button onclick="blackWhite()">Black & White</button>
-<button onclick="vivid()">Vivid Mode</button>
-<button onclick="softSkin()">Soft Skin</button>
-<button onclick="warmTone()">Warm Tone</button>
-<button onclick="coolTone()">Cool Tone</button>
-<button onclick="downloadImage()">Save Photo</button>
-
-<div id="messageBox"></div>
-<br>
-<canvas id="canvas"></canvas>
-
-<!-- Tabs -->
-<div class="tabButtons">
-    <button onclick="showTab('basic')">Basic</button>
-    <button onclick="showTab('face')">Face</button>
-    <button onclick="showTab('pro')">Pro</button>
+<h1>Henicks Boxing Dodge</h1>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div class="controls">
+  <button onclick="moveLeft()">Walk Left</button>
+  <button onclick="moveRight()">Walk Right</button>
+  <button onclick="runLeft()">Run Left</button>
+  <button onclick="runRight()">Run Right</button>
+  <button onclick="slip()">Slip</button>
+  <button onclick="roll()">Roll</button>
 </div>
+<div id="scoreBoard">Score: 0 | Level: 1</div>
 
-<!-- Sliders -->
-<div class="sliderContainer" id="basic">
-    <div class="sliderBox">
-        <label>Brightness: <span id="valBrightness">0</span></label>
-        <input type="range" min="-100" max="100" value="0" id="sliderBrightness" 
-        oninput="document.getElementById('valBrightness').innerText=this.value; applySliders()">
-    </div>
-    <div class="sliderBox">
-        <label>Contrast: <span id="valContrast">120</span></label>
-        <input type="range" min="0" max="300" value="120" id="sliderContrast" 
-        oninput="document.getElementById('valContrast').innerText=this.value; applySliders()">
-    </div>
-    <div class="sliderBox">
-        <label>Saturation: <span id="valSaturation">115</span></label>
-        <input type="range" min="0" max="300" value="115" id="sliderSaturation" 
-        oninput="document.getElementById('valSaturation').innerText=this.value; applySliders()">
-    </div>
-</div>
-
-<div class="sliderContainer" id="face">
-    <div class="sliderBox">
-        <label>Skin Smooth: <span id="valSkin">1</span></label>
-        <input type="range" min="0" max="10" value="1" id="sliderSkin" 
-        oninput="document.getElementById('valSkin').innerText=this.value; applySliders()">
-    </div>
-    <div class="sliderBox">
-        <label>Teeth Bright: <span id="valTeeth">1</span></label>
-        <input type="range" min="0" max="10" value="1" id="sliderTeeth" 
-        oninput="document.getElementById('valTeeth').innerText=this.value; applySliders()">
-    </div>
-    <div class="sliderBox">
-        <label>Eye Detail: <span id="valEye">1</span></label>
-        <input type="range" min="0" max="10" value="1" id="sliderEye" 
-        oninput="document.getElementById('valEye').innerText=this.value; applySliders()">
-    </div>
-</div>
-
-<div class="sliderContainer" id="pro">
-    <div class="sliderBox">
-        <label>Sharpness: <span id="valSharp">1</span></label>
-        <input type="range" min="0" max="10" value="1" id="sliderSharp" 
-        oninput="document.getElementById('valSharp').innerText=this.value; applySliders()">
-    </div>
-    <div class="sliderBox">
-        <label>Noise Reduction: <span id="valNoise">1</span></label>
-        <input type="range" min="0" max="10" value="1" id="sliderNoise" 
-        oninput="document.getElementById('valNoise').innerText=this.value; applySliders()">
-    </div>
-    <div class="sliderBox">
-        <label>Glow: <span id="valGlow">1</span></label>
-        <input type="range" min="0" max="10" value="1" id="sliderGlow" 
-        oninput="document.getElementById('valGlow').innerText=this.value; applySliders()">
-    </div>
-</div>
-
-<!-- Color Change -->
-<div class="colorContainer">
-    <div class="colorBox">
-        <label>Clothes Color</label><br>
-        <input type="color" id="clothesColor" value="#ff0000" onchange="applyColors()">
-    </div>
-    <div class="colorBox">
-        <label>Hair Color</label><br>
-        <input type="color" id="hairColor" value="#000000" onchange="applyColors()">
-    </div>
-    <div class="colorBox">
-        <label>Eye Color</label><br>
-        <input type="color" id="eyeColor" value="#00ff00" onchange="applyColors()">
-    </div>
-</div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.23.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js"></script>
 <script>
-const upload = document.getElementById("upload");
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const msgBox = document.getElementById("messageBox");
-let original = new Image();
-let imgData = null;
-let net = null;
 
-// Load BodyPix
-bodyPix.load().then(model => { net = model; });
+let player = {x:180, y:520, width:40, height:60, color:"#FFD700", slipping:false, rolling:false};
+let punches = [];
+let score = 0;
+let level = 1;
+let gameSpeed = 2;
+let punchInterval = 1500;
 
-// Show tab
-function showTab(id){
-    document.querySelectorAll('.sliderContainer').forEach(s=>s.style.display='none');
-    document.getElementById(id).style.display='flex';
+// Draw player
+function drawPlayer(){
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
-// Default tab
-showTab('basic');
+// Generate punches
+function addPunch(){
+    const size = 30;
+    const x = Math.random()*(canvas.width - size);
+    punches.push({x:x, y:0, width:size, height:size, color:"#FF0000"});
+}
+setInterval(addPunch, punchInterval);
 
-// File Upload
-upload.addEventListener("change", function(e){
-    const reader = new FileReader();
-    reader.onload = function(event){
-        original.onload = function(){
-            canvas.width = original.width;
-            canvas.height = original.height;
-            ctx.drawImage(original,0,0);
-            imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+// Update game
+function update(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    
+    // Move punches
+    for(let i=punches.length-1;i>=0;i--){
+        punches[i].y += gameSpeed;
+        ctx.fillStyle = punches[i].color;
+        ctx.fillRect(punches[i].x, punches[i].y, punches[i].width, punches[i].height);
+
+        // Collision detection
+        if(!player.slipping && !player.rolling &&
+          punches[i].x < player.x + player.width &&
+          punches[i].x + punches[i].width > player.x &&
+          punches[i].y < player.y + player.height &&
+          punches[i].y + punches[i].height > player.y){
+            alert("You got hit! Score: "+score);
+            document.location.reload();
         }
-        original.src = event.target.result;
+
+        // Remove off-screen punches
+        if(punches[i].y > canvas.height) punches.splice(i,1);
     }
-    reader.readAsDataURL(e.target.files[0]);
-});
 
-// Auto Enhance Messages
-const messages=[
-    "Your photo?🙄",
-    "Your photo looks good, jealous down 👇.",
-    "If you don't post this amazing photo on Facebook, chai, I will get shocked.😲",
-    "Okay, your photo is cooked, ready to be eaten 🥪🌭",
-    "How do you look, amazing, right?😁"
-];
+    drawPlayer();
+    document.getElementById("scoreBoard").innerText = "Score: "+score+" | Level: "+level;
+    requestAnimationFrame(update);
+}
+update();
 
-function showMessages(){
-    let index=0;
-    msgBox.style.display="block";
-    const interval = setInterval(()=>{
-        if(index>=messages.length){
-            msgBox.style.display="none";
-            clearInterval(interval);
-            return;
-        }
-        msgBox.innerText=messages[index];
-        index++;
-    },1500);
+// Controls
+function moveLeft(){ player.x -= 20; if(player.x<0) player.x=0; }
+function moveRight(){ player.x += 20; if(player.x+player.width>canvas.width) player.x=canvas.width-player.width; }
+function runLeft(){ player.x -= 40; if(player.x<0) player.x=0; }
+function runRight(){ player.x += 40; if(player.x+player.width>canvas.width) player.x=canvas.width-player.width; }
+function slip(){
+    player.slipping=true;
+    player.color="#00FF00"; // green indicates slipping
+    setTimeout(()=>{ player.slipping=false; player.color="#FFD700"; }, 500);
+}
+function roll(){
+    player.rolling=true;
+    player.color="#0000FF"; // blue indicates rolling
+    setTimeout(()=>{ player.rolling=false; player.color="#FFD700"; }, 700);
 }
 
-// Clamp helper
-function clamp(v){ return Math.max(0, Math.min(255, v)); }
-
-// Apply Sliders
-function applySliders(){
-    if(!imgData) return;
-    let d = new Uint8ClampedArray(imgData.data);
-    const w = canvas.width;
-    const h = canvas.height;
-
-    const brightness = parseFloat(document.getElementById("sliderBrightness").value);
-    const contrast = parseFloat(document.getElementById("sliderContrast").value)/100;
-    const saturation = parseFloat(document.getElementById("sliderSaturation").value)/100;
-    // Simple brightness/contrast/saturation
-    for(let i=0;i<d.length;i+=4){
-        for(let c=0;c<3;c++){
-            d[i+c] = clamp((d[i+c]-128)*contrast + 128 + brightness);
-        }
-        let avg = (d[i]+d[i+1]+d[i+2])/3;
-        for(let c=0;c<3;c++){
-            d[i+c] = clamp(avg + (d[i+c]-avg)*saturation);
-        }
+// Increase score & level over time
+setInterval(()=>{
+    score++;
+    if(score % 20 === 0){
+        level++;
+        gameSpeed += 0.5;
+        if(punchInterval > 400) punchInterval -= 100;
     }
-    ctx.putImageData(new ImageData(d,w,h),0,0);
-    applyColors();
-}
+},1000);
 
-// Filters
-function autoEnhance(){
-    if(!imgData) return;
-    showMessages();
-    applySliders();
-    canvas.style.filter="contrast(120%) saturate(115%)";
-}
-function blackWhite(){
-    if(!imgData) return;
-    const d = new Uint8ClampedArray(imgData.data);
-    for(let i=0;i<d.length;i+=4){
-        const avg=(d[i]+d[i+1]+d[i+2])/3;
-        d[i]=d[i+1]=d[i+2]=avg;
-    }
-    ctx.putImageData(new ImageData(d,canvas.width,canvas.height),0,0);
-    canvas.style.filter="none";
-}
-function vivid(){ canvas.style.filter="contrast(130%) saturate(140%)"; }
-function softSkin(){ canvas.style.filter="blur(1px) contrast(105%)"; }
-function warmTone(){ canvas.style.filter="contrast(115%) saturate(110%) sepia(0.15)"; }
-function coolTone(){ canvas.style.filter="contrast(115%) saturate(110%) hue-rotate(180deg)"; }
-
-// Download
-function downloadImage(){
-    const link=document.createElement("a");
-    link.download="henicks_auto_enhance.png";
-    link.href=canvas.toDataURL("image/png");
-    link.click();
-    setTimeout(()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); upload.value=""; canvas.style.filter="none"; },500);
-}
-
-// BodyPix Colors
-async function applyColors(){
-    if(!imgData || !net) return;
-    const segmentation = await net.segmentPersonParts(canvas);
-    const d = ctx.getImageData(0,0,canvas.width,canvas.height);
-    const cColor = hexToRGB(document.getElementById("clothesColor").value);
-    const hColor = hexToRGB(document.getElementById("hairColor").value);
-    const eColor = hexToRGB(document.getElementById("eyeColor").value);
-
-    for(let y=0;y<canvas.height;y++){
-        for(let x=0;x<canvas.width;x++){
-            const idx = (y*canvas.width + x)*4;
-            const part = segmentation.data[idx/4];
-            if([12,13,14,15].includes(part)){ d.data[idx]=cColor.r; d.data[idx+1]=cColor.g; d.data[idx+2]=cColor.b; }
-            if(part===1){ d.data[idx]=hColor.r; d.data[idx+1]=hColor.g; d.data[idx+2]=hColor.b; }
-            if([4,5].includes(part)){ d.data[idx]=eColor.r; d.data[idx+1]=eColor.g; d.data[idx+2]=eColor.b; }
-        }
-    }
-    ctx.putImageData(d,0,0);
-}
-function hexToRGB(hex){
-    const bigint = parseInt(hex.replace("#",""),16);
-    return { r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255 };
-}
 </script>
-
 </body>
-        </html>
+</html>
