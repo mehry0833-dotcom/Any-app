@@ -1,64 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Henicks Auto Photo Enhance</title>
-
 <style>
-body{
+body {
     margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    color:white;
-    text-align:center;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color: #fff;
+    text-align: center;
 }
-header{
-    padding:20px;
-    font-size:22px;
-    font-weight:bold;
+header {
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px;
 }
-.container{
-    padding:15px;
+.container {
+    padding: 15px;
 }
-canvas{
-    max-width:100%;
-    border-radius:15px;
-    margin-top:15px;
-    box-shadow:0 0 25px rgba(0,0,0,0.6);
+button, input {
+    padding: 12px 16px;
+    margin: 6px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
 }
-button,input{
-    padding:10px 15px;
-    margin:6px;
-    border:none;
-    border-radius:8px;
-    font-size:14px;
+button {
+    background: #00e5ff;
+    color: #000;
+    cursor: pointer;
 }
-button{
-    background:#00e5ff;
-    cursor:pointer;
+button:hover { opacity: 0.85; }
+canvas {
+    max-width: 100%;
+    border-radius: 15px;
+    margin-top: 15px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
 }
-button:hover{opacity:0.85;}
 </style>
 </head>
-
 <body>
 
 <header>Henicks Auto Photo Enhance</header>
 
 <div class="container">
-
 <input type="file" id="upload" accept="image/*"><br>
-
-<button onclick="autoEnhance()">Auto Enhance</button>
+<button onclick="autoEnhance()">Ultra Clean Enhance</button>
 <button onclick="blackWhite()">Black & White</button>
 <button onclick="vivid()">Vivid Mode</button>
 <button onclick="softSkin()">Soft Skin</button>
 <button onclick="downloadImage()">Save Photo</button>
-
 <br>
 <canvas id="canvas"></canvas>
-
 </div>
 
 <script>
@@ -80,65 +75,78 @@ upload.addEventListener("change", function(e){
     reader.readAsDataURL(e.target.files[0]);
 });
 
-function getPixels(){
-    return ctx.getImageData(0,0,canvas.width,canvas.height);
-}
+// Helper: clamp
+function clamp(v){ return Math.max(0, Math.min(255, v)); }
 
-function putPixels(data){
-    ctx.putImageData(data,0,0);
-}
-
+// Apply advanced enhancement
 function autoEnhance(){
     ctx.drawImage(original,0,0);
-    let img = getPixels();
+    let img = ctx.getImageData(0,0,canvas.width,canvas.height);
     let d = img.data;
 
-    for(let i=0;i<d.length;i+=4){
-        // Brightness balance
-        d[i]+=8;
-        d[i+1]+=8;
-        d[i+2]+=8;
+    // 1. Smart noise reduction: blur non-edge pixels
+    const width = canvas.width;
+    const height = canvas.height;
+    const copy = new Uint8ClampedArray(d);
 
-        // Contrast
-        let contrast=1.15;
-        d[i]=((d[i]-128)*contrast)+128;
-        d[i+1]=((d[i+1]-128)*contrast)+128;
-        d[i+2]=((d[i+2]-128)*contrast)+128;
-
-        // Slight noise reduction
-        d[i]=Math.min(255,Math.max(0,d[i]));
-        d[i+1]=Math.min(255,Math.max(0,d[i+1]));
-        d[i+2]=Math.min(255,Math.max(0,d[i+2]));
+    for(let y=1;y<height-1;y++){
+        for(let x=1;x<width-1;x++){
+            const idx = (y*width + x)*4;
+            // Edge detection simple
+            const dx = Math.abs(copy[idx]-copy[idx+4]) + Math.abs(copy[idx+1]-copy[idx+5]) + Math.abs(copy[idx+2]-copy[idx+6]);
+            const dy = Math.abs(copy[idx]-copy[idx+width*4]) + Math.abs(copy[idx+1]-copy[idx+width*4+1]) + Math.abs(copy[idx+2]-copy[idx+width*4+2]);
+            const edge = dx + dy;
+            if(edge < 50){ // Non-edge: smooth
+                for(let c=0;c<3;c++){
+                    d[idx+c] = (copy[idx-4+c]+copy[idx+c]+copy[idx+4+c])/3;
+                }
+            }
+        }
     }
 
-    putPixels(img);
+    // 2. Brightness & contrast
+    for(let i=0;i<d.length;i+=4){
+        // brightness
+        d[i]+=10; d[i+1]+=10; d[i+2]+=10;
+        // contrast
+        const contrast = 1.2;
+        d[i] = clamp(((d[i]-128)*contrast)+128);
+        d[i+1] = clamp(((d[i+1]-128)*contrast)+128);
+        d[i+2] = clamp(((d[i+2]-128)*contrast)+128);
+    }
 
-    // Sharpen
-    canvas.style.filter="contrast(110%) saturate(105%)";
+    putImageData(img);
+
+    // 3. Subtle sharpening via canvas filter
+    canvas.style.filter="contrast(115%) saturate(110%)";
 }
 
+// Black & White
 function blackWhite(){
-    let img = getPixels();
+    let img = ctx.getImageData(0,0,canvas.width,canvas.height);
     let d = img.data;
-
     for(let i=0;i<d.length;i+=4){
         let avg=(d[i]+d[i+1]+d[i+2])/3;
         d[i]=d[i+1]=d[i+2]=avg;
     }
-    putPixels(img);
+    ctx.putImageData(img,0,0);
+    canvas.style.filter="none";
 }
 
+// Vivid mode
 function vivid(){
-    canvas.style.filter="contrast(125%) saturate(140%)";
+    canvas.style.filter="contrast(130%) saturate(140%)";
 }
 
+// Soft skin
 function softSkin(){
     canvas.style.filter="blur(1px) contrast(105%)";
 }
 
+// Download & auto-clear
 function downloadImage(){
     const link=document.createElement("a");
-    link.download="henicks_enhanced.png";
+    link.download="henicks_auto_enhance.png";
     link.href=canvas.toDataURL("image/png");
     link.click();
 
