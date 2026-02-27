@@ -1,76 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zee Web to App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Web to App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: white;
-    text-align: center;
-}
+        header {
+            background: #000;
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+        }
 
-header {
-    background: #000;
-    padding: 15px;
-    font-size: 20px;
-    font-weight: bold;
-}
+        input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 20px;
+            font-size: 16px;
+            background: #222;
+            color: white;
+        }
 
-input {
-    width: 80%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    margin-top: 20px;
-    font-size: 16px;
-}
+        button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 10px;
+            background: #00ff88;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-button {
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: none;
-    margin-top: 10px;
-    background: #00ff88;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-iframe {
-    width: 100%;
-    height: 80vh;
-    border: none;
-    margin-top: 10px;
-    background: white;
-}
-</style>
+        button:hover {
+            background: #00cc66;
+        }
+    </style>
 </head>
-
 <body>
 
-<header>Zee Simple Web → App Viewer</header>
+<header>Simple Web to App</header>
 
+<p>Enter the URL below to load a website like an app</p>
 <input id="urlInput" placeholder="Enter full URL (https://example.com)">
 <br>
-<button onclick="loadSite()">Load Website</button>
-
-<iframe id="viewer"></iframe>
+<button onclick="loadWebsite()">Load Website</button>
 
 <script>
-function loadSite() {
-    let url = document.getElementById("urlInput").value.trim();
+    function loadWebsite() {
+        let url = document.getElementById("urlInput").value.trim();
+        
+        // Check if the URL is valid
+        if (!url.startsWith("http") && !url.startsWith("https")) {
+            alert("Please enter a valid URL starting with https://");
+            return;
+        }
 
-    if (!url.startsWith("http")) {
-        alert("Enter full URL starting with https://");
-        return;
+        // Open the URL in the same window
+        window.location.href = url;
     }
-
-    document.getElementById("viewer").src = url;
-}
 </script>
 
 </body>
