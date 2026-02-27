@@ -1,419 +1,242 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Let’s Vibe</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#050509;color:#f5f5f5;font-family:system-ui,sans-serif;padding-bottom:80px}
-    h2{font-size:18px;margin-bottom:8px;color:#10b981}
-    p{font-size:13px;opacity:.8}
-    .screen{display:none;padding:14px}
-    .screen.active{display:block}
-    input,textarea,select{width:100%;padding:8px 10px;margin:6px 0;border-radius:10px;
-      border:1px solid #262626;background:#11121a;color:#f5f5f5;font-size:14px}
-    textarea{min-height:60px}
-    input[type=file]{font-size:11px}
-    button{border:none;cursor:pointer}
-    .primary{width:100%;padding:9px 0;border-radius:999px;background:#10b981;color:#fff;
-      font-size:14px;margin-top:8px}
-    #chatList,#statusList,#postList,#happyList{max-height:55vh;overflow-y:auto;margin:8px 0}
-    .chatBubble{max-width:80%;padding:8px 10px;border-radius:14px;margin:6px 0;font-size:13px}
-    .me{background:#10b981;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
-    .other{background:#1b1c24;margin-right:auto;border-bottom-left-radius:4px}
-    .chatMedia img,.chatMedia video{width:100%;border-radius:10px;margin-top:6px}
-    .chatMedia audio{width:100%;margin-top:6px}
-    .statusCard,.postCard{background:#11121a;border-radius:16px;padding:10px;margin-bottom:10px;
-      box-shadow:0 0 12px rgba(0,0,0,.4)}
-    .statusCard img,.postCard img{width:100%;border-radius:12px;margin-top:6px}
-    .statusTop{display:flex;justify-content:space-between;font-size:11px;opacity:.7}
-    .statusActions,.postActions{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
-    .statusActions button,.postActions button{background:#1f2933;color:#f5f5f5;border-radius:999px;
-      padding:5px 10px;font-size:11px}
-    .comment{font-size:12px;padding:3px 0;border-bottom:1px solid #1f1f2a}
-    .commentInput{width:100%;padding:7px 9px;border-radius:10px;border:1px solid #262626;
-      background:#050509;color:#f5f5f5;font-size:12px;margin-top:6px}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-    .grid img{width:100%;height:90px;object-fit:cover;border-radius:10px}
-    #typing{font-size:11px;color:#9ca3af;min-height:14px}
-    #recBtn{background:#1f2933;color:#f5f5f5;border-radius:999px;padding:6px 12px;font-size:12px;margin-top:4px}
-    #recState{font-size:11px;color:#10b981;margin-top:2px;min-height:12px}
-    /* bottom nav */
-    nav{position:fixed;left:0;bottom:12px;width:100%;display:flex;justify-content:center;pointer-events:none}
-    .navShell{background:#05060d;border-radius:999px;box-shadow:0 0 18px rgba(0,0,0,.7);
-      padding:6px 10px;display:flex;gap:10px;pointer-events:auto;border:1px solid #111827}
-    .navBtn{background:transparent;color:#9ca3af;font-size:11px;text-align:center;padding:4px 8px;
-      border-radius:999px;min-width:58px}
-    .navBtn span{display:block;font-size:16px;margin-bottom:1px}
-    .navBtn.active{background:#111827;color:#10b981}
-    /* more sheet */
-    #moreOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
-      justify-content:flex-end;align-items:flex-end}
-    #moreOverlay.active{display:flex}
-    #moreSheet{width:100%;background:#0b0c12;border-radius:18px 18px 0 0;padding:16px;
-      box-shadow:0 -10px 25px rgba(0,0,0,.8);animation:up .22s ease-out}
-    .moreItem{width:100%;padding:10px 12px;margin-bottom:8px;border-radius:12px;
-      background:#111827;color:#f5f5f5;font-size:14px;text-align:left}
-    @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  </style>
-</head>
-<body>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>localSocial · all in one</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+#app{width:100%;max-width:450px;background:white;height:95vh;border-radius:28px 28px 0 0;box-shadow:0 0 20px rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.app-header{background:#075e54;color:#fff;padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1.2rem}
+.app-header i{font-size:1.3rem}
+.top-tabs{display:flex;background:#075e54;color:#fff;padding:0 16px;gap:24px}
+.top-tab{padding:8px 0 12px;font-weight:500;opacity:.7;border-bottom:3px solid transparent;cursor:pointer}
+.top-tab.active{opacity:1;border-bottom:3px solid #fff}
+.main-content{flex:1;overflow-y:auto;padding:12px 16px;background:#e5ddd5;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23e5ddd5" opacity="0.2"/></svg>')}
+.main-content::-webkit-scrollbar{width:4px}
+.main-content::-webkit-scrollbar-thumb{background:#b3a9a0;border-radius:10px}
+.bottom-nav{display:flex;justify-content:space-around;background:#fff;padding:10px 0 8px;border-top:1px solid #ddd}
+.nav-item{text-align:center;font-size:.7rem;color:#555;cursor:pointer;flex:1}
+.nav-item i{font-size:1.5rem;display:block;margin-bottom:2px}
+.nav-item.active{color:#075e54;font-weight:500}
+.message-bubble{max-width:80%;margin-bottom:8px;padding:8px 12px;border-radius:18px;background:#fff;align-self:flex-start;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.message-bubble.own{background:#dcf8c6;align-self:flex-end}
+.chat-container{display:flex;flex-direction:column}
+.typing-indicator{font-size:.8rem;color:#888;margin-bottom:8px;font-style:italic}
+.chat-input-area{display:flex;gap:6px;background:#fff;padding:10px;border-top:1px solid #ddd;align-items:center;flex-wrap:wrap}
+.chat-input-area input[type="text"]{flex:1;padding:10px;border:1px solid #ccc;border-radius:24px;outline:0}
+.chat-input-area button{background:#075e54;border:0;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer}
+.chat-input-area label{background:#128C7E;color:#fff;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.status-card{background:#fff;border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.1)}
+.status-media{position:relative;background:#000;min-height:200px;display:flex;align-items:center;justify-content:center}
+.status-media img{width:100%;max-height:300px;object-fit:cover}
+.status-audio{position:absolute;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,.6);padding:8px;border-radius:30px;color:#fff}
+.status-info{padding:10px;display:flex;justify-content:space-between;align-items:center}
+.status-actions i{margin:0 6px;cursor:pointer}
+.post-card,.happy-card{background:#fff;border-radius:12px;padding:12px;margin-bottom:16px}
+.post-header{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.post-image{width:100%;max-height:250px;object-fit:cover;border-radius:12px;margin:10px 0}
+.grid-pictures{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.grid-pictures img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-card{background:#fff;width:90%;max-width:400px;border-radius:24px;padding:20px;max-height:80vh;overflow-y:auto}
+.flex{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:#075e54;color:#fff;border:0;padding:10px 16px;border-radius:30px;font-weight:600;cursor:pointer}
+.btn-outline{background:#fff;color:#075e54;border:1px solid #075e54}
+.small{font-size:.75rem;color:gray}
+.hidden{display:none!important}
+</style>
+<body><div id="app"><div class="app-header"><i class="fas fa-user-circle"></i><span>localSocial</span><i class="fas fa-ellipsis-v"></i></div><div id="topTabs" class="top-tabs hidden"><div class="top-tab active" data-tab="chats">Chats</div><div class="top-tab" data-tab="status">Status</div></div><div id="mainContent" class="main-content"></div><div class="bottom-nav" id="bottomNav"><div class="nav-item" data-screen="home"><i class="fas fa-home"></i>Home</div><div class="nav-item active" data-screen="chat"><i class="fas fa-comment-dots"></i>Chat</div><div class="nav-item" data-screen="posts"><i class="fas fa-newspaper"></i>Posts</div><div class="nav-item" data-screen="pictures"><i class="fas fa-images"></i>Pics</div><div class="nav-item" data-screen="happy"><i class="fas fa-smile"></i>Happy</div></div></div>
 
-<div id="home" class="screen active">
-  <h2>Let’s Vibe</h2>
-  <p>Unique social energy. Everything you post stays on this device using local storage.</p>
-</div>
-
-<div id="chats" class="screen">
-  <h2>Chats</h2>
-  <div id="typing"></div>
-  <div id="chatList"></div>
-  <input id="chatName" placeholder="Your name">
-  <input id="chatMsg" placeholder="Type a message">
-  <input id="chatFile" type="file" accept="image/*,video/*,audio/*">
-  <button id="recBtn">🎙 Record</button>
-  <div id="recState"></div>
-  <button id="sendChat" class="primary">Send</button>
-</div>
-
-<div id="status" class="screen">
-  <h2>Status</h2>
-  <textarea id="statusText" placeholder="Write something..."></textarea>
-  <input id="statusImg" type="file" accept="image/*">
-  <input id="statusMusic" type="file" accept="audio/*">
-  <select id="statusSticker">
-    <option value="">Sticker (optional)</option>
-    <option>🔥</option><option>😂</option><option>❤️</option><option>🎧</option><option>💃</option>
-  </select>
-  <button id="postStatus" class="primary">Post Status</button>
-  <div id="statusList"></div>
-</div>
-
-<div id="posts" class="screen">
-  <h2>Posts</h2>
-  <textarea id="postText" placeholder="Say something..."></textarea>
-  <input id="postImg" type="file" accept="image/*">
-  <button id="addPost" class="primary">Post</button>
-  <div id="postList"></div>
-</div>
-
-<div id="pictures" class="screen">
-  <h2>Pictures</h2>
-  <div id="picGrid" class="grid"></div>
-</div>
-
-<div id="happy" class="screen">
-  <h2>What Makes Me Happy</h2>
-  <textarea id="happyText" placeholder="What makes you happy?"></textarea>
-  <input id="happyAct" placeholder="Activity (optional)">
-  <input id="happyImg" type="file" accept="image/*">
-  <button id="addHappy" class="primary">Post</button>
-  <div id="happyList"></div>
-</div>
-
-<div id="moreOverlay">
-  <div id="moreSheet">
-    <button class="moreItem" data-go="pictures">🖼 Pictures</button>
-    <button class="moreItem" data-go="happy">⭐ What I Like</button>
-    <button class="moreItem" id="closeMore">Close</button>
-  </div>
-</div>
-
-<nav>
-  <div class="navShell">
-    <button class="navBtn active" data-go="home"><span>🏠</span>Home</button>
-    <button class="navBtn" data-go="chats"><span>💬</span>Chats</button>
-    <button class="navBtn" data-go="status"><span>🎵</span>Status</button>
-    <button class="navBtn" data-go="posts"><span>📝</span>Posts</button>
-    <button class="navBtn" id="moreBtn"><span>⋯</span>More</button>
-  </div>
-</nav>
+<div id="statusModal" class="modal-overlay"><div class="modal-card"><h3>Add status <i class="fas fa-music"></i></h3><input type="file" id="statusImageInput" accept="image/*" style="margin:10px 0"><input type="file" id="statusAudioInput" accept="audio/*" style="margin:10px 0"><textarea id="statusText" rows="2" placeholder="write something..." style="width:100%"></textarea><div class="flex" style="justify-content:space-between;margin-top:12px"><button class="btn-outline" id="cancelStatus">Cancel</button><button class="btn" id="postStatusBtn">Post story</button></div></div></div>
+<div id="postModal" class="modal-overlay"><div class="modal-card"><h3>Create post</h3><textarea id="postText" rows="2" placeholder="What's on your mind?" style="width:100%"></textarea><input type="file" id="postImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelPost">Cancel</button><button class="btn" id="createPostBtn">Post</button></div></div></div>
+<div id="happyModal" class="modal-overlay"><div class="modal-card"><h3>What makes me happy</h3><input type="text" id="happyActivity" placeholder="activity (e.g. hiking)" style="width:100%;margin-bottom:8px"><textarea id="happyText" rows="2" placeholder="why?" style="width:100%"></textarea><input type="file" id="happyImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelHappy">Cancel</button><button class="btn" id="createHappyBtn">Share</button></div></div></div>
 
 <script>
-const $ = id => document.getElementById(id);
-const screens = document.querySelectorAll(".screen");
-const navBtns = document.querySelectorAll(".navBtn");
-const moreOverlay = $("moreOverlay");
-const timeNow = () => new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-
-let chats = JSON.parse(localStorage.lv_chats || "[]");
-let statuses = JSON.parse(localStorage.lv_statuses || "[]");
-let posts = JSON.parse(localStorage.lv_posts || "[]");
-let happy = JSON.parse(localStorage.lv_happy || "[]");
-let pics = JSON.parse(localStorage.lv_pics || "[]");
-
+(function(){
+let messages=JSON.parse(localStorage.getItem('messages'))||[];
+let statuses=JSON.parse(localStorage.getItem('statuses'))||[];
+let posts=JSON.parse(localStorage.getItem('posts'))||[];
+let happy=JSON.parse(localStorage.getItem('happyItems'))||[];
 function saveAll(){
-  localStorage.lv_chats = JSON.stringify(chats);
-  localStorage.lv_statuses = JSON.stringify(statuses);
-  localStorage.lv_posts = JSON.stringify(posts);
-  localStorage.lv_happy = JSON.stringify(happy);
-  localStorage.lv_pics = JSON.stringify(pics);
+localStorage.setItem('messages',JSON.stringify(messages));
+let oneDay=Date.now()-24*60*60*1000;
+statuses=statuses.filter(s=>s.timestamp>oneDay);
+localStorage.setItem('statuses',JSON.stringify(statuses));
+localStorage.setItem('posts',JSON.stringify(posts));
+localStorage.setItem('happyItems',JSON.stringify(happy));
 }
-
-function showScreen(id){
-  screens.forEach(s => s.classList.remove("active"));
-  $(id).classList.add("active");
-  navBtns.forEach(b => b.classList.remove("active"));
-  document.querySelector(`.navBtn[data-go="${id}"]`)?.classList.add("active");
+const ME='You',FRIEND='Alex';
+let activeBottom='chat',activeTop='chats';
+const main=document.getElementById('mainContent'),topTabs=document.getElementById('topTabs');
+function render(){
+if(activeBottom==='chat')topTabs.classList.remove('hidden');
+else topTabs.classList.add('hidden');
+document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.screen===activeBottom));
+document.querySelectorAll('.top-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===activeTop));
+if(activeBottom==='home')home();
+else if(activeBottom==='chat') activeTop==='chats'?chats():status();
+else if(activeBottom==='posts')postsScreen();
+else if(activeBottom==='pictures')pictures();
+else if(activeBottom==='happy')happyScreen();
 }
-
-navBtns.forEach(b=>{
-  b.onclick = () => {
-    if(b.id === "moreBtn"){ moreOverlay.classList.add("active"); return; }
-    showScreen(b.dataset.go);
-  };
+function home(){
+let h='<h3>🌿 home feed</h3>';
+if(posts.length){
+h+='<h4>Recent posts</h4>';
+posts.slice(-3).reverse().forEach(p=>{h+=`<div class="post-card"><strong>${p.user||ME}</strong> ${p.text||''}`;
+if(p.image)h+=`<br><img src="${p.image}" class="post-image">`;
+h+=`<div class="small">❤️ ${p.likes?.length||0} 💬 ${p.comments?.length||0}</div></div>`;});
+}else h+='<p>No posts yet</p>';
+h+='<h4>✨ happy moments</h4>';
+happy.slice(-2).forEach(hh=>{h+=`<div class="happy-card"><b>${hh.activity||'activity'}</b> – ${hh.text||''}`;
+if(hh.image)h+=`<br><img src="${hh.image}" style="max-width:100%;max-height:150px">`;h+='</div>';});
+main.innerHTML=h;
+}
+function chats(){
+let h='<div class="chat-container">';
+messages.forEach(m=>{let own=m.sender===ME?'own':'';h+=`<div class="message-bubble ${own}">`;
+if(m.sender!==ME)h+=`<b>${m.sender}</b><br>`;
+if(m.text)h+=m.text;
+if(m.image)h+=`<br><img src="${m.image}" style="max-width:150px;border-radius:10px;">`;
+if(m.audio)h+=`<br><audio src="${m.audio}" controls style="width:200px;"></audio>`;
+h+=`<div class="small">${new Date(m.timestamp).toLocaleTimeString()}</div></div>`;});
+h+='<div class="typing-indicator"><i class="fas fa-ellipsis-h"></i> Alex is typing...</div></div>';
+h+=`<div class="chat-input-area"><input type="text" id="chatMsg" placeholder="Type a message"><label for="chatImage"><i class="fas fa-camera"></i></label><input type="file" id="chatImage" accept="image/*" style="display:none"><label for="chatAudio"><i class="fas fa-headphones"></i></label><input type="file" id="chatAudio" accept="audio/*" style="display:none"><button id="sendChat"><i class="fas fa-paper-plane"></i></button></div>`;
+main.innerHTML=h;
+document.getElementById('sendChat').addEventListener('click',()=>{
+let inp=document.getElementById('chatMsg');if(!inp.value.trim())return;
+messages.push({sender:ME,text:inp.value,timestamp:Date.now()});
+setTimeout(()=>{messages.push({sender:FRIEND,text:'👍',timestamp:Date.now()});saveAll();if(activeBottom==='chat'&&activeTop==='chats')chats();},800);
+inp.value='';saveAll();chats();});
+document.getElementById('chatImage').addEventListener('change',function(e){
+let file=e.target.files[0];if(!file)return;let fr=new FileReader();
+fr.onload=ev=>{messages.push({sender:ME,image:ev.target.result,timestamp:Date.now()});saveAll();chats();};
+fr.readAsDataURL(file);});
+document.getElementById('chatAudio').addEventListener('change',function(e){
+let file=e.target.files[0];if(!file)return;let fr=new FileReader();
+fr.onload=ev=>{messages.push({sender:ME,audio:ev.target.result,timestamp:Date.now()});saveAll();chats();};
+fr.readAsDataURL(file);});
+}
+function status(){
+let h='<div style="margin-bottom:12px"><button id="newStatusBtn" class="btn"><i class="fas fa-plus-circle"></i> Add story</button></div><h4>Recent updates</h4>';
+statuses.sort((a,b)=>b.timestamp-a.timestamp).forEach(s=>{
+h+=`<div class="status-card"><div class="status-media">`;
+if(s.image)h+=`<img src="${s.image}">`;
+if(s.audio)h+=`<div class="status-audio"><audio src="${s.audio}" controls style="width:100%"></audio></div>`;
+h+=`</div><div class="status-info"><div><strong>${s.user||ME}</strong> <span class="small">${new Date(s.timestamp).toLocaleString()}</span><br>${s.text||''}</div>`;
+h+=`<div class="status-actions"><i class="far fa-eye" title="views:${s.views?.length||0}"></i><i class="far fa-heart" title="likes:${s.likes?.length||0}"></i><i class="fas fa-download" data-id="${s.id}" data-save></i></div></div></div>`;
 });
-
-$("closeMore").onclick = () => moreOverlay.classList.remove("active");
-document.querySelectorAll(".moreItem[data-go]").forEach(b=>{
-  b.onclick = () => { showScreen(b.dataset.go); moreOverlay.classList.remove("active"); };
-});
-
-/* CHATS */
-function renderChats(){
-  const box = $("chatList");
-  box.innerHTML = "";
-  chats.forEach((c,i)=>{
-    const div = document.createElement("div");
-    div.className = "chatBubble " + (i%2 ? "other" : "me");
-    let media = "";
-    if(c.img) media += `<div class="chatMedia"><img src="${c.img}"></div>`;
-    if(c.vid) media += `<div class="chatMedia"><video controls src="${c.vid}"></video></div>`;
-    if(c.aud) media += `<div class="chatMedia"><audio controls src="${c.aud}"></audio></div>`;
-    div.innerHTML = (c.name?`<b>${c.name}</b><br>`:"") + (c.text||"") + media;
-    box.appendChild(div);
-  });
-  box.scrollTop = box.scrollHeight;
+main.innerHTML=h;
+document.getElementById('newStatusBtn')?.addEventListener('click',()=>document.getElementById('statusModal').style.display='flex');
+document.querySelectorAll('[data-save]').forEach(btn=>btn.addEventListener('click',e=>{
+let id=e.target.dataset.id,stat=statuses.find(s=>s.id==id);if(stat?.image){let a=document.createElement('a');a.href=stat.image;a.download='status.jpg';a.click();}}));
 }
-renderChats();
-
-$("chatMsg").oninput = () => $("typing").innerText = $("chatMsg").value ? "Typing..." : "";
-
-$("sendChat").onclick = () => {
-  const name = $("chatName").value.trim();
-  const text = $("chatMsg").value.trim();
-  const file = $("chatFile").files[0];
-  if(!text && !file) return;
-  const msg = {name,text,time:timeNow()};
-  if(file){
-    const r = new FileReader();
-    r.onload = () => {
-      if(file.type.startsWith("image")){ msg.img = r.result; pics.push(r.result); }
-      else if(file.type.startsWith("video")) msg.vid = r.result;
-      else msg.aud = r.result;
-      chats.push(msg); saveAll(); renderChats(); renderPics();
-    };
-    r.readAsDataURL(file);
-  }else{
-    chats.push(msg); saveAll(); renderChats();
-  }
-  $("chatMsg").value = "";
-  $("chatName").value = "";
-  $("chatFile").value = "";
-  $("typing").innerText = "";
-};
-
-/* RECORD AUDIO */
-let recorder = null, recChunks = [];
-$("recBtn").onclick = async () => {
-  if(recorder && recorder.state === "recording"){
-    recorder.stop();
-    $("recState").innerText = "Saving...";
-    return;
-  }
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    recorder = new MediaRecorder(stream);
-    recChunks = [];
-    recorder.ondataavailable = e => recChunks.push(e.data);
-    recorder.onstop = () => {
-      const blob = new Blob(recChunks,{type:"audio/webm"});
-      const r = new FileReader();
-      r.onload = () => {
-        chats.push({aud:r.result,time:timeNow()});
-        saveAll(); renderChats();
-        $("recState").innerText = "Saved";
-        setTimeout(()=>$("recState").innerText="",800);
-      };
-      r.readAsDataURL(blob);
-    };
-    recorder.start();
-    $("recState").innerText = "Recording...";
-  }catch(e){
-    $("recState").innerText = "Mic blocked";
-  }
-};
-
-/* STATUS */
-function renderStatus(){
-  const box = $("statusList");
-  box.innerHTML = "";
-  statuses.forEach((s,i)=>{
-    const div = document.createElement("div");
-    div.className = "statusCard";
-    const img = s.img ? `<img src="${s.img}">` : "";
-    const mus = s.mus ? `<audio controls src="${s.mus}" style="width:100%;margin-top:6px"></audio>` : "";
-    div.innerHTML = `
-      <div class="statusTop"><span>${s.time}</span><span>${s.views||0} views · ${s.likes||0} likes</span></div>
-      ${img}
-      <div style="margin-top:4px;font-size:13px">${s.text||""}</div>
-      <div style="font-size:20px;margin-top:2px">${s.sticker||""}</div>
-      ${mus}
-      <div class="statusActions">
-        <button onclick="likeStatus(${i})">Like</button>
-        <button onclick="viewStatus(${i})">Viewed</button>
-        ${s.img?`<a href="${s.img}" download="status.png"><button>Save</button></a>`:""}
-      </div>`;
-    box.appendChild(div);
-  });
+function postsScreen(){
+let h='<button id="newPostBtn" class="btn" style="margin-bottom:12px"><i class="fas fa-pen"></i> new post</button>';
+posts.slice().reverse().forEach(p=>{
+h+=`<div class="post-card"><div class="post-header"><i class="fas fa-user-circle"></i> <b>${p.user||ME}</b> <span class="small">${new Date(p.timestamp).toLocaleString()}</span></div>`;
+if(p.text)h+=`<p>${p.text}</p>`;
+if(p.image)h+=`<img src="${p.image}" class="post-image">`;
+h+=`<div class="status-actions"><i class="far fa-heart"></i> ${p.likes?.length||0} <i class="far fa-comment"></i> ${p.comments?.length||0} <i class="fas fa-share"></i></div>`;
+if(p.comments?.length){h+='<div style="background:#f0f0f0;padding:6px;border-radius:12px;">';p.comments.slice(-2).forEach(c=>h+=`<div><b>${c.user}:</b> ${c.text}</div>`);h+='</div>';}
+h+='</div>';});
+main.innerHTML=h;
+document.getElementById('newPostBtn')?.addEventListener('click',()=>document.getElementById('postModal').style.display='flex');
 }
-window.likeStatus = i => { statuses[i].likes=(statuses[i].likes||0)+1; saveAll(); renderStatus(); };
-window.viewStatus = i => { statuses[i].views=(statuses[i].views||0)+1; saveAll(); renderStatus(); };
-renderStatus();
-
-$("postStatus").onclick = () => {
-  const text = $("statusText").value.trim();
-  const fi = $("statusImg").files[0];
-  const fm = $("statusMusic").files[0];
-  const sticker = $("statusSticker").value;
-  if(!text && !fi && !fm && !sticker) return;
-  const obj = {text,sticker,time:timeNow(),likes:0,views:0};
-  const tasks = [];
-  if(fi){
-    const r = new FileReader();
-    tasks.push(new Promise(res=>{ r.onload=()=>{obj.img=r.result;pics.push(r.result);res();}; }));
-    r.readAsDataURL(fi);
-  }
-  if(fm){
-    const r2 = new FileReader();
-    tasks.push(new Promise(res=>{ r2.onload=()=>{obj.mus=r2.result;res();}; }));
-    r2.readAsDataURL(fm);
-  }
-  Promise.all(tasks).then(()=>{
-    statuses.unshift(obj); saveAll(); renderStatus(); renderPics();
-    $("statusText").value=""; $("statusImg").value=""; $("statusMusic").value=""; $("statusSticker").value="";
-  });
-};
-
-/* POSTS */
-function renderPosts(){
-  const box = $("postList");
-  box.innerHTML = "";
-  posts.forEach((p,i)=>{
-    const div = document.createElement("div");
-    div.className = "postCard";
-    const img = p.img ? `<img src="${p.img}">` : "";
-    const comments = (p.comments||[]).map(c=>`<div class="comment">${c}</div>`).join("");
-    div.innerHTML = `
-      <div style="font-size:11px;opacity:.7">${p.time}</div>
-      <div style="margin-top:3px;font-size:13px">${p.text}</div>
-      ${img}
-      <div class="postActions">
-        <button onclick="likePost(${i})">Like (${p.likes||0})</button>
-        <button onclick="alert('Shared (local only)')">Share</button>
-      </div>
-      <input class="commentInput" data-i="${i}" placeholder="Comment...">
-      ${comments}`;
-    box.appendChild(div);
-  });
+function pictures(){
+let all=[];
+posts.forEach(p=>{if(p.image)all.push(p.image);});
+statuses.forEach(s=>{if(s.image)all.push(s.image);});
+happy.forEach(h=>{if(h.image)all.push(h.image);});
+if(!all.length){main.innerHTML='<p>No pictures yet.</p>';return;}
+let h='<div class="grid-pictures">';all.forEach(src=>h+=`<img src="${src}">`);h+='</div>';main.innerHTML=h;
 }
-window.likePost = i => { posts[i].likes=(posts[i].likes||0)+1; saveAll(); renderPosts(); };
-renderPosts();
-
-$("postList").addEventListener("keydown",e=>{
-  if(e.key==="Enter" && e.target.classList.contains("commentInput")){
-    const i = e.target.dataset.i;
-    const txt = e.target.value.trim();
-    if(!txt) return;
-    posts[i].comments = posts[i].comments || [];
-    posts[i].comments.push(txt);
-    e.target.value = "";
-    saveAll(); renderPosts();
-  }
-});
-
-$("addPost").onclick = () => {
-  const text = $("postText").value.trim();
-  const f = $("postImg").files[0];
-  if(!text && !f) return;
-  const obj = {text,time:timeNow(),likes:0,comments:[]};
-  if(f){
-    const r = new FileReader();
-    r.onload = () => {
-      obj.img = r.result; pics.push(r.result);
-      posts.unshift(obj); saveAll(); renderPosts(); renderPics();
-    };
-    r.readAsDataURL(f);
-  }else{
-    posts.unshift(obj); saveAll(); renderPosts();
-  }
-  $("postText").value=""; $("postImg").value="";
-};
-
-/* HAPPY */
-function renderHappy(){
-  const box = $("happyList");
-  box.innerHTML = "";
-  happy.forEach((h,i)=>{
-    const div = document.createElement("div");
-    div.className = "postCard";
-    const img = h.img ? `<img src="${h.img}">` : "";
-    const comments = (h.comments||[]).map(c=>`<div class="comment">${c}</div>`).join("");
-    div.innerHTML = `
-      <div style="font-size:11px;opacity:.7">${h.time}</div>
-      <div style="margin-top:3px;font-size:13px">${h.text}</div>
-      ${h.act?`<div style="font-size:11px;color:#10b981;margin-top:2px">Activity: ${h.act}</div>`:""}
-      ${img}
-      <input class="commentInput" data-i="${i}" placeholder="Ask or comment...">
-      ${comments}`;
-    box.appendChild(div);
-  });
+function happyScreen(){
+let h='<button id="newHappyBtn" class="btn" style="margin-bottom:12px"><i class="far fa-smile"></i> add happy moment</button>';
+happy.slice().reverse().forEach(hh=>{
+h+=`<div class="happy-card"><i class="fas fa-heart" style="color:red"></i> <b>${hh.activity||'activity'}</b> <span class="small">${new Date(hh.timestamp).toLocaleString()}</span>`;
+if(hh.text)h+=`<p>${hh.text}</p>`;
+if(hh.image)h+=`<img src="${hh.image}" style="max-width:100%;border-radius:12px;">`;
+h+=`<div><i class="far fa-comment"></i> comments (${hh.comments?.length||0})</div>`;
+if(hh.comments?.length){h+='<div style="background:#eee;padding:6px;border-radius:12px;">';hh.comments.slice(-1).forEach(c=>h+=`<div><b>${c.user}:</b> ${c.text}</div>`);h+='</div>';}
+h+='</div>';});
+main.innerHTML=h;
+document.getElementById('newHappyBtn')?.addEventListener('click',()=>document.getElementById('happyModal').style.display='flex');
 }
-renderHappy();
+document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',e=>{activeBottom=e.currentTarget.dataset.screen;if(activeBottom!=='chat')activeTop='chats';render();}));
+document.querySelectorAll('.top-tab').forEach(el=>el.addEventListener('click',e=>{if(activeBottom!=='chat')return;activeTop=e.target.dataset.tab;render();}));
 
-$("happyList").addEventListener("keydown",e=>{
-  if(e.key==="Enter" && e.target.classList.contains("commentInput")){
-    const i = e.target.dataset.i;
-    const txt = e.target.value.trim();
-    if(!txt) return;
-    happy[i].comments = happy[i].comments || [];
-    happy[i].comments.push(txt);
-    e.target.value = "";
-    saveAll(); renderHappy();
-  }
-});
+document.getElementById('cancelStatus').addEventListener('click',()=>document.getElementById('statusModal').style.display='none');
+document.getElementById('cancelPost').addEventListener('click',()=>document.getElementById('postModal').style.display='none');
+document.getElementById('cancelHappy').addEventListener('click',()=>document.getElementById('happyModal').style.display='none');
 
-$("addHappy").onclick = () => {
-  const text = $("happyText").value.trim();
-  const act = $("happyAct").value.trim();
-  const f = $("happyImg").files[0];
-  if(!text && !act && !f) return;
-  const obj = {text,act,time:timeNow(),comments:[]};
-  if(f){
-    const r = new FileReader();
-    r.onload = () => {
-      obj.img = r.result; pics.push(r.result);
-      happy.unshift(obj); saveAll(); renderHappy(); renderPics();
-    };
-    r.readAsDataURL(f);
-  }else{
-    happy.unshift(obj); saveAll(); renderHappy();
-  }
-  $("happyText").value=""; $("happyAct").value=""; $("happyImg").value="";
+document.getElementById('postStatusBtn').addEventListener('click',()=>{
+let img=document.getElementById('statusImageInput').files[0];
+let aud=document.getElementById('statusAudioInput').files[0];
+let txt=document.getElementById('statusText').value;
+if(!img&&!aud&&!txt)return;
+let imgD=null,audD=null,pr=[];
+if(img)pr.push(new Promise(r=>{let fr=new FileReader();fr.onload=e=>{imgD=e.target.result;r();};fr.readAsDataURL(img);}));
+if(aud)pr.push(new Promise(r=>{let fr=new FileReader();fr.onload=e=>{audD=e.target.result;r();};fr.readAsDataURL(aud);}));
+Promise.all(pr).then(()=>{
+statuses.push({id:Date.now(),user:ME,image:imgD,audio:audD,text:txt,timestamp:Date.now(),views:[],likes:[]});
+saveAll();
+document.getElementById('statusModal').style.display='none';
+document.getElementById('statusImageInput').value='';
+document.getElementById('statusAudioInput').value='';
+document.getElementById('statusText').value='';
+if(activeBottom==='chat'&&activeTop==='status')status();
+});});
+
+document.getElementById('createPostBtn').addEventListener('click',()=>{
+let txt=document.getElementById('postText').value;
+let img=document.getElementById('postImageInput').files[0];
+if(!txt&&!img)return;
+if(img){
+let fr=new FileReader();
+fr.onload=e=>{
+posts.push({id:Date.now(),user:ME,text:txt,image:e.target.result,timestamp:Date.now(),likes:[],comments:[]});
+saveAll();
+document.getElementById('postModal').style.display='none';
+document.getElementById('postText').value='';
+document.getElementById('postImageInput').value='';
+if(activeBottom==='posts')postsScreen();
 };
+fr.readAsDataURL(img);
+}else{
+posts.push({id:Date.now(),user:ME,text:txt,image:null,timestamp:Date.now(),likes:[],comments:[]});
+saveAll();
+document.getElementById('postModal').style.display='none';
+document.getElementById('postText').value='';
+if(activeBottom==='posts')postsScreen();
+}});
 
-/* PICTURES */
-function renderPics(){
-  const box = $("picGrid");
-  box.innerHTML = "";
-  pics.forEach(src=>{
-    const img = document.createElement("img");
-    img.src = src;
-    box.appendChild(img);
-  });
-}
-renderPics();
+document.getElementById('createHappyBtn').addEventListener('click',()=>{
+let act=document.getElementById('happyActivity').value;
+let txt=document.getElementById('happyText').value;
+let img=document.getElementById('happyImageInput').files[0];
+if(!act&&!txt&&!img)return;
+if(img){
+let fr=new FileReader();
+fr.onload=e=>{
+happy.push({id:Date.now(),user:ME,activity:act,text:txt,image:e.target.result,timestamp:Date.now(),comments:[]});
+saveAll();
+document.getElementById('happyModal').style.display='none';
+document.getElementById('happyActivity').value='';
+document.getElementById('happyText').value='';
+document.getElementById('happyImageInput').value='';
+if(activeBottom==='happy')happyScreen();
+};
+fr.readAsDataURL(img);
+}else{
+happy.push({id:Date.now(),user:ME,activity:act,text:txt,image:null,timestamp:Date.now(),comments:[]});
+saveAll();
+document.getElementById('happyModal').style.display='none';
+document.getElementById('happyActivity').value='';
+document.getElementById('happyText').value='';
+if(activeBottom==='happy')happyScreen();
+}});
+
+window.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.style.display='none';});
+if('Notification'in window)Notification.requestPermission();
+setInterval(()=>{if(Math.random()>0.8&&messages.length)new Notification('New message from Alex');},20000);
+render();
+})();
 </script>
-</body>
-  </html>
+</body></html>
