@@ -1,117 +1,277 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Zee Social Pro</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f2f3f7;color:#111}header{background:#111827;color:#fff;padding:10px;display:flex;justify-content:space-between}header h1{font-size:16px;font-weight:600}.nav{display:flex;overflow-x:auto;background:#1f2937}.nav button{flex:1;border:none;background:transparent;color:#9ca3af;padding:10px;font-size:12px;white-space:nowrap;position:relative}.nav button.active{color:#fff;border-bottom:2px solid #10b981}.badge{position:absolute;top:4px;right:10px;width:8px;height:8px;border-radius:50%;background:#ef4444;display:none}.badge.show{display:block}main{padding:10px;max-width:600px;margin:0 auto}.screen{display:none}.screen.active{display:block}.card{background:#fff;border-radius:10px;padding:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}.card h2{font-size:14px;margin-bottom:6px}input,textarea,select{width:100%;padding:8px;margin-bottom:8px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;font-size:13px}textarea{min-height:60px;resize:vertical}button.primary{background:#10b981;color:#fff;border:none;padding:8px 12px;border-radius:999px;font-size:13px}button.secondary{background:#e5e7eb;color:#111827;border:none;padding:6px 10px;border-radius:999px;font-size:11px;margin-right:4px}.row{display:flex;gap:8px}.row>*{flex:1}.chat-container,.status-list{max-height:55vh;overflow-y:auto;padding:6px;margin-bottom:8px}.chat-bubble{max-width:80%;padding:8px;border-radius:12px;margin-bottom:6px;font-size:12px;word-wrap:break-word}.chat-me{margin-left:auto;background:#10b981;color:#fff;border-bottom-right-radius:2px}.chat-other{margin-right:auto;background:#e5e7eb;color:#111827;border-bottom-left-radius:2px}.chat-meta{font-size:10px;opacity:.8;margin-top:2px}.chat-media{margin-top:4px}.typing-indicator{font-size:11px;color:#6b7280;min-height:14px;margin-bottom:4px}.picture-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.picture-grid img{width:100%;height:90px;object-fit:cover;border-radius:6px}.home-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.home-tile{background:#111827;color:#fff;border-radius:10px;padding:12px;font-size:13px;text-align:center}.home-tile small{display:block;font-size:10px;opacity:.8;margin-top:4px}@media(min-width:700px){body{background:#e5e7eb}main{margin-top:10px}}
-</style>
-</head>
-<body>
-<header>
-<h1>Zee Social Pro</h1>
-<span style="font-size:11px;color:#9ca3af;">Local · Offline</span>
-</header>
-<nav class="nav">
-<button class="tab-btn active" data-screen="homeScreen">Home<span class="badge" id="badge-home"></span></button>
-<button class="tab-btn" data-screen="chatsScreen">Chats<span class="badge" id="badge-chats"></span></button>
-<button class="tab-btn" data-screen="statusScreen">Status<span class="badge" id="badge-status"></span></button>
-<button class="tab-btn" data-screen="postsScreen">Posts<span class="badge" id="badge-posts"></span></button>
-<button class="tab-btn" data-screen="picturesScreen">Pictures<span class="badge" id="badge-pictures"></span></button>
-<button class="tab-btn" data-screen="happyScreen">What I Like<span class="badge" id="badge-happy"></span></button>
-</nav>
-<main>
-<!-- HOME -->
-<section id="homeScreen" class="screen active">
-<div class="card"><h2>Welcome, Zee Flame</h2><p style="font-size:12px;margin-top:4px;">Everything is local on this phone. No backend.</p></div>
-<div class="home-grid">
-<div class="home-tile" data-jump="chatsScreen">Chats<small>Talk, send pictures/audio</small></div>
-<div class="home-tile" data-jump="statusScreen">Status<small>Photo/music/stickers</small></div>
-<div class="home-tile" data-jump="postsScreen">Posts<small>Text/photo, likes/comments</small></div>
-<div class="home-tile" data-jump="happyScreen">What makes me happy<small>Text, picture, activity</small></div>
-</div>
-</section>
-<!-- CHATS -->
-<section id="chatsScreen" class="screen">
-<div class="card">
-<h2>Chats</h2>
-<div class="typing-indicator" id="typingIndicator"></div>
-<div class="chat-container" id="chatList"></div>
-<div class="row">
-<input type="text" id="chatName" placeholder="Your name">
-<input type="text" id="chatMessage" placeholder="Message">
-</div>
-<input type="file" id="chatFile" accept="image/*,audio/*">
-<button class="primary" id="sendChatBtn">Send</button>
-</div>
-</section>
-<!-- STATUS -->
-<section id="statusScreen" class="screen">
-<div class="card">
-<h2>Status</h2>
-<textarea id="statusText" placeholder="What's on your mind?"></textarea>
-<input type="file" id="statusImage" accept="image/*">
-<input type="file" id="statusMusic" accept="audio/*">
-<select id="statusSticker">
-<option value="">No sticker</option><option value="🔥">🔥</option><option value="😂">😂</option><option value="❤️">❤️</option><option value="🎧">🎧</option><option value="💃">💃</option>
-</select>
-<button class="primary" id="postStatusBtn">Post status</button>
-</div>
-<div class="card"><h2>My status</h2><div class="status-list" id="statusList"></div></div>
-</section>
-<!-- POSTS -->
-<section id="postsScreen" class="screen">
-<div class="card">
-<h2>Posts</h2>
+body{margin:0;background:#0d0d0f;color:#eee;font-family:sans-serif;padding-bottom:70px}
+.screen{display:none;padding:15px}.active{display:block}
+input,textarea,select{width:100%;padding:8px;margin:6px 0;border-radius:8px;
+border:1px solid #333;background:#1a1a1d;color:#eee}
+textarea{min-height:60px}
+button{border:0;cursor:pointer}
+.primary{width:100%;padding:10px;background:#10b981;color:#fff;border-radius:8px;margin-top:8px}
+#chatList,#statusList,#postList,#happyList{max-height:55vh;overflow-y:auto}
+.chatBubble{max-width:80%;padding:8px;border-radius:10px;margin:6px 0;font-size:14px}
+.me{background:#10b981;color:#fff;margin-left:auto}
+.other{background:#1f1f22;margin-right:auto}
+.chatMedia img,video{width:100%;border-radius:10px;margin-top:6px}
+nav{position:fixed;bottom:0;left:0;width:100%;background:#111;display:flex;
+justify-content:space-around;padding:6px 0;border-top:1px solid #222}
+.navBtn{background:none;color:#aaa;font-size:12px;text-align:center}
+.navBtn.active{color:#10b981}
+#moreMenu{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;
+justify-content:flex-end;align-items:flex-end}
+#moreMenu.active{display:flex}
+#moreSheet{width:100%;background:#1a1a1d;padding:20px;border-radius:20px 20px 0 0;
+animation:up .25s}@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.moreItem{width:100%;padding:12px;background:#333;color:#fff;border-radius:10px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.grid img{width:100%;height:90px;object-fit:cover;border-radius:8px}
+</style></head><body>
+
+<div id="home" class="screen active"><h2>Welcome, Zee Flame</h2>
+<p>Everything is saved locally on your phone.</p></div>
+
+<div id="chats" class="screen"><h2>Chats</h2>
+<div id="typing"></div><div id="chatList"></div>
+<input id="chatName" placeholder="Your name">
+<input id="chatMsg" placeholder="Type a message">
+<input id="chatFile" type="file" accept="image/*,video/*,audio/*">
+<button id="recBtn">🎙 Record</button><div id="recState"></div>
+<button id="sendChat" class="primary">Send</button></div>
+
+<div id="status" class="screen"><h2>Status</h2>
+<textarea id="statusText" placeholder="Write something..."></textarea>
+<input id="statusImg" type="file" accept="image/*">
+<input id="statusMusic" type="file" accept="audio/*">
+<select id="statusSticker"><option value="">Sticker</option><option>🔥</option>
+<option>😂</option><option>❤️</option><option>🎧</option><option>💃</option></select>
+<button id="postStatus" class="primary">Post Status</button>
+<div id="statusList"></div></div>
+
+<div id="posts" class="screen"><h2>Posts</h2>
 <textarea id="postText" placeholder="Say something..."></textarea>
-<input type="file" id="postImage" accept="image/*">
-<button class="primary" id="addPostBtn">Post</button>
-</div>
-<div class="card"><h2>Feed</h2><div id="postList"></div></div>
-</section>
-<!-- PICTURES -->
-<section id="picturesScreen" class="screen">
-<div class="card"><h2>All pictures</h2><div class="picture-grid" id="pictureGrid"></div></div>
-</section>
-<!-- WHAT I LIKE -->
-<section id="happyScreen" class="screen">
-<div class="card">
-<h2>What makes me happy</h2>
-<textarea id="happyText" placeholder="Family, music, money..."></textarea>
-<input type="text" id="happyActivity" placeholder="Activity">
-<input type="file" id="happyImage" accept="image/*">
-<button class="primary" id="addHappyBtn">Post</button>
-</div>
-<div class="card"><h2>Happy moments</h2><div id="happyList"></div></div>
-</section>
-</main>
+<input id="postImg" type="file" accept="image/*">
+<button id="addPost" class="primary">Post</button>
+<div id="postList"></div></div>
+
+<div id="pictures" class="screen"><h2>Pictures</h2>
+<div id="picGrid" class="grid"></div></div>
+
+<div id="happy" class="screen"><h2>What Makes Me Happy</h2>
+<textarea id="happyText" placeholder="What makes you happy?"></textarea>
+<input id="happyAct" placeholder="Activity">
+<input id="happyImg" type="file" accept="image/*">
+<button id="addHappy" class="primary">Post</button>
+<div id="happyList"></div></div>
+
+<div id="moreMenu"><div id="moreSheet">
+<button class="moreItem" data-go="pictures">🖼 Pictures</button>
+<button class="moreItem" data-go="happy">⭐ What I Like</button>
+<button id="closeMore" class="moreItem">Close</button></div></div>
+
+<nav>
+<button class="navBtn active" data-go="home">🏠<br>Home</button>
+<button class="navBtn" data-go="chats">💬<br>Chats</button>
+<button class="navBtn" data-go="status">🎵<br>Status</button>
+<button class="navBtn" data-go="posts">📝<br>Posts</button>
+<button id="moreBtn" class="navBtn">⋯<br>More</button>
+</nav>
+
 <script>
-// UTIL
-const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),load=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))||f}catch{return f}},timeStr=()=>new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-// STATE
-let chats=load("zee_chats",[]),statuses=load("zee_statuses",[]),posts=load("zee_posts",[]),happyItems=load("zee_happy",[]),pictures=load("zee_pictures",[]);
-// NAV
-const screens=document.querySelectorAll(".screen"),tabBtns=document.querySelectorAll(".tab-btn");
-const showScreen=id=>{screens.forEach(s=>s.classList.toggle("active",s.id===id));tabBtns.forEach(b=>b.classList.toggle("active",b.dataset.screen===id));["chats","status","posts","pictures","happy"].forEach(x=>{if(id===x+"Screen")document.getElementById("badge-"+x).classList.remove("show")})};
-tabBtns.forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.screen)));
-document.querySelectorAll(".home-tile").forEach(t=>t.addEventListener("click",()=>showScreen(t.dataset.jump)));
-// RENDER HELPERS
-const chatListEl=document.getElementById("chatList"),chatNameEl=document.getElementById("chatName"),chatMessageEl=document.getElementById("chatMessage"),chatFileEl=document.getElementById("chatFile"),typingIndicatorEl=document.getElementById("typingIndicator");
-function renderChats(){chatListEl.innerHTML="";chats.forEach((c,i)=>{const d=document.createElement("div");d.className="chat-bubble "+(i%2===0?"chat-me":"chat-other");let media="";if(c.image)media=`<div class="chat-media"><img src="${c.image}" style="max-width:100%;border-radius:8px"/></div>`;if(c.audio)media=`<div class="chat-media"><audio controls src="${c.audio}" style="width:100%"></audio></div>`;d.innerHTML=`${c.name?`<strong>${c.name}</strong><br>`:""}${c.text||""}${media}<div class="chat-meta">${c.time}</div>`;chatListEl.appendChild(d)});chatListEl.scrollTop=chatListEl.scrollHeight;}
-function addChatMessage(){const name=chatNameEl.value.trim(),text=chatMessageEl.value.trim(),file=chatFileEl.files[0];if(!text&&!file)return;const msg={name,text,time:timeStr(),image:null,audio:null};if(file){const r=new FileReader();r.onload=()=>{file.type.startsWith("image/")?(msg.image=r.result,pictures.push(r.result),save("zee_pictures",pictures),document.getElementById("badge-pictures").classList.add("show")):file.type.startsWith("audio/")&&(msg.audio=r.result);chats.push(msg);save("zee_chats",chats);renderChats()};r.readAsDataURL(file);}else{chats.push(msg);save("zee_chats",chats);renderChats();}chatMessageEl.value="";chatNameEl.value="";chatFileEl.value="";typingIndicatorEl.textContent="";document.getElementById("badge-chats").classList.add("show");}
-chatMessageEl.addEventListener("input",()=>{typingIndicatorEl.textContent=chatMessageEl.value.trim()?"Typing...":""});
-document.getElementById("sendChatBtn").addEventListener("click",addChatMessage);
-// STATUS
-const sText=document.getElementById("statusText"),sImg=document.getElementById("statusImage"),sMus=document.getElementById("statusMusic"),sSticker=document.getElementById("statusSticker"),sList=document.getElementById("statusList");
-function renderStatuses(){sList.innerHTML="";statuses.forEach((s,i)=>{const d=document.createElement("div");d.className="status-card";d.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;color:#6b7280"><span>${s.time}</span><span>${s.views||0} views · ${s.likes||0} likes</span></div>${s.image?`<img src="${s.image}" style="width:100%;border-radius:10px;max-height:260px">`:""}<div style="margin-top:6px;font-size:13px">${s.text||""}</div>${s.sticker?`<div style="font-size:20px;margin-top:4px">${s.sticker}</div>`:""}${s.music?`<div style="margin-top:6px"><audio controls src="${s.music}" style="width:100%"></audio><div style="font-size:11px;color:#6b7280;margin-top:2px">🎵 ${s.musicName||"Music"}</div></div>`:""}<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;font-size:11px"><button class="secondary" data-idx="${i}" data-action="like">Like</button><button class="secondary" data-idx="${i}" data-action="view">Mark viewed</button>${s.image?`<a class="secondary" style="text-decoration:none;padding:6px 10px" href="${s.image}" download="status-image.png">Save</a>`:""}</div>`;sList.appendChild(d)});}
-sList.addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const i=parseInt(b.dataset.idx),a=b.dataset.action,s=statuses[i];if(!s)return;a==="like"?s.likes=(s.likes||0)+1:a==="view"?s.views=(s.views||0)+1:null;save("zee_statuses",statuses);renderStatuses();});
-function addStatus(){const text=sText.value.trim(),img=sImg.files[0],mus=sMus.files[0],sticker=sSticker.value;if(!text&&!img&&!mus)return;const st={text,sticker,time:timeStr(),image:null,music:null,musicName:mus?mus.name:"",likes:0,views:0};const readers=[];if(img){const r=new FileReader();readers.push(new Promise(res=>{r.onload=()=>{st.image=r.result;pictures.push(r.result);res()};r.readAsDataURL(img)}))}if(mus){const r=new FileReader();readers.push(new Promise(res=>{r.onload=()=>{st.music=r.result;res()};r.readAsDataURL(mus)}))}Promise.all(readers).then(()=>{statuses.unshift(st);save("zee_statuses",statuses);save("zee_pictures",pictures);renderStatuses();renderPictures();sText.value="";sImg.value="";sMus.value="";sSticker.value="";document.getElementById("badge-status").classList.add("show");document.getElementById("badge-pictures").classList.add("show");});}
-document.getElementById("postStatusBtn").addEventListener("click",addStatus);
-// PICTURES
-const picGrid=document.getElementById("pictureGrid");
-function renderPictures(){picGrid.innerHTML="";pictures.forEach(p=>{const i=document.createElement("img");i.src=p;picGrid.appendChild(i)})}
-// POST & HAPPY SIMPLIFIED (similar pattern)
+const $=id=>document.getElementById(id);
+let chats=JSON.parse(localStorage.chats||"[]"),
+statuses=JSON.parse(localStorage.statuses||"[]"),
+posts=JSON.parse(localStorage.posts||"[]"),
+happy=JSON.parse(localStorage.happy||"[]"),
+pics=JSON.parse(localStorage.pics||"[]");
+
+function save(){localStorage.chats=JSON.stringify(chats);
+localStorage.statuses=JSON.stringify(statuses);
+localStorage.posts=JSON.stringify(posts);
+localStorage.happy=JSON.stringify(happy);
+localStorage.pics=JSON.stringify(pics);}
+
+function show(id){
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+$(id).classList.add("active");
+document.querySelectorAll(".navBtn").forEach(b=>b.classList.remove("active"));
+document.querySelector(`[data-go="${id}"]`)?.classList.add("active");
+}
+
+document.querySelectorAll(".navBtn").forEach(b=>{
+b.onclick=()=>{if(b.id==="moreBtn")return $("moreMenu").classList.add("active");
+show(b.dataset.go);}
+});
+$("closeMore").onclick=()=>$("moreMenu").classList.remove("active");
+document.querySelectorAll(".moreItem").forEach(b=>{
+b.onclick=()=>{if(b.dataset.go){show(b.dataset.go);} $("moreMenu").classList.remove("active");}
+});
+
+function t(){return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});}
+
+/* CHATS */
+function renderChats(){
+$("chatList").innerHTML="";
+chats.forEach((c,i)=>{
+let d=document.createElement("div");
+d.className="chatBubble "+(i%2?"other":"me");
+let m="";
+if(c.img)m+=`<div class='chatMedia'><img src='${c.img}'></div>`;
+if(c.vid)m+=`<div class='chatMedia'><video controls src='${c.vid}'></video></div>`;
+if(c.aud)m+=`<div class='chatMedia'><audio controls src='${c.aud}'></audio></div>`;
+d.innerHTML=`${c.name?("<b>"+c.name+"</b><br>"):""}${c.text||""}${m}`;
+$("chatList").appendChild(d);
+});
+$("chatList").scrollTop=999999;
+}
+renderChats();
+
+$("chatMsg").oninput=()=>$("typing").innerText=$("chatMsg").value?"Typing...":"";
+
+$("sendChat").onclick=()=>{
+let n=$("chatName").value.trim(),m=$("chatMsg").value.trim(),f=$("chatFile").files[0];
+if(!m&&!f)return;
+let o={name:n,text:m,time:t()};
+if(f){
+let r=new FileReader();
+r.onload=()=>{
+if(f.type.startsWith("image")){o.img=r.result;pics.push(r.result);}
+else if(f.type.startsWith("video"))o.vid=r.result;
+else o.aud=r.result;
+chats.push(o);save();renderChats();
+};
+r.readAsDataURL(f);
+}else{chats.push(o);save();renderChats();}
+$("chatMsg").value="";$("chatName").value="";$("chatFile").value="";
+$("typing").innerText="";
+};
+
+/* RECORDING */
+let rec,chunks=[];
+$("recBtn").onclick=async()=>{
+if(rec&&rec.state==="recording"){rec.stop();$("recState").innerText="Saving...";return;}
+let s=await navigator.mediaDevices.getUserMedia({audio:true});
+rec=new MediaRecorder(s);
+rec.ondataavailable=e=>chunks.push(e.data);
+rec.onstop=()=>{
+let b=new Blob(chunks,{type:"audio/webm"});chunks=[];
+let r=new FileReader();
+r.onload=()=>{chats.push({aud:r.result,time:t()});save();renderChats();$("recState").innerText="Saved";};
+r.readAsDataURL(b);
+};
+rec.start();$("recState").innerText="Recording...";
+};
+
+/* STATUS */
+function renderStatus(){
+$("statusList").innerHTML="";
+statuses.forEach((s,i)=>{
+let d=document.createElement("div");
+d.className="statusCard";
+let img=s.img?`<img src='${s.img}'>`:"";
+let mus=s.mus?`<audio controls src='${s.mus}' style='width:100%'></audio>`:"";
+d.innerHTML=`<div class='statusTop'><span>${s.time}</span>
+<span>${s.views||0} views · ${s.likes||0} likes</span></div>
+${img}<div>${s.text||""}</div>${s.sticker||""}${mus}
+<div class='statusActions'>
+<button onclick='likeStatus(${i})'>Like</button>
+<button onclick='viewStatus(${i})'>Viewed</button>
+${s.img?`<a href='${s.img}' download='status.png'><button>Save</button></a>`:""}
+</div>`;
+$("statusList").appendChild(d);
+});
+}
+renderStatus();
+
+function likeStatus(i){statuses[i].likes=(statuses[i].likes||0)+1;save();renderStatus();}
+function viewStatus(i){statuses[i].views=(statuses[i].views||0)+1;save();renderStatus();}
+
+$("postStatus").onclick=()=>{
+let t=$("statusText").value.trim(),fi=$("statusImg").files[0],fm=$("statusMusic").files[0],st=$("statusSticker").value;
+let o={text:t,sticker:st,time:t(),likes:0,views:0};
+let p=[];
+if(fi){let r=new FileReader();p.push(new Promise(res=>{r.onload=()=>{o.img=r.result;pics.push(r.result);res();};}));r.readAsDataURL(fi);}
+if(fm){let r=new FileReader();p.push(new Promise(res=>{r.onload=()=>{o.mus=r.result;res();};}));r.readAsDataURL(fm);}
+Promise.all(p).then(()=>{statuses.unshift(o);save();renderStatus();renderPics();
+$("statusText").value="";$("statusImg").value="";$("statusMusic").value="";$("statusSticker").value="";});
+};
+
+/* POSTS */
+function renderPosts(){
+$("postList").innerHTML="";
+posts.forEach((p,i)=>{
+let d=document.createElement("div");
+d.className="postCard";
+let img=p.img?`<img src='${p.img}'>`:"";
+let c=(p.comments||[]).map(x=>`<div class='comment'>${x}</div>`).join("");
+d.innerHTML=`<div>${p.time}</div><div>${p.text}</div>${img}
+<div class='postActions'>
+<button onclick='likePost(${i})'>Like (${p.likes||0})</button>
+<button onclick='alert("Shared")'>Share</button></div>
+<input class='commentInput' data-i='${i}' placeholder='Comment...'>
+${c}`;
+$("postList").appendChild(d);
+});
+}
+renderPosts();
+
+function likePost(i){posts[i].likes=(posts[i].likes||0)+1;save();renderPosts();}
+
+$("postList").addEventListener("keydown",e=>{
+if(e.key==="Enter"&&e.target.classList.contains("commentInput")){
+let i=e.target.dataset.i,txt=e.target.value.trim();if(!txt)return;
+posts[i].comments=posts[i].comments||[];posts[i].comments.push(txt);
+e.target.value="";save();renderPosts();
+}});
+
+$("addPost").onclick=()=>{
+let t=$("postText").value.trim(),f=$("postImg").files[0];
+if(!t&&!f)return;
+let o={text:t,time:t(),likes:0,comments:[]};
+if(f){let r=new FileReader();r.onload=()=>{o.img=r.result;pics.push(r.result);
+posts.unshift(o);save();renderPosts();renderPics();};r.readAsDataURL(f);}
+else{posts.unshift(o);save();renderPosts();}
+$("postText").value="";$("postImg").value="";
+};
+
+/* HAPPY */
+function renderHappy(){
+$("happyList").innerHTML="";
+happy.forEach((h,i)=>{
+let d=document.createElement("div");
+d.className="postCard";
+let img=h.img?`<img src='${h.img}'>`:"";
+let c=(h.comments||[]).map(x=>`<div class='comment'>${x}</div>`).join("");
+d.innerHTML=`<div>${h.time}</div><div>${h.text}</div>
+${h.act?`<div>Activity: ${h.act}</div>`:""}${img}
+<input class='commentInput' data-i='${i}' placeholder='Comment...'>${c}`;
+$("happyList").appendChild(d);
+});
+}
+renderHappy();
+
+$("happyList").addEventListener("keydown",e=>{
+if(e.key==="Enter"&&e.target.classList.contains("commentInput")){
+let i=e.target.dataset.i,txt=e.target.value.trim();if(!txt)return;
+happy[i].comments=happy[i].comments||[];happy[i].comments.push(txt);
+e.target.value="";save();renderHappy();
+}});
+
+$("addHappy").onclick=()=>{
+let t=$("happyText").value.trim(),a=$("happyAct").value.trim(),f=$("happyImg").files[0];
+if(!t&&!a&&!f)return;
+let o={text:t,act:a,time:t(),comments:[]};
+if(f){let r=new FileReader();r.onload=()=>{o.img=r.result;pics.push(r.result);
+happy.unshift(o);save();renderHappy();renderPics();};r.readAsDataURL(f);}
+else{happy.unshift(o);save();renderHappy();}
+$("happyText").value="";$("happyAct").value="";$("happyImg").value="";
+};
+
+/* PICTURES */
+function renderPics(){
+$("picGrid").innerHTML="";
+pics.forEach(s=>{let i=document.createElement("img");i.src=s;$("picGrid").appendChild(i);});
+}
+renderPics();
 </script>
-</body>
-  </html>
+</body></html>
