@@ -2,312 +2,153 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zee Pro Chat</title>
-
+<title>Zee Ultra Pro Chat</title>
 <style>
-*{box-sizing:border-box}
 body{
-margin:0;
-font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
-background:#ece5dd;
-display:flex;
-flex-direction:column;
-height:100vh;
+  margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
+  background:#ece5dd;display:flex;flex-direction:column;height:100vh;
 }
-
 header{
-background:#075e54;
-color:white;
-padding:15px;
-text-align:center;
-font-weight:bold;
+  background:#075e54;color:white;padding:15px;font-weight:bold;text-align:center;
 }
-
-#nameBar{
-padding:8px;
-background:white;
-border-bottom:1px solid #ddd;
+.tabs{
+  display:flex;
+  justify-content:space-around;
+  background:white;
+  border-bottom:1px solid #ddd;
 }
-
-#nameInput{
-width:100%;
-padding:8px;
-border-radius:20px;
-border:1px solid #ccc;
+.tabs button{
+  flex:1;padding:10px;font-size:16px;border:none;background:white;cursor:pointer;
 }
-
-#chat{
-flex:1;
-overflow-y:auto;
-padding:10px;
-display:flex;
-flex-direction:column;
-}
-
-.message{
-max-width:75%;
-padding:10px;
-margin:5px 0;
-border-radius:12px;
-position:relative;
-word-wrap:break-word;
-}
-
-.left{
-background:white;
-align-self:flex-start;
-}
-
-.right{
-background:#dcf8c6;
-align-self:flex-end;
-}
-
-.sender{
-font-size:11px;
-font-weight:bold;
-margin-bottom:3px;
-}
-
-.time{
-font-size:10px;
-opacity:.6;
-margin-top:5px;
-}
-
-.options{
-font-size:11px;
-cursor:pointer;
-margin-top:3px;
-opacity:.7;
-}
-
-.reactions{
-font-size:14px;
-margin-top:3px;
-display:flex;
-gap:10px;
-cursor:pointer;
-}
-
-#typing{
-font-size:12px;
-padding-left:10px;
-color:#555;
-}
-
-#inputBar{
-display:flex;
-padding:8px;
-background:white;
-gap:5px;
-}
-
-#messageInput{
-flex:1;
-padding:8px;
-border-radius:20px;
-border:1px solid #ccc;
-}
-
-button{
-border:none;
-border-radius:20px;
-padding:8px 12px;
-background:#128c7e;
-color:white;
-cursor:pointer;
-}
-
-#statusScreen{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:white;
-display:none;
-flex-direction:column;
-padding:15px;
-}
-
-.statusImg{
-width:100%;
-max-height:300px;
-object-fit:cover;
-border-radius:10px;
-margin-top:10px;
-}
+.tabs button.active{background:#128c7e;color:white;font-weight:bold;}
+.screen{flex:1;overflow-y:auto;padding:5px;display:none;}
+#chatScreen{display:flex;flex-direction:column;}
+.message{max-width:75%;padding:10px;margin:5px;border-radius:12px;position:relative;word-wrap:break-word;}
+.left{background:white;align-self:flex-start;}
+.right{background:#dcf8c6;align-self:flex-end;}
+.sender{font-size:12px;font-weight:bold;margin-bottom:3px;}
+.time{font-size:10px;opacity:.6;margin-top:3px;}
+.options{font-size:11px;cursor:pointer;margin-top:2px;opacity:.7;}
+.reactions{font-size:14px;margin-top:3px;display:flex;gap:10px;cursor:pointer;}
+#typing{font-size:12px;padding-left:10px;color:#555;}
+.inputBar{display:flex;padding:5px;background:white;gap:5px;}
+.inputBar input[type=text]{flex:1;padding:8px;border-radius:20px;border:1px solid #ccc;}
+.inputBar button{border:none;border-radius:20px;padding:8px 12px;background:#128c7e;color:white;cursor:pointer;}
+#statusScreen{display:flex;flex-direction:column;padding:10px;}
+.statusImg{width:100%;max-height:250px;border-radius:10px;margin-top:5px;object-fit:cover;}
+.statusAudio, .statusVideo{width:100%;margin-top:5px;}
 </style>
 </head>
-
 <body>
 
-<header>
-Zee Pro Chat
-</header>
-
-<div id="nameBar">
-<input id="nameInput" placeholder="Enter your name">
+<header>Zee Ultra Pro Chat</header>
+<div class="tabs">
+<button id="chatTab" class="active" onclick="showScreen('chat')">Chats</button>
+<button id="statusTab" onclick="showScreen('status')">Status</button>
 </div>
 
-<div id="chat"></div>
-
-<div id="typing"></div>
-
-<div id="inputBar">
-<input id="messageInput" placeholder="Type a message">
-<button onclick="send()">Send</button>
-<button onclick="openStatus()">Status</button>
-<button onclick="record()">🎤</button>
-<input type="file" id="fileInput" hidden>
-<button onclick="pickFile()">+</button>
+<div id="chatScreen" class="screen">
+  <div id="chat"></div>
+  <div id="typing">Typing...</div>
 </div>
 
-<div id="statusScreen">
-<h3>Status (expires in 10 minutes)</h3>
-<input id="statusText" placeholder="Write something...">
-<input type="file" id="statusFile">
-<button onclick="postStatus()">Post</button>
-<div id="statusDisplay"></div>
-<button onclick="closeStatus()">Close</button>
+<div id="statusScreen" class="screen">
+  <input type="text" id="statusText" placeholder="Write something for your status">
+  <input type="file" id="statusFile">
+  <input type="file" id="statusMusic" accept="audio/*">
+  <button onclick="postStatus()">Post Status</button>
+  <div id="statusDisplay"></div>
+</div>
+
+<div class="inputBar">
+  <input id="nameInput" placeholder="Your name">
+  <input id="messageInput" placeholder="Type a message">
+  <button onclick="send()">Send</button>
+  <button onclick="recordAudio()">🎤</button>
+  <input type="file" id="fileInput" hidden>
+  <button onclick="fileInput.click()">+</button>
 </div>
 
 <script>
+let messages = JSON.parse(localStorage.getItem("zeeChat"))||[];
+let mediaRecorder;
+let chunks = [];
 
-let messages=JSON.parse(localStorage.getItem("zeeChat"))||[]
-let mediaRecorder
-let chunks=[]
-
-function save(){
-localStorage.setItem("zeeChat",JSON.stringify(messages))
+function showScreen(s){
+  if(s==='chat'){chatScreen.style.display='flex';statusScreen.style.display='none';chatTab.classList.add('active');statusTab.classList.remove('active');}
+  else{chatScreen.style.display='none';statusScreen.style.display='flex';chatTab.classList.remove('active');statusTab.classList.add('active');}
 }
 
+function save(){localStorage.setItem("zeeChat",JSON.stringify(messages));}
 function render(){
-chat.innerHTML=""
-let side=true
-messages.forEach((m,i)=>{
-let div=document.createElement("div")
-div.className="message "+(side?"right":"left")
-side=!side
-
-div.innerHTML=`
-<div class="sender">${m.name}</div>
-<div>${m.text}</div>
-${m.media?m.media:""}
-<div class="time">${m.time}</div>
-<div class="options" onclick="menu(${i})">(:)</div>
-<div class="reactions">
-<span onclick="react(${i},'👍')">👍</span>
-<span onclick="react(${i},'❤️')">❤️</span>
-<span onclick="react(${i},'👎')">👎</span>
-</div>
-`
-chat.appendChild(div)
-})
-chat.scrollTop=chat.scrollHeight
+  chat.innerHTML="";let side=true;
+  messages.forEach((m,i)=>{
+    let div=document.createElement("div");
+    div.className="message "+(side?"right":"left");side=!side;
+    let mediaHTML=m.media||"";
+    div.innerHTML=`<div class="sender">${m.name}</div><div>${m.text}</div>${mediaHTML}<div class="time">${m.time}</div><div class="options" onclick="menu(${i})">(:)</div><div class="reactions"><span onclick="react(${i},'👍')">👍</span><span onclick="react(${i},'❤️')">❤️</span><span onclick="react(${i},'👎')">👎</span></div>`;
+    chat.appendChild(div);
+  });
+  chat.scrollTop=chat.scrollHeight;
 }
-
 function send(){
-let name=nameInput.value.trim()
-let text=messageInput.value.trim()
-if(!name||!text)return alert("Enter name and message")
-messages.push({name,text,time:new Date().toLocaleTimeString()})
-save()
-render()
-messageInput.value=""
+  let name=nameInput.value.trim();
+  let text=messageInput.value.trim();
+  if(!name||!text)return alert("Enter name & message");
+  messages.push({name,text,time:new Date().toLocaleTimeString()});
+  save();render();
+  messageInput.value="";nameInput.value="";
 }
-
 function menu(i){
-let action=prompt("edit / delete")
-if(action==="edit"){
-let newText=prompt("Edit:",messages[i].text)
-if(newText){messages[i].text=newText;save();render()}
+  let action=prompt("edit / delete / info");
+  if(action==="edit"){let t=prompt("Edit",messages[i].text);if(t){messages[i].text=t;save();render();}}
+  if(action==="delete"){messages.splice(i,1);save();render();}
+  if(action==="info"){alert("Sent at: "+messages[i].time);}
 }
-if(action==="delete"){
-messages.splice(i,1)
-save()
-render()
-}
-}
+function react(i,e){messages[i].text+=" "+e;save();render();}
+messageInput.addEventListener("input",()=>{typing.innerText="Typing...";clearTimeout(window.tt);window.tt=setTimeout(()=>typing.innerText="",1000);});
 
-function react(i,e){
-messages[i].text+=" "+e
-save()
-render()
-}
-
-messageInput.addEventListener("input",()=>{
-typing.innerText="Typing..."
-clearTimeout(window.t)
-window.t=setTimeout(()=>typing.innerText="",1000)
-})
-
-function openStatus(){
-statusScreen.style.display="flex"
-}
-
-function closeStatus(){
-statusScreen.style.display="none"
-}
-
-function postStatus(){
-let text=statusText.value
-let file=statusFile.files[0]
-let reader=new FileReader()
-reader.onload=e=>{
-statusDisplay.innerHTML="<p>"+text+"</p><img src='"+e.target.result+"' class='statusImg'>"
-localStorage.setItem("zeeStatus",statusDisplay.innerHTML)
-setTimeout(()=>{
-statusDisplay.innerHTML=""
-localStorage.removeItem("zeeStatus")
-},600000)
-}
-if(file)reader.readAsDataURL(file)
-else statusDisplay.innerHTML="<p>"+text+"</p>"
-}
-
-let savedStatus=localStorage.getItem("zeeStatus")
-if(savedStatus)statusDisplay.innerHTML=savedStatus
-
-function record(){
+function recordAudio(){
 navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
-mediaRecorder=new MediaRecorder(stream)
-mediaRecorder.start()
-chunks=[]
-mediaRecorder.ondataavailable=e=>chunks.push(e.data)
+mediaRecorder=new MediaRecorder(stream);
+mediaRecorder.start();
+chunks=[];
+mediaRecorder.ondataavailable=e=>chunks.push(e.data);
 mediaRecorder.onstop=()=>{
-let blob=new Blob(chunks)
-let url=URL.createObjectURL(blob)
-messages.push({name:nameInput.value,text:"Voice message",media:"<audio controls src='"+url+"'></audio>",time:new Date().toLocaleTimeString()})
-save()
-render()
-}
-setTimeout(()=>mediaRecorder.stop(),3000)
-})
-}
-
-function pickFile(){
-fileInput.click()
+let blob=new Blob(chunks);
+let url=URL.createObjectURL(blob);
+messages.push({name:nameInput.value||"Unknown",text:"Voice message",media:`<audio controls src='${url}'></audio>`,time:new Date().toLocaleTimeString()});
+save();render();nameInput.value="";};
+setTimeout(()=>mediaRecorder.stop(),3000);
+});
 }
 
 fileInput.addEventListener("change",()=>{
-let file=fileInput.files[0]
-let reader=new FileReader()
+let file=fileInput.files[0];let reader=new FileReader();
 reader.onload=e=>{
-let type=file.type.startsWith("video")?"video":"audio"
-let mediaTag= type==="video"?
-"<video controls width='200' src='"+e.target.result+"'></video>"
-:"<audio controls src='"+e.target.result+"'></audio>"
-messages.push({name:nameInput.value,text:"Media",media:mediaTag,time:new Date().toLocaleTimeString()})
-save()
-render()
+let tag=file.type.startsWith("video")?`<video controls src='${e.target.result}' class='statusVideo'></video>`:`<img src='${e.target.result}' class='statusImg'>`;
+messages.push({name:nameInput.value||"Unknown",text:"Media",media:tag,time:new Date().toLocaleTimeString()});
+save();render();nameInput.value="";
+};
+reader.readAsDataURL(file);
+});
+
+function postStatus(){
+let t=statusText.value;
+let file=statusFile.files[0];
+let music=statusMusic.files[0];
+let html="";
+if(t) html+="<p>"+t+"</p>";
+if(file){let reader=new FileReader();reader.onload=e=>{html+="<img src='"+e.target.result+"' class='statusImg'>";if(music){let r2=new FileReader();r2.onload=ev=>{html+="<audio controls src='"+ev.target.result+"'></audio>";statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);};r2.readAsDataURL(music);}else{statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);}};reader.readAsDataURL(file);}
+else if(music){let reader=new FileReader();reader.onload=e=>{html+="<audio controls src='"+e.target.result+"'></audio>";statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);};reader.readAsDataURL(music);}
+else{statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);}
+statusText.value="";statusFile.value="";statusMusic.value="";
 }
-reader.readAsDataURL(file)
-})
 
-render()
+let savedStatus=localStorage.getItem("zeeStatus");
+if(savedStatus) statusDisplay.innerHTML=savedStatus;
 
+render();
 </script>
 
 </body>
