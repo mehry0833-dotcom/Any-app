@@ -3,119 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simple Music Enhancer</title>
+<title>Zee Life Guide</title>
 <style>
-  body { font-family: Arial; text-align: center; padding: 20px; background: #111; color: #fff; }
-  input, button { margin: 10px; padding: 10px; font-size: 16px; }
-  audio { margin-top: 20px; width: 100%; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+  header { background: #4CAF50; color: white; padding: 20px; text-align: center; font-size: 24px; }
+  .container { padding: 20px; }
+  .category, .item { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  .back { margin: 10px 0; cursor: pointer; color: #4CAF50; font-weight: bold; }
 </style>
 </head>
 <body>
-<h1>Simple Music Enhancer</h1>
-<input type="file" id="audioFile" accept="audio/*"><br>
-<button id="enhanceBtn">Enhance & Download</button>
-<a id="downloadLink" style="display:none;">Download Enhanced Audio</a><br>
-<audio id="player" controls></audio>
+
+<header>Zee Life Guide</header>
+<div class="container" id="app"></div>
 
 <script>
-const audioFileInput = document.getElementById('audioFile');
-const enhanceBtn = document.getElementById('enhanceBtn');
-const downloadLink = document.getElementById('downloadLink');
-const player = document.getElementById('player');
-
-enhanceBtn.onclick = async () => {
-  const file = audioFileInput.files[0];
-  if (!file) { alert('Select an audio file first'); return; }
-
-  const arrayBuffer = await file.arrayBuffer();
-  const audioCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, 44100 * 180, 44100); // max 3 min song
-  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-
-  const source = audioCtx.createBufferSource();
-  source.buffer = audioBuffer;
-
-  // 1. Noise gate (silence quiet parts)
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = 1.0;
-
-  const compressor = audioCtx.createDynamicsCompressor();
-  compressor.threshold.setValueAtTime(-50, audioCtx.currentTime); // silence anything below -50dB
-  compressor.knee.setValueAtTime(0, audioCtx.currentTime);
-  compressor.ratio.setValueAtTime(20, audioCtx.currentTime);
-  compressor.attack.setValueAtTime(0.005, audioCtx.currentTime);
-  compressor.release.setValueAtTime(0.1, audioCtx.currentTime);
-
-  // 2. EQ (light adjustment)
-  const lowShelf = audioCtx.createBiquadFilter();
-  lowShelf.type = 'lowshelf';
-  lowShelf.frequency.value = 150;
-  lowShelf.gain.value = 3;
-
-  const mid = audioCtx.createBiquadFilter();
-  mid.type = 'peaking';
-  mid.frequency.value = 1000;
-  mid.Q.value = 1;
-  mid.gain.value = 2;
-
-  const highShelf = audioCtx.createBiquadFilter();
-  highShelf.type = 'highshelf';
-  highShelf.frequency.value = 6000;
-  highShelf.gain.value = 2;
-
-  // Connect nodes
-  source.connect(compressor);
-  compressor.connect(lowShelf);
-  lowShelf.connect(mid);
-  mid.connect(highShelf);
-  highShelf.connect(audioCtx.destination);
-
-  source.start();
-  const renderedBuffer = await audioCtx.startRendering();
-
-  // Convert to WAV for download
-  function bufferToWave(abuffer) {
-    let numOfChan = abuffer.numberOfChannels,
-        length = abuffer.length * numOfChan * 2 + 44,
-        buffer = new ArrayBuffer(length),
-        view = new DataView(buffer),
-        channels = [],
-        sample,
-        offset = 0,
-        pos = 0;
-
-    setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
-    setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
-    setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
-    setUint16(numOfChan * 2); setUint16(16);
-    setUint32(0x61746164); setUint32(length - pos - 4);
-
-    for(let i=0; i<numOfChan; i++) channels.push(abuffer.getChannelData(i));
-    while(pos < length) {
-      for(let i=0; i<numOfChan; i++) {
-        sample = Math.max(-1, Math.min(1, channels[i][offset]));
-        sample = (0.5 + sample*0.5) * 65535;
-        view.setUint16(pos, sample, true);
-        pos += 2;
-      }
-      offset++;
-    }
-
-    function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-    function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
-
-    return new Blob([buffer], {type: "audio/wav"});
-  }
-
-  const wavBlob = bufferToWave(renderedBuffer);
-  const url = URL.createObjectURL(wavBlob);
-
-  downloadLink.href = url;
-  downloadLink.download = "enhanced_song.wav";
-  downloadLink.style.display = 'inline';
-  downloadLink.textContent = "Download Enhanced Audio";
-
-  player.src = url;
+// Offline data
+const data = {
+  "Stories": [
+    { "title": "The Honest Farmer", "text": "A farmer always worked hard and never lied. One day..." },
+    { "title": "The Brave Child", "text": "A child faced fears to help others, teaching courage..." }
+  ],
+  "Guidance": [
+    { "title": "Self-Care Basics", "text": "Eat well, sleep enough, and exercise daily. Small habits..." },
+    { "title": "Caring for Loved Ones", "text": "Listen actively, be present, and help when needed..." }
+  ],
+  "Growth": [
+    { "title": "Daily Growth Habits", "text": "Read 15 minutes, reflect on mistakes, plan your day..." }
+  ],
+  "WayOfLife": [
+    { "title": "Living Simply", "text": "Focus on essentials, avoid clutter, and appreciate small joys..." }
+  ]
 };
+
+// App container
+const app = document.getElementById('app');
+
+// Show categories
+function showCategories() {
+  app.innerHTML = '';
+  for (let cat in data) {
+    const div = document.createElement('div');
+    div.className = 'category';
+    div.textContent = cat;
+    div.onclick = () => showItems(cat);
+    app.appendChild(div);
+  }
+}
+
+// Show items in category
+function showItems(cat) {
+  app.innerHTML = `<div class="back" onclick="showCategories()">← Back to Categories</div>`;
+  data[cat].forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.textContent = item.title;
+    div.onclick = () => showContent(cat, item.title);
+    app.appendChild(div);
+  });
+}
+
+// Show full content
+function showContent(cat, title) {
+  const item = data[cat].find(i => i.title === title);
+  app.innerHTML = `<div class="back" onclick="showItems('${cat}')">← Back to ${cat}</div>
+                   <h2>${item.title}</h2>
+                   <p>${item.text}</p>`;
+}
+
+// Start app
+showCategories();
 </script>
+
 </body>
 </html>
