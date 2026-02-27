@@ -1,83 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Vibe</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600&display=swap');body{font-family:'Inter',sans-serif}.logo{font-family:'Poppins',sans-serif}.chat-me{background:linear-gradient(135deg,#eab308,#f59e0b);color:white;border-radius:20px 20px 4px 20px}.chat-other{background:#27272a;border-radius:20px 20px 20px 4px}.phone{box-shadow:0 0 0 12px #18181b,0 0 0 14px #27272a}</style>
-</head>
-<body class="bg-zinc-950 text-zinc-200 flex items-center justify-center min-h-screen p-4">
-<div id="app" class="phone w-full max-w-[380px] h-[780px] bg-zinc-900 rounded-[52px] overflow-hidden flex flex-col border border-zinc-800">
-
-<header class="bg-zinc-900 border-b border-zinc-800 px-5 py-3 flex items-center justify-between z-50">
-<div class="flex items-center gap-2"><div class="w-8 h-8 bg-yellow-400 rounded-2xl flex items-center justify-center text-zinc-900 font-bold text-xl logo">V</div><span class="logo text-2xl font-semibold tracking-tighter">Vibe</span></div>
-<div class="flex items-center gap-4">
-<button onclick="toggleNotif()" class="relative p-2 hover:bg-zinc-800 rounded-2xl"><i class="fa-solid fa-bell text-xl"></i><span id="ndot" class="hidden absolute -top-1 -right-1 bg-red-500 text-[10px] w-5 h-5 rounded-full flex items-center justify-center">0</span></button>
-<div onclick="profile()" class="w-9 h-9 rounded-2xl overflow-hidden border-2 border-yellow-400 cursor-pointer"><img src="https://i.pravatar.cc/150?img=68" class="w-full h-full object-cover"></div>
-</div>
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>Mini Social</title><style>
+body{font-family:Arial; margin:0; padding:0; background:#f5f5f5}
+header{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#222; color:#fff}
+.tabs{display:flex; gap:8px; padding:6px}
+.tab{background:#333; color:#fff; border:1px solid #555; padding:8px 12px; cursor:pointer}
+.tab.active{background:#fff; color:#000; border-color:#ccc}
+.screen{display:none; padding:12px}
+.screen.active{display:block}
+.card{border:1px solid #ddd; background:#fff; padding:8px; border-radius:6px; margin:6px 0}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px}
+img{max-width:100%; height:auto; display:block}
+</style></head>
+<body onload="initApp()">
+<header>
+  <div>Mini Social</div>
+  <div id="notif" aria-live="polite"></div>
 </header>
 
-<div class="flex-1 overflow-hidden relative">
-<div id="home" class="screen h-full overflow-auto"><div class="p-5"><h1 class="text-3xl font-semibold">Good evening, <span class="text-yellow-400">Alex</span> 👋</h1><div class="bg-zinc-800 rounded-3xl p-5 my-8 grid grid-cols-2 gap-4"><div onclick="go('status')" class="bg-zinc-700 hover:bg-yellow-400 hover:text-zinc-900 rounded-2xl py-5 text-center cursor-pointer"><i class="fa-solid fa-circle-plus text-4xl mb-2 block"></i><span class="text-xs">New Status</span></div><div onclick="go('happy')" class="bg-zinc-700 hover:bg-yellow-400 hover:text-zinc-900 rounded-2xl py-5 text-center cursor-pointer"><i class="fa-solid fa-face-smile text-4xl mb-2 block"></i><span class="text-xs">I'm Happy</span></div></div><div class="mb-8"><div class="flex justify-between mb-3"><span class="font-medium">Active</span><span onclick="go('chats')" class="text-yellow-400 text-xs cursor-pointer">All →</span></div><div id="active" class="flex gap-6 overflow-x-auto"></div></div></div></div>
-
-<div id="chats" class="screen h-full flex flex-col hidden"><div class="p-5 border-b border-zinc-800 flex justify-between bg-zinc-900"><h2 class="text-2xl font-semibold">Chats</h2><button onclick="newChat()" class="w-10 h-10 bg-yellow-400 rounded-2xl text-zinc-900"><i class="fa-solid fa-plus"></i></button></div><div id="chatlist" class="flex-1 overflow-auto"></div></div>
-
-<div id="chatroom" class="screen h-full flex flex-col hidden bg-zinc-950"><div class="bg-zinc-900 border-b border-zinc-800 p-4 flex items-center gap-3"><button onclick="closeChat()" class="text-3xl mr-2">←</button><div id="chatav" class="w-10 h-10 rounded-2xl overflow-hidden"></div><div class="flex-1"><div id="chatnm" class="font-semibold"></div><div class="text-emerald-400 text-xs">online</div></div><button onclick="chatOpts()" class="text-3xl">⋯</button></div><div id="msgs" class="flex-1 overflow-auto p-5 space-y-4 bg-[radial-gradient(#27272a_1px,transparent_1px)] bg-[length:20px_20px]"></div><div class="bg-zinc-900 border-t border-zinc-800 p-4"><div class="flex items-center gap-2 bg-zinc-800 rounded-3xl px-4 py-2"><button onclick="pickImg()" class="text-2xl text-zinc-400"><i class="fa-solid fa-paperclip"></i></button><input id="msginput" onkeypress="if(event.key==='Enter')sendMsg()" class="flex-1 bg-transparent outline-none text-sm" placeholder="Message..."><button onclick="sendMsg()" class="w-9 h-9 bg-yellow-400 text-zinc-900 rounded-2xl"><i class="fa-solid fa-paper-plane"></i></button></div><input id="imgupload" type="file" accept="image/*" class="hidden" onchange="sendImg(event)"></div></div>
-
-<div id="status" class="screen h-full overflow-auto hidden"><div class="p-5"><h2 class="text-2xl font-semibold mb-6">Status</h2><div id="mystatus" onclick="viewMyStatus()" class="hidden bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl p-5 text-zinc-900 mb-8 cursor-pointer"><div class="flex items-center gap-4"><div class="w-16 h-16 bg-white/30 rounded-2xl overflow-hidden border-2 border-white"><img id="myimg" class="w-full h-full object-cover"></div><div><p class="font-medium">My status</p><p id="mytime" class="text-xs">Just now</p></div></div></div><button onclick="newStatus()" class="w-full py-7 border-2 border-dashed border-yellow-400 rounded-3xl text-yellow-400 hover:bg-yellow-400 hover:text-zinc-900 flex items-center justify-center gap-3">📸 Post status with music</button><div class="mt-12"><h3 class="text-zinc-400 text-sm mb-4">Friends</h3><div id="friendstatus" class="grid grid-cols-3 gap-4"></div></div></div></div>
-
-<div id="posts" class="screen h-full overflow-auto hidden"><div class="sticky top-0 bg-zinc-900 border-b border-zinc-800 p-5 flex justify-between z-10"><h2 class="text-2xl font-semibold">Posts</h2><button onclick="newPost()" class="px-6 py-2 bg-yellow-400 text-zinc-900 font-medium rounded-3xl">Create</button></div><div id="postfeed" class="p-5 space-y-8"></div></div>
-
-<div id="pics" class="screen h-full overflow-auto hidden"><div class="p-5"><h2 class="text-2xl font-semibold mb-6">Pictures</h2><div id="picgrid" class="grid grid-cols-3 gap-2"></div></div></div>
-
-<div id="happy" class="screen h-full overflow-auto hidden"><div class="p-5"><h2 class="text-2xl font-semibold">What makes me happy</h2><button onclick="newHappy()" class="w-full mt-6 py-8 bg-gradient-to-br from-pink-400 to-yellow-400 rounded-3xl text-xl font-semibold flex items-center justify-center gap-3">❤️ Post happy moment</button><div id="happyfeed" class="mt-10 space-y-8"></div></div></div>
+<div class="tabs" aria-label="Main sections">
+  <button class="tab active" onclick="show('chats')">Chats</button>
+  <button class="tab" onclick="show('status')">Status</button>
+  <button class="tab" onclick="show('posts')">Posts</button>
+  <button class="tab" onclick="show('pictures')">Pictures</button>
+  <button class="tab" onclick="show('happy')">What makes me happy</button>
 </div>
 
-<nav class="bg-zinc-900 border-t border-zinc-700 py-3 px-1 flex justify-around text-[10px]">
-<button onclick="go('home')" class="nav active flex flex-col items-center text-yellow-400"><i class="fa-solid fa-house text-2xl"></i><span>Home</span></button>
-<button onclick="go('chats')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-comment-dots text-2xl"></i><span>Chats</span></button>
-<button onclick="go('status')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-circle-play text-2xl"></i><span>Status</span></button>
-<button onclick="go('posts')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-newspaper text-2xl"></i><span>Posts</span></button>
-<button onclick="go('pics')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-images text-2xl"></i><span>Pics</span></button>
-<button onclick="go('happy')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-face-smile text-2xl"></i><span>Happy</span></button>
-</nav>
+<div id="chats" class="screen active">
+  <div id="chatList"></div>
+  <input id="chatName" placeholder="Your name" style="width:40%; margin-right:6px"/>
+  <input id="chatInput" placeholder="Type a message" style="width:40%"/>
+  <input type="file" id="chatImage" accept="image/*" style="display:none" />
+  <button onclick="document.getElementById('chatImage').click()">Attach</button>
+  <button onclick="sendChat()">Send</button>
+</div>
 
-<div id="statusmodal" class="hidden fixed inset-0 bg-black/90 flex items-end z-50"><div class="bg-zinc-900 w-full rounded-t-3xl"><div class="p-4 border-b flex justify-between sticky top-0 bg-zinc-900"><button onclick="closeStatusModal()" class="text-lg">Cancel</button><span class="font-semibold">New Status</span><button onclick="postStatus()" class="text-yellow-400 font-semibold">Post</button></div><div class="p-6"><div id="statusprev" class="aspect-video bg-zinc-800 rounded-3xl flex items-center justify-center border border-dashed border-zinc-600 mb-6 cursor-pointer" onclick="document.getElementById('statusimg').click()"><input id="statusimg" type="file" accept="image/*" class="hidden" onchange="prevStatusImg(event)"><div class="text-center text-zinc-400"><i class="fa-solid fa-image text-6xl mb-3"></i><p>Choose photo</p></div></div><div class="mb-8" onclick="document.getElementById('statusmusic').click()"><div class="border border-zinc-700 rounded-2xl p-4 flex gap-3 cursor-pointer hover:border-yellow-400"><i class="fa-solid fa-music text-3xl text-yellow-400"></i><div><div class="font-medium">Add music from phone</div><div id="musicname" class="text-xs text-zinc-500">No song</div></div></div><input id="statusmusic" type="file" accept="audio/*" class="hidden" onchange="setMusic(event)"></div><textarea id="statuscap" rows="3" class="w-full bg-zinc-800 rounded-3xl p-5 outline-none" placeholder="Feeling..."></textarea></div></div></div>
+<div id="status" class="screen">
+  <div id="statusList"></div>
+  <textarea id="statusText" placeholder="What's new?" style="width:100%; height:60px"></textarea>
+  <input type="file" id="statusImage" accept="image/*" style="display:block"/>
+  <input type="file" id="statusSong" accept="audio/*" style="display:block"/>
+  <button onclick="postStatus()">Post</button>
+</div>
 
-<div id="viewer" class="hidden fixed inset-0 bg-black flex flex-col z-[60]"><div class="flex items-center justify-between p-4 text-white"><button onclick="closeViewer()" class="text-4xl">←</button><button onclick="saveStatus()" class="px-5 py-1 bg-white/20 rounded-full text-sm">Save</button></div><div class="flex-1 flex items-center justify-center relative"><img id="viewimg" class="max-h-full w-full object-cover"><div id="musicbar" class="hidden absolute bottom-12 left-1/2 -translate-x-1/2 bg-black/70 px-6 py-3 rounded-3xl flex items-center gap-3 text-sm"><i class="fa-solid fa-music"></i><span id="curmusic"></span></div></div><div class="p-6 text-center text-white" id="viewcap"></div></div>
+<div id="posts" class="screen">
+  <div class="card" style="padding:6px 0">
+    <input id="postText" placeholder="Share something..." style="width:70%"/>
+    <input type="file" id="postImage" accept="image/*" style="display:inline-block"/>
+    <button onclick="addPost()">Post</button>
+  </div>
+  <div id="postFeed"></div>
+</div>
 
-<div id="postmodal" class="hidden fixed inset-0 bg-black/80 flex items-end z-50"><div class="bg-zinc-900 w-full rounded-t-3xl p-6"><div class="flex justify-between mb-6"><button onclick="closePostModal()" class="text-zinc-400">Cancel</button><button onclick="publishPost()" class="text-yellow-400 font-semibold">Share</button></div><textarea id="posttxt" class="w-full h-32 bg-transparent outline-none resize-y" placeholder="What's on your mind?"></textarea><div onclick="document.getElementById('postimg').click()" class="mt-6 border border-dashed border-zinc-700 rounded-3xl py-8 text-center cursor-pointer"><i class="fa-solid fa-image text-4xl"></i><p class="mt-2 text-sm">Add photo</p></div><input id="postimg" type="file" accept="image/*" class="hidden" onchange="prevPostImg(event)"><div id="postprev" class="hidden mt-4"><img id="postpreview" class="rounded-3xl w-full"></div></div></div>
+<div id="pictures" class="screen grid" style="padding-top:6px"></div>
 
-<div id="happymodal" class="hidden fixed inset-0 bg-black/80 flex items-end z-50"><div class="bg-zinc-900 w-full rounded-t-3xl p-6"><div class="flex justify-between mb-6"><button onclick="closeHappyModal()" class="text-zinc-400">Cancel</button><button onclick="publishHappy()" class="text-yellow-400 font-semibold">Post</button></div><input id="happyact" class="w-full bg-zinc-800 rounded-3xl px-6 py-4 outline-none mb-4" placeholder="Activity (e.g. Coffee run)"><textarea id="happytext" class="w-full h-32 bg-transparent outline-none resize-y" placeholder="This makes me happy..."></textarea><div onclick="document.getElementById('happyimg').click()" class="mt-8 border border-dashed border-zinc-700 rounded-3xl py-8 text-center cursor-pointer"><i class="fa-solid fa-image"></i><p class="mt-2 text-sm">Add memory photo</p></div><input id="happyimg" type="file" accept="image/*" class="hidden" onchange="prevHappyImg(event)"><div id="happyprev" class="hidden mt-4"><img id="happypreview" class="rounded-3xl w-full"></div></div></div>
+<div id="happy" class="screen">
+  <div class="card" style="padding:6px 0">
+    <textarea id="happyText" placeholder="What makes you happy?" style="width:100%; height:60px"></textarea>
+    <input type="file" id="happyImage" accept="image/*"/>
+    <button onclick="postHappy()">Post</button>
+  </div>
+  <div id="happyFeed"></div>
 </div>
 
 <script>
-let currentUser={name:"Alex Rivera",avatar:"https://i.pravatar.cc/150?img=68"};let contacts=[{id:1,name:"Alice Chen",av:"https://i.pravatar.cc/150?img=1",online:true},{id:2,name:"Marcus Okoro",av:"https://i.pravatar.cc/150?img=32",online:false}];let msgs={},statuses=[],posts=[],happy=[],notifs=[];let curChat=null,curStatus=null,selImg=null,selMusic=null,selPostImg=null,selHappyImg=null;const LS={msgs:'vibe_msgs',statuses:'vibe_status',posts:'vibe_posts',happy:'vibe_happy',notifs:'vibe_notifs'};
-function load(){if(localStorage.getItem(LS.msgs))msgs=JSON.parse(localStorage.getItem(LS.msgs));if(localStorage.getItem(LS.statuses))statuses=JSON.parse(localStorage.getItem(LS.statuses));if(localStorage.getItem(LS.posts))posts=JSON.parse(localStorage.getItem(LS.posts));if(localStorage.getItem(LS.happy))happy=JSON.parse(localStorage.getItem(LS.happy));if(localStorage.getItem(LS.notifs))notifs=JSON.parse(localStorage.getItem(LS.notifs));if(Object.keys(msgs).length===0)seed();}
-function save(){localStorage.setItem(LS.msgs,JSON.stringify(msgs));localStorage.setItem(LS.statuses,JSON.stringify(statuses));localStorage.setItem(LS.posts,JSON.stringify(posts));localStorage.setItem(LS.happy,JSON.stringify(happy));localStorage.setItem(LS.notifs,JSON.stringify(notifs));}
-function seed(){msgs[1]=[{fromMe:false,type:'text',txt:'Hey weekend was great!',time:'10:12'}];statuses=[{id:991,by:'Alice Chen',img:'https://picsum.photos/id/1015/800/600',music:null,cap:'Sunset 🌅',ts:Date.now()-10800000}];posts=[{id:881,by:'Alice Chen',txt:'Just finished marathon! 🏃‍♀️',img:'https://picsum.photos/id/133/800/600',ts:'2h',likes:142}];happy=[{id:771,txt:'Coffee and book on rainy day ☕',act:'Reading',img:'https://picsum.photos/id/251/800/600',ts:'Yesterday'}];notifs=[{msg:'Alice liked your post',time:'now'}];save();}
-function t(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
-function go(tab){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(tab).classList.remove('hidden');document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active','text-yellow-400'));document.querySelectorAll('.nav').forEach(n=>{if(n.getAttribute('onclick').includes(tab))n.classList.add('active','text-yellow-400');});if(tab==='chats')renderChats();if(tab==='status')renderStatuses();if(tab==='posts')renderPosts();if(tab==='pics')renderPics();if(tab==='happy')renderHappy();}
-function renderActive(){let c=document.getElementById('active');c.innerHTML='';contacts.forEach(co=>{let d=document.createElement('div');d.className='flex-shrink-0 text-center cursor-pointer';d.innerHTML='<div onclick="openChat('+co.id+')" class="relative"><img src="'+co.av+'" class="w-14 h-14 rounded-3xl ring-2 ring-yellow-400"><div class="'+(co.online?'absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-zinc-900 rounded-full':'')+'"></div></div><p class="text-xs mt-1">'+co.name.split(' ')[0]+'</p>';c.appendChild(d);});}
-function renderChats(){let c=document.getElementById('chatlist');c.innerHTML='';contacts.forEach(co=>{let last=msgs[co.id]?msgs[co.id][msgs[co.id].length-1]:{txt:'Say hi!'};let d=document.createElement('div');d.className='flex gap-4 p-5 border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer';d.onclick=()=>openChat(co.id);d.innerHTML='<img src="'+co.av+'" class="w-14 h-14 rounded-2xl"><div class="flex-1"><div class="font-medium">'+co.name+'</div><div class="text-sm text-zinc-400 truncate">'+(last.txt||'Photo')+'</div></div>';c.appendChild(d);});}
-function openChat(id){curChat=id;let co=contacts.find(c=>c.id===id);document.getElementById('chats').classList.add('hidden');document.getElementById('chatroom').classList.remove('hidden');document.getElementById('chatav').innerHTML='<img src="'+co.av+'" class="w-full h-full object-cover">';document.getElementById('chatnm').textContent=co.name;renderChatMsgs();}
-function closeChat(){document.getElementById('chatroom').classList.add('hidden');document.getElementById('chats').classList.remove('hidden');curChat=null;}
-function renderChatMsgs(){let area=document.getElementById('msgs');area.innerHTML='';(msgs[curChat]||[]).forEach(m=>{let div=document.createElement('div');div.className='flex '+(m.fromMe?'justify-end':'');if(m.type==='text')div.innerHTML='<div class="'+(m.fromMe?'chat-me px-5 py-3 max-w-[75%]':'chat-other px-5 py-3 max-w-[75%]')+'">'+m.txt+'</div>';else if(m.type==='img')div.innerHTML='<img src="'+m.txt+'" class="max-w-[240px] rounded-3xl">';area.appendChild(div);});area.scrollTop=area.scrollHeight;}
-function sendMsg(){let inp=document.getElementById('msginput');if(!inp.value.trim()||!curChat)return;if(!msgs[curChat])msgs[curChat]=[];msgs[curChat].push({fromMe:true,type:'text',txt:inp.value,time:t(Date.now())});inp.value='';renderChatMsgs();save();setTimeout(fakeReply,1400);}
-function fakeReply(){if(!curChat)return;let replies=["Haha same!","Love this 🔥","Tell me more"];let txt=replies[Math.floor(Math.random()*replies.length)];if(!msgs[curChat])msgs[curChat]=[];msgs[curChat].push({fromMe:false,type:'text',txt:txt,time:t(Date.now())});renderChatMsgs();save();}
-function pickImg(){document.getElementById('imgupload').click();}
-function sendImg(e){let file=e.target.files[0];if(!file||!curChat)return;let reader=new FileReader();reader.onload=function(ev){if(!msgs[curChat])msgs[curChat]=[];msgs[curChat].push({fromMe:true,type:'img',txt:ev.target.result,time:t(Date.now())});renderChatMsgs();save();setTimeout(fakeReply,1200);};reader.readAsDataURL(file);}
-function newStatus(){document.getElementById('statusmodal').classList.remove('hidden');selImg=null;selMusic=null;document.getElementById('musicname').textContent='No song';document.getElementById('statusprev').innerHTML='<input id="statusimg" type="file" accept="image/*" class="hidden" onchange="prevStatusImg(event)"><div class="text-center text-zinc-400"><i class="fa-solid fa-image text-6xl mb-3"></i><p>Choose photo</p></div>';}
-function closeStatusModal(){document.getElementById('statusmodal').classList.add('hidden');}
-function prevStatusImg(e){let f=e.target.files[0];let r=new FileReader();r.onload=function(ev){selImg=ev.target.result;document.getElementById('statusprev').innerHTML='<img src="'+ev.target.result+'" class="w-full h-full object-cover rounded-3xl">';};r.readAsDataURL(f);}
-function setMusic(e){let f=e.target.files[0];let r=new FileReader();r.onload=function(ev){selMusic=ev.target.result;document.getElementById('musicname').textContent=f.name.substring(0,18)+'...';};r.readAsDataURL(f);}
-function postStatus(){if(!selImg){alert('Choose photo first');return;}let cap=document.getElementById('statuscap').value||'No caption';statuses.unshift({id:Date.now(),by:currentUser.name,img:selImg,music:selMusic,cap:cap,ts:Date.now()});save();closeStatusModal();go('status');renderStatuses();setTimeout(()=>{addNotif('Sofia viewed your status');},1500);}
-function renderStatuses(){let me=statuses.find(s=>s.by===currentUser.name);document.getElementById('mystatus').classList.toggle('hidden',!me);if(me){document.getElementById('myimg').src=me.img;document.getElementById('mytime').textContent='Just now';}let c=document.getElementById('friendstatus');c.innerHTML='';statuses.filter(s=>s.by!==currentUser.name).forEach(s=>{let d=document.createElement('div');d.innerHTML='<div onclick="viewStatus('+s.id+')" class="cursor-pointer"><img src="'+s.img+'" class="aspect-square object-cover rounded-3xl ring-2 ring-yellow-400"></div>';c.appendChild(d);});}
-function viewStatus(id){curStatus=statuses.find(s=>s.id===id);document.getElementById('viewer').classList.remove('hidden');document.getElementById('viewimg').src=curStatus.img;document.getElementById('viewcap').textContent=curStatus.cap;document.getElementById('musicbar').classList.toggle('hidden',!curStatus.music);if(curStatus.music)document.getElementById('curmusic').textContent='Song playing';}
-function closeViewer(){document.getElementById('viewer').classList.add('hidden');}
-function saveStatus(){alert('✅ Saved to phone!');closeViewer();}
-function viewMyStatus(){let me=statuses.find(s=>s.by===currentUser.name);if(me)viewStatus(me.id);}
-function newPost(){document.getElementById('postmodal').classList.remove('hidden');selPostImg=null;document.getElementById('posttxt').value='';document.getElementById('postprev').classList.add('hidden');}
-function closePostModal(){document.getElementById('postmodal').classL
+let data = JSON.parse(localStorage.getItem('miniSocial')) || {
+  chats: [], statuses: [], posts: [], pictures: [], happy: []
+};
+function save(){ localStorage.setItem('miniSocial', JSON.stringify(data)); }
+function show(id){ document.querySelectorAll('.screen').forEach(n=>n.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function renderAll(){ renderChats(); renderStatuses(); renderPosts(); renderPics(); renderHappy(); }
+
+function renderChats(){
+  const el = document.getElementById('chatList');
+  el.innerHTML = data.chats.map(m => `<div class="card"><strong>${escape(m.name||'Guest')}</strong>: ${escape(m.text||'')} ${m.image? `<br><img src="${m.image}" style="max-width:100%">`:''}</div>`).join('');
+}
+function renderStatuses(){
+  const el = document.getElementById('statusList');
+  el.innerHTML = data.statuses.map(s => `<div class="card">${escape(s.text||'')} ${s.image? `<br><img src="${s.image}" style="max-width:100%">`:''} ${s.song? `<br><audio controls src="${s.song}"></audio>`:''}</div>`).join('');
+}
+function renderPosts(){
+  const el = document.getElementById('postFeed');
+  el.innerHTML = data.posts.map(p => `<div class="card">${escape(p.text||'')} ${p.image? `<br><img src="${p.image}" style="max-width:100%">`:''}</div>`).join('');
+}
+function renderPics(){
+  const el = document.getElementById('pictures');
+  el.innerHTML = data.pictures.map(p => `<img src="${p}" />`).join('');
+}
+function renderHappy(){
+  const el = document.getElementById('happyFeed');
+  el.innerHTML = data.happy.map(h => `<div class="card">${escape(h.text||'')} ${h.image? `<br><img src="${h.image}" style="max-width:100%">`:''}</div>`).join('');
+}
+function escape(t){ return (''+t).replace(/[&<>"']/g, m => ({&:'&amp;',<:'&lt;',>: '&gt;', '"':'&quot;', "'":'&#39;'}[m])); }
+
+function initApp(){
+  renderAll();
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', ()=>{}));
+}
+function sendChat(){
+  const name = (document.getElementById('chatName').value || 'Guest');
+  const text = document.getElementById('chatInput').value;
+  if(!text) return;
+  const img = document.getElementById('chatImage').files[0];
+  if(img){
+    const r = new FileReader();
+    r.onload = e => {
+      data.chats.push({name, text, image:e.target.result});
+      save(); renderChats(); document.getElementById('chatInput').value=''; document.getElementById('chatName').value=''; document.getElementById('chatImage').value='';
+      show('chats'); document.getElementById('notif').textContent='Message sent';
+    }; r.readAsDataURL(img);
+  } else {
+    data.chats.push({name, text});
+    save(); renderChats(); document.getElementById('chatInput').value=''; document.getElementById('chatName').value='';
+    document.getElementById('notif').textContent='Message sent';
+  }
+}
+function postStatus(){
+  const t = document.getElementById('statusText').value;
+  if(!t) return;
+  const img = document.getElementById('statusImage').files[0];
+  const song = document.getElementById('statusSong').files[0];
+  if(img){
+    const r = new FileReader();
+    r.onload = e => {
+      const item = { text:t, image:e.target.result };
+      if(song){
+        const sr = new FileReader();
+        sr.onload = ee => { item.song = ee.target.result; data.statuses.push(item); save(); renderStatuses(); };
+        sr.readAsDataURL(song);
+      } else { data.statuses.push(item); save(); renderStatuses(); }
+    }; r.readAsDataURL(img);
+  } else if(song){
+    const sr = new FileReader();
+    sr.onload = ee => { data.statuses.push({ text: t, song: ee.target.result }); save(); renderStatuses(); };
+    sr.readAsDataURL(song);
+  } else { data.statuses.push({ text: t }); save(); renderStatuses(); }
+  document.getElementById('statusText').value=''; document.getElementById('statusImage').value=''; document.getElementById('statusSong').value='';
+  show('status'); document.getElementById('notif').textContent='Status posted';
+}
+function addPost(){
+  const t = document.getElementById('postText').value; if(!t) return;
+  const img = document.getElementById('postImage').files[0];
+  if(img){
+    const r = new FileReader();
+    r.onload = e => { data.posts.push({ text:t, image:e.target.result }); save(); renderPosts(); document.getElementById('postText').value=''; document.getElementById('postImage').value=''; };
+    r.readAsDataURL(img);
+  } else { data.posts.push({ text:t }); save(); renderPosts(); document.getElementById('postText').value=''; }
+}
+function postHappy(){
+  const t = document.getElementById('happyText').value; if(!t) return;
+  const img = document.getElementById('happyImage').files[0];
+  if(img){
+    const r=new FileReader();
+    r.onload=e=>{ data.happy.push({ text:t, image:e.target.result }); save(); renderHappy(); document.getElementById('happyText').value=''; document.getElementById('happyImage').value=''; };
+    r.readAsDataURL(img);
+  } else { data.happy.push({ text:t }); save(); renderHappy(); document.getElementById('happyText').value=''; }
+}
+initApp();
+</script>
+</body></html>
