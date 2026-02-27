@@ -1,556 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>localSocial · all in one</title>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        #app {
-            width: 100%;
-            max-width: 450px;
-            background: white;
-            height: 95vh;
-            border-radius: 28px 28px 0 0;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* header */
-        .app-header {
-            background: #075e54;
-            color: white;
-            padding: 16px 16px 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-        .app-header i {
-            font-size: 1.3rem;
-        }
-
-        /* top tabs (chats/status) – only visible when bottom nav = chat */
-        .top-tabs {
-            display: flex;
-            background: #075e54;
-            color: white;
-            padding: 0 16px;
-            gap: 24px;
-        }
-        .top-tab {
-            padding: 8px 0 12px;
-            font-weight: 500;
-            opacity: 0.7;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-        }
-        .top-tab.active {
-            opacity: 1;
-            border-bottom: 3px solid white;
-        }
-
-        /* main content area – scrollable */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px 16px;
-            background: #e5ddd5;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23e5ddd5" opacity="0.2"/></svg>');
-        }
-        .main-content::-webkit-scrollbar {
-            width: 4px;
-        }
-        .main-content::-webkit-scrollbar-thumb {
-            background: #b3a9a0;
-            border-radius: 10px;
-        }
-
-        /* bottom navigation */
-        .bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            background: #ffffff;
-            padding: 10px 0 8px;
-            border-top: 1px solid #ddd;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.03);
-        }
-        .nav-item {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #555;
-            cursor: pointer;
-            flex: 1;
-        }
-        .nav-item i {
-            font-size: 1.5rem;
-            display: block;
-            margin-bottom: 2px;
-        }
-        .nav-item.active {
-            color: #075e54;
-            font-weight: 500;
-        }
-
-        /* cards, bubbles, forms */
-        .message-bubble {
-            max-width: 80%;
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            border-radius: 18px;
-            background: white;
-            align-self: flex-start;
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .message-bubble.own {
-            background: #dcf8c6;
-            align-self: flex-end;
-        }
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-        }
-        .typing-indicator {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 8px;
-            font-style: italic;
-        }
-        .chat-input-area {
-            display: flex;
-            gap: 6px;
-            background: white;
-            padding: 10px;
-            border-top: 1px solid #ddd;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .chat-input-area input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 24px;
-            outline: none;
-        }
-        .chat-input-area button {
-            background: #075e54;
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .chat-input-area label {
-            background: #128C7E;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        /* status cards */
-        .status-card {
-            background: white;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .status-media {
-            position: relative;
-            background: black;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .status-media img {
-            width: 100%;
-            max-height: 300px;
-            object-fit: cover;
-        }
-        .status-audio {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.6);
-            padding: 8px;
-            border-radius: 30px;
-            color: white;
-        }
-        .status-info {
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .status-actions i {
-            margin: 0 6px;
-            cursor: pointer;
-        }
-
-        /* post card */
-        .post-card, .happy-card {
-            background: white;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 16px;
-        }
-        .post-header, .comment-section {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .post-image {
-            width: 100%;
-            max-height: 250px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin: 10px 0;
-        }
-
-        .grid-pictures {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-        }
-        .grid-pictures img {
-            width: 100%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-card {
-            background: white;
-            width: 90%;
-            max-width: 400px;
-            border-radius: 24px;
-            padding: 20px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .flex {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            background: #075e54;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-outline {
-            background: white;
-            color: #075e54;
-            border: 1px solid #075e54;
-        }
-        .small {
-            font-size: 0.75rem;
-            color: gray;
-        }
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Vibe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600&display=swap');body{font-family:'Inter',sans-serif}.logo{font-family:'Poppins',sans-serif}.chat-me{background:linear-gradient(135deg,#eab308,#f59e0b);color:white;border-radius:20px 20px 4px 20px}.chat-other{background:#27272a;border-radius:20px 20px 20px 4px}.phone{box-shadow:0 0 0 12px #18181b,0 0 0 14px #27272a}</style>
 </head>
-<body>
-<div id="app">
-    <div class="app-header">
-        <i class="fas fa-user-circle"></i>
-        <span>localSocial</span>
-        <i class="fas fa-ellipsis-v"></i>
-    </div>
+<body class="bg-zinc-950 text-zinc-200 flex items-center justify-center min-h-screen p-4">
+<div id="app" class="phone w-full max-w-[380px] h-[780px] bg-zinc-900 rounded-[52px] overflow-hidden flex flex-col border border-zinc-800">
 
-    <!-- top tabs: only visible when on chat section -->
-    <div id="topTabs" class="top-tabs hidden">
-        <div class="top-tab active" data-tab="chats">Chats</div>
-        <div class="top-tab" data-tab="status">Status</div>
-    </div>
+<header class="bg-zinc-900 border-b border-zinc-800 px-5 py-3 flex items-center justify-between z-50">
+<div class="flex items-center gap-2"><div class="w-8 h-8 bg-yellow-400 rounded-2xl flex items-center justify-center text-zinc-900 font-bold text-xl logo">V</div><span class="logo text-2xl font-semibold tracking-tighter">Vibe</span></div>
+<div class="flex items-center gap-4">
+<button onclick="toggleNotif()" class="relative p-2 hover:bg-zinc-800 rounded-2xl"><i class="fa-solid fa-bell text-xl"></i><span id="ndot" class="hidden absolute -top-1 -right-1 bg-red-500 text-[10px] w-5 h-5 rounded-full flex items-center justify-center">0</span></button>
+<div onclick="profile()" class="w-9 h-9 rounded-2xl overflow-hidden border-2 border-yellow-400 cursor-pointer"><img src="https://i.pravatar.cc/150?img=68" class="w-full h-full object-cover"></div>
+</div>
+</header>
 
-    <!-- dynamic main content -->
-    <div id="mainContent" class="main-content"></div>
+<div class="flex-1 overflow-hidden relative">
+<div id="home" class="screen h-full overflow-auto"><div class="p-5"><h1 class="text-3xl font-semibold">Good evening, <span class="text-yellow-400">Alex</span> 👋</h1><div class="bg-zinc-800 rounded-3xl p-5 my-8 grid grid-cols-2 gap-4"><div onclick="go('status')" class="bg-zinc-700 hover:bg-yellow-400 hover:text-zinc-900 rounded-2xl py-5 text-center cursor-pointer"><i class="fa-solid fa-circle-plus text-4xl mb-2 block"></i><span class="text-xs">New Status</span></div><div onclick="go('happy')" class="bg-zinc-700 hover:bg-yellow-400 hover:text-zinc-900 rounded-2xl py-5 text-center cursor-pointer"><i class="fa-solid fa-face-smile text-4xl mb-2 block"></i><span class="text-xs">I'm Happy</span></div></div><div class="mb-8"><div class="flex justify-between mb-3"><span class="font-medium">Active</span><span onclick="go('chats')" class="text-yellow-400 text-xs cursor-pointer">All →</span></div><div id="active" class="flex gap-6 overflow-x-auto"></div></div></div></div>
 
-    <!-- bottom navigation -->
-    <div class="bottom-nav" id="bottomNav">
-        <div class="nav-item" data-screen="home"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item active" data-screen="chat"><i class="fas fa-comment-dots"></i>Chat</div>
-        <div class="nav-item" data-screen="posts"><i class="fas fa-newspaper"></i>Posts</div>
-        <div class="nav-item" data-screen="pictures"><i class="fas fa-images"></i>Pics</div>
-        <div class="nav-item" data-screen="happy"><i class="fas fa-smile"></i>Happy</div>
-    </div>
+<div id="chats" class="screen h-full flex flex-col hidden"><div class="p-5 border-b border-zinc-800 flex justify-between bg-zinc-900"><h2 class="text-2xl font-semibold">Chats</h2><button onclick="newChat()" class="w-10 h-10 bg-yellow-400 rounded-2xl text-zinc-900"><i class="fa-solid fa-plus"></i></button></div><div id="chatlist" class="flex-1 overflow-auto"></div></div>
+
+<div id="chatroom" class="screen h-full flex flex-col hidden bg-zinc-950"><div class="bg-zinc-900 border-b border-zinc-800 p-4 flex items-center gap-3"><button onclick="closeChat()" class="text-3xl mr-2">←</button><div id="chatav" class="w-10 h-10 rounded-2xl overflow-hidden"></div><div class="flex-1"><div id="chatnm" class="font-semibold"></div><div class="text-emerald-400 text-xs">online</div></div><button onclick="chatOpts()" class="text-3xl">⋯</button></div><div id="msgs" class="flex-1 overflow-auto p-5 space-y-4 bg-[radial-gradient(#27272a_1px,transparent_1px)] bg-[length:20px_20px]"></div><div class="bg-zinc-900 border-t border-zinc-800 p-4"><div class="flex items-center gap-2 bg-zinc-800 rounded-3xl px-4 py-2"><button onclick="pickImg()" class="text-2xl text-zinc-400"><i class="fa-solid fa-paperclip"></i></button><input id="msginput" onkeypress="if(event.key==='Enter')sendMsg()" class="flex-1 bg-transparent outline-none text-sm" placeholder="Message..."><button onclick="sendMsg()" class="w-9 h-9 bg-yellow-400 text-zinc-900 rounded-2xl"><i class="fa-solid fa-paper-plane"></i></button></div><input id="imgupload" type="file" accept="image/*" class="hidden" onchange="sendImg(event)"></div></div>
+
+<div id="status" class="screen h-full overflow-auto hidden"><div class="p-5"><h2 class="text-2xl font-semibold mb-6">Status</h2><div id="mystatus" onclick="viewMyStatus()" class="hidden bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl p-5 text-zinc-900 mb-8 cursor-pointer"><div class="flex items-center gap-4"><div class="w-16 h-16 bg-white/30 rounded-2xl overflow-hidden border-2 border-white"><img id="myimg" class="w-full h-full object-cover"></div><div><p class="font-medium">My status</p><p id="mytime" class="text-xs">Just now</p></div></div></div><button onclick="newStatus()" class="w-full py-7 border-2 border-dashed border-yellow-400 rounded-3xl text-yellow-400 hover:bg-yellow-400 hover:text-zinc-900 flex items-center justify-center gap-3">📸 Post status with music</button><div class="mt-12"><h3 class="text-zinc-400 text-sm mb-4">Friends</h3><div id="friendstatus" class="grid grid-cols-3 gap-4"></div></div></div></div>
+
+<div id="posts" class="screen h-full overflow-auto hidden"><div class="sticky top-0 bg-zinc-900 border-b border-zinc-800 p-5 flex justify-between z-10"><h2 class="text-2xl font-semibold">Posts</h2><button onclick="newPost()" class="px-6 py-2 bg-yellow-400 text-zinc-900 font-medium rounded-3xl">Create</button></div><div id="postfeed" class="p-5 space-y-8"></div></div>
+
+<div id="pics" class="screen h-full overflow-auto hidden"><div class="p-5"><h2 class="text-2xl font-semibold mb-6">Pictures</h2><div id="picgrid" class="grid grid-cols-3 gap-2"></div></div></div>
+
+<div id="happy" class="screen h-full overflow-auto hidden"><div class="p-5"><h2 class="text-2xl font-semibold">What makes me happy</h2><button onclick="newHappy()" class="w-full mt-6 py-8 bg-gradient-to-br from-pink-400 to-yellow-400 rounded-3xl text-xl font-semibold flex items-center justify-center gap-3">❤️ Post happy moment</button><div id="happyfeed" class="mt-10 space-y-8"></div></div></div>
 </div>
 
-<!-- modals for posting etc -->
-<div id="statusModal" class="modal-overlay">
-    <div class="modal-card">
-        <h3>Add status <i class="fas fa-music" style="color: #075e54;"></i></h3>
-        <input type="file" id="statusImageInput" accept="image/*" capture="environment" style="margin:10px 0">
-        <input type="file" id="statusAudioInput" accept="audio/*" style="margin:10px 0">
-        <textarea id="statusText" rows="2" placeholder="write something..." style="width:100%"></textarea>
-        <div class="flex" style="justify-content: space-between; margin-top:12px">
-            <button class="btn-outline" id="cancelStatus">Cancel</button>
-            <button class="btn" id="postStatusBtn">Post story</button>
-        </div>
-    </div>
-</div>
+<nav class="bg-zinc-900 border-t border-zinc-700 py-3 px-1 flex justify-around text-[10px]">
+<button onclick="go('home')" class="nav active flex flex-col items-center text-yellow-400"><i class="fa-solid fa-house text-2xl"></i><span>Home</span></button>
+<button onclick="go('chats')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-comment-dots text-2xl"></i><span>Chats</span></button>
+<button onclick="go('status')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-circle-play text-2xl"></i><span>Status</span></button>
+<button onclick="go('posts')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-newspaper text-2xl"></i><span>Posts</span></button>
+<button onclick="go('pics')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-images text-2xl"></i><span>Pics</span></button>
+<button onclick="go('happy')" class="nav flex flex-col items-center text-zinc-400"><i class="fa-solid fa-face-smile text-2xl"></i><span>Happy</span></button>
+</nav>
 
-<div id="postModal" class="modal-overlay">
-    <div class="modal-card">
-        <h3>Create post</h3>
-        <textarea id="postText" rows="2" placeholder="What's on your mind?" style="width:100%"></textarea>
-        <input type="file" id="postImageInput" accept="image/*" style="margin:10px 0">
-        <div class="flex" style="justify-content: space-between">
-            <button class="btn-outline" id="cancelPost">Cancel</button>
-            <button class="btn" id="createPostBtn">Post</button>
-        </div>
-    </div>
-</div>
+<div id="statusmodal" class="hidden fixed inset-0 bg-black/90 flex items-end z-50"><div class="bg-zinc-900 w-full rounded-t-3xl"><div class="p-4 border-b flex justify-between sticky top-0 bg-zinc-900"><button onclick="closeStatusModal()" class="text-lg">Cancel</button><span class="font-semibold">New Status</span><button onclick="postStatus()" class="text-yellow-400 font-semibold">Post</button></div><div class="p-6"><div id="statusprev" class="aspect-video bg-zinc-800 rounded-3xl flex items-center justify-center border border-dashed border-zinc-600 mb-6 cursor-pointer" onclick="document.getElementById('statusimg').click()"><input id="statusimg" type="file" accept="image/*" class="hidden" onchange="prevStatusImg(event)"><div class="text-center text-zinc-400"><i class="fa-solid fa-image text-6xl mb-3"></i><p>Choose photo</p></div></div><div class="mb-8" onclick="document.getElementById('statusmusic').click()"><div class="border border-zinc-700 rounded-2xl p-4 flex gap-3 cursor-pointer hover:border-yellow-400"><i class="fa-solid fa-music text-3xl text-yellow-400"></i><div><div class="font-medium">Add music from phone</div><div id="musicname" class="text-xs text-zinc-500">No song</div></div></div><input id="statusmusic" type="file" accept="audio/*" class="hidden" onchange="setMusic(event)"></div><textarea id="statuscap" rows="3" class="w-full bg-zinc-800 rounded-3xl p-5 outline-none" placeholder="Feeling..."></textarea></div></div></div>
 
-<div id="happyModal" class="modal-overlay">
-    <div class="modal-card">
-        <h3>What makes me happy</h3>
-        <input type="text" id="happyActivity" placeholder="activity (e.g. hiking)" style="width:100%; margin-bottom:8px">
-        <textarea id="happyText" rows="2" placeholder="why?" style="width:100%"></textarea>
-        <input type="file" id="happyImageInput" accept="image/*" style="margin:10px 0">
-        <div class="flex" style="justify-content: space-between">
-            <button class="btn-outline" id="cancelHappy">Cancel</button>
-            <button class="btn" id="createHappyBtn">Share</button>
-        </div>
-    </div>
+<div id="viewer" class="hidden fixed inset-0 bg-black flex flex-col z-[60]"><div class="flex items-center justify-between p-4 text-white"><button onclick="closeViewer()" class="text-4xl">←</button><button onclick="saveStatus()" class="px-5 py-1 bg-white/20 rounded-full text-sm">Save</button></div><div class="flex-1 flex items-center justify-center relative"><img id="viewimg" class="max-h-full w-full object-cover"><div id="musicbar" class="hidden absolute bottom-12 left-1/2 -translate-x-1/2 bg-black/70 px-6 py-3 rounded-3xl flex items-center gap-3 text-sm"><i class="fa-solid fa-music"></i><span id="curmusic"></span></div></div><div class="p-6 text-center text-white" id="viewcap"></div></div>
+
+<div id="postmodal" class="hidden fixed inset-0 bg-black/80 flex items-end z-50"><div class="bg-zinc-900 w-full rounded-t-3xl p-6"><div class="flex justify-between mb-6"><button onclick="closePostModal()" class="text-zinc-400">Cancel</button><button onclick="publishPost()" class="text-yellow-400 font-semibold">Share</button></div><textarea id="posttxt" class="w-full h-32 bg-transparent outline-none resize-y" placeholder="What's on your mind?"></textarea><div onclick="document.getElementById('postimg').click()" class="mt-6 border border-dashed border-zinc-700 rounded-3xl py-8 text-center cursor-pointer"><i class="fa-solid fa-image text-4xl"></i><p class="mt-2 text-sm">Add photo</p></div><input id="postimg" type="file" accept="image/*" class="hidden" onchange="prevPostImg(event)"><div id="postprev" class="hidden mt-4"><img id="postpreview" class="rounded-3xl w-full"></div></div></div>
+
+<div id="happymodal" class="hidden fixed inset-0 bg-black/80 flex items-end z-50"><div class="bg-zinc-900 w-full rounded-t-3xl p-6"><div class="flex justify-between mb-6"><button onclick="closeHappyModal()" class="text-zinc-400">Cancel</button><button onclick="publishHappy()" class="text-yellow-400 font-semibold">Post</button></div><input id="happyact" class="w-full bg-zinc-800 rounded-3xl px-6 py-4 outline-none mb-4" placeholder="Activity (e.g. Coffee run)"><textarea id="happytext" class="w-full h-32 bg-transparent outline-none resize-y" placeholder="This makes me happy..."></textarea><div onclick="document.getElementById('happyimg').click()" class="mt-8 border border-dashed border-zinc-700 rounded-3xl py-8 text-center cursor-pointer"><i class="fa-solid fa-image"></i><p class="mt-2 text-sm">Add memory photo</p></div><input id="happyimg" type="file" accept="image/*" class="hidden" onchange="prevHappyImg(event)"><div id="happyprev" class="hidden mt-4"><img id="happypreview" class="rounded-3xl w-full"></div></div></div>
 </div>
 
 <script>
-    (function() {
-        // ----- DATA STORAGE (localStorage) -----
-        let messages = JSON.parse(localStorage.getItem('messages')) || [];
-        let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
-        let posts = JSON.parse(localStorage.getItem('posts')) || [];
-        let happyItems = JSON.parse(localStorage.getItem('happyItems')) || [];
-
-        // helper to save all
-        function saveAll() {
-            localStorage.setItem('messages', JSON.stringify(messages));
-            // filter expired statuses (24h)
-            const oneDayAgo = Date.now() - 24*60*60*1000;
-            statuses = statuses.filter(s => s.timestamp > oneDayAgo);
-            localStorage.setItem('statuses', JSON.stringify(statuses));
-            localStorage.setItem('posts', JSON.stringify(posts));
-            localStorage.setItem('happyItems', JSON.stringify(happyItems));
-        }
-
-        // current user
-        const ME = 'You';
-        const FRIEND = 'Alex';
-
-        // navigation state
-        let activeBottom = 'chat';     // home, chat, posts, pictures, happy
-        let activeTopTab = 'chats';    // chats, status (only when activeBottom='chat')
-
-        // ----- RENDERING FUNCTIONS -----
-        const mainEl = document.getElementById('mainContent');
-        const topTabs = document.getElementById('topTabs');
-
-        function render() {
-            // show/hide top tabs
-            if (activeBottom === 'chat') {
-                topTabs.classList.remove('hidden');
-            } else {
-                topTabs.classList.add('hidden');
-            }
-
-            // highlight bottom nav
-            document.querySelectorAll('.nav-item').forEach(el => {
-                const screen = el.dataset.screen;
-                if (screen === activeBottom) el.classList.add('active');
-                else el.classList.remove('active');
-            });
-
-            // highlight top tabs
-            document.querySelectorAll('.top-tab').forEach(el => {
-                const tab = el.dataset.tab;
-                if (tab === activeTopTab) el.classList.add('active');
-                else el.classList.remove('active');
-            });
-
-            // render main content based on activeBottom + activeTopTab
-            if (activeBottom === 'home') renderHome();
-            else if (activeBottom === 'chat') {
-                if (activeTopTab === 'chats') renderChats();
-                else renderStatus();
-            } else if (activeBottom === 'posts') renderPosts();
-            else if (activeBottom === 'pictures') renderPictures();
-            else if (activeBottom === 'happy') renderHappy();
-        }
-
-        // ----- HOME SCREEN (simple feed) -----
-        function renderHome() {
-            let html = '<h3>🌿 home feed</h3>';
-            // latest posts
-            if (posts.length) {
-                html += '<h4>Recent posts</h4>';
-                posts.slice(-3).reverse().forEach(p => {
-                    html += `<div class="post-card"><strong>${p.user || ME}</strong> ${p.text || ''}`;
-                    if (p.image) html += `<br><img src="${p.image}" class="post-image">`;
-                    html += `<div class="small">❤️ ${p.likes ? p.likes.length : 0}  💬 ${p.comments ? p.comments.length : 0}</div></div>`;
-                });
-            } else html += '<p>No posts yet</p>';
-            html += '<h4>✨ happy moments</h4>';
-            happyItems.slice(-2).forEach(h => {
-                html += `<div class="happy-card"><b>${h.activity || 'activity'}</b> – ${h.text || ''}`;
-                if (h.image) html += `<br><img src="${h.image}" style="max-width:100%; max-height:150px">`;
-                html += '</div>';
-            });
-            mainEl.innerHTML = html;
-        }
-
-        // ----- CHATS -----
-        function renderChats() {
-            let html = '<div class="chat-container">';
-            messages.forEach(msg => {
-                const ownClass = msg.sender === ME ? 'own' : '';
-                html += `<div class="message-bubble ${ownClass}">`;
-                if (msg.sender !== ME) html += `<b>${msg.sender}</b><br>`;
-                if (msg.text) html += msg.text;
-                if (msg.image) html += `<br><img src="${msg.image}" style="max-width:150px; border-radius:10px;">`;
-                if (msg.audio) html += `<br><audio src="${msg.audio}" controls style="width:200px;"></audio>`;
-                html += `<div class="small">${new Date(msg.timestamp).toLocaleTimeString()}</div>`;
-                html += '</div>';
-            });
-            html += '<div class="typing-indicator"><i class="fas fa-ellipsis-h"></i> Alex is typing...</div>';
-            html += '</div>';
-
-            // input area
-            html += `<div class="chat-input-area">
-                <input type="text" id="chatMsg" placeholder="Type a message">
-                <label for="chatImage"><i class="fas fa-camera"></i></label>
-                <input type="file" id="chatImage" accept="image/*" style="display:none">
-                <label for="chatAudio"><i class="fas fa-headphones"></i></label>
-                <input type="file" id="chatAudio" accept="audio/*" style="display:none">
-                <button id="sendChat"><i class="fas fa-paper-plane"></i></button>
-            </div>`;
-
-            mainEl.innerHTML = html;
-
-            // attach events
-            document.getElementById('sendChat').addEventListener('click', sendMessage);
-            document.getElementById('chatImage').addEventListener('change', sendImage);
-            document.getElementById('chatAudio').addEventListener('change', sendAudio);
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatMsg');
-            if (!input.value.trim()) return;
-            messages.push({
-                sender: ME,
-                text: input.value,
-                timestamp: Date.now()
-            });
-            // auto reply from friend
-            setTimeout(() => {
-                messages.push({
-                    sender: FRIEND,
-                    text: '👍',
-                    timestamp: Date.now()
-                });
-                saveAll();
-                if (activeBottom === 'chat' && activeTopTab === 'chats') renderChats();
-            }, 800);
-            input.value = '';
-            saveAll();
-            renderChats();
-        }
-
-        function sendImage(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                messages.push({ sender: ME, image: ev.target.result, timestamp: Date.now() });
-                saveAll();
-                renderChats();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function sendAudio(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                messages.push({ sender: ME, audio: ev.target.result, timestamp: Date.now() });
-                saveAll();
-                renderChats();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // ----- STATUS -----
-        function renderStatus() {
-            let html = '<div style="margin-bottom:12px"><button id="newStatusBtn" class="btn"><i class="fas fa-plus-circle"></i> Add story</button></div>';
-            html += '<h4>Recent updates</h4>';
-            statuses.sort((a,b) => b.timestamp - a.timestamp).forEach(s => {
-                html += `<div class="status-card">
-                    <div class="status-media">`;
-                if (s.image) html += `<img src="${s.image}">`;
-                if (s.audio) html += `<div class="status-audio"><audio src="${s.audio}" controls style="width:100%"></audio></div>`;
-                html += `</div><div class="status-info">
-                    <div><strong>${s.user || ME}</strong> <span class="small">${new Date(s.timestamp).toLocaleString()}</span><br>${s.text || ''}</div>
-                    <div class="status-actions">
-                        <i class="far fa-eye" title="views: ${s.views ? s.views.length : 0}"></i>
-                        <i class="far fa-heart" title="likes: ${s.likes ? s.likes.length : 0}"></i>
-                        <i class="fas fa-download" data-id="${s.id}" data-save></i>
-                    </div>
-                </div>`;
-            });
-            mainEl.innerHTML = html;
-
-            document.getElementById('newStatusBtn')?.addEventListener('click', () => {
-                document.getElementById('statusModal').style.display = 'flex';
-            });
-
-            document.querySelectorAll('[data-save]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    c
+let currentUser={name:"Alex Rivera",avatar:"https://i.pravatar.cc/150?img=68"};let contacts=[{id:1,name:"Alice Chen",av:"https://i.pravatar.cc/150?img=1",online:true},{id:2,name:"Marcus Okoro",av:"https://i.pravatar.cc/150?img=32",online:false}];let msgs={},statuses=[],posts=[],happy=[],notifs=[];let curChat=null,curStatus=null,selImg=null,selMusic=null,selPostImg=null,selHappyImg=null;const LS={msgs:'vibe_msgs',statuses:'vibe_status',posts:'vibe_posts',happy:'vibe_happy',notifs:'vibe_notifs'};
+function load(){if(localStorage.getItem(LS.msgs))msgs=JSON.parse(localStorage.getItem(LS.msgs));if(localStorage.getItem(LS.statuses))statuses=JSON.parse(localStorage.getItem(LS.statuses));if(localStorage.getItem(LS.posts))posts=JSON.parse(localStorage.getItem(LS.posts));if(localStorage.getItem(LS.happy))happy=JSON.parse(localStorage.getItem(LS.happy));if(localStorage.getItem(LS.notifs))notifs=JSON.parse(localStorage.getItem(LS.notifs));if(Object.keys(msgs).length===0)seed();}
+function save(){localStorage.setItem(LS.msgs,JSON.stringify(msgs));localStorage.setItem(LS.statuses,JSON.stringify(statuses));localStorage.setItem(LS.posts,JSON.stringify(posts));localStorage.setItem(LS.happy,JSON.stringify(happy));localStorage.setItem(LS.notifs,JSON.stringify(notifs));}
+function seed(){msgs[1]=[{fromMe:false,type:'text',txt:'Hey weekend was great!',time:'10:12'}];statuses=[{id:991,by:'Alice Chen',img:'https://picsum.photos/id/1015/800/600',music:null,cap:'Sunset 🌅',ts:Date.now()-10800000}];posts=[{id:881,by:'Alice Chen',txt:'Just finished marathon! 🏃‍♀️',img:'https://picsum.photos/id/133/800/600',ts:'2h',likes:142}];happy=[{id:771,txt:'Coffee and book on rainy day ☕',act:'Reading',img:'https://picsum.photos/id/251/800/600',ts:'Yesterday'}];notifs=[{msg:'Alice liked your post',time:'now'}];save();}
+function t(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function go(tab){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(tab).classList.remove('hidden');document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active','text-yellow-400'));document.querySelectorAll('.nav').forEach(n=>{if(n.getAttribute('onclick').includes(tab))n.classList.add('active','text-yellow-400');});if(tab==='chats')renderChats();if(tab==='status')renderStatuses();if(tab==='posts')renderPosts();if(tab==='pics')renderPics();if(tab==='happy')renderHappy();}
+function renderActive(){let c=document.getElementById('active');c.innerHTML='';contacts.forEach(co=>{let d=document.createElement('div');d.className='flex-shrink-0 text-center cursor-pointer';d.innerHTML='<div onclick="openChat('+co.id+')" class="relative"><img src="'+co.av+'" class="w-14 h-14 rounded-3xl ring-2 ring-yellow-400"><div class="'+(co.online?'absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-zinc-900 rounded-full':'')+'"></div></div><p class="text-xs mt-1">'+co.name.split(' ')[0]+'</p>';c.appendChild(d);});}
+function renderChats(){let c=document.getElementById('chatlist');c.innerHTML='';contacts.forEach(co=>{let last=msgs[co.id]?msgs[co.id][msgs[co.id].length-1]:{txt:'Say hi!'};let d=document.createElement('div');d.className='flex gap-4 p-5 border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer';d.onclick=()=>openChat(co.id);d.innerHTML='<img src="'+co.av+'" class="w-14 h-14 rounded-2xl"><div class="flex-1"><div class="font-medium">'+co.name+'</div><div class="text-sm text-zinc-400 truncate">'+(last.txt||'Photo')+'</div></div>';c.appendChild(d);});}
+function openChat(id){curChat=id;let co=contacts.find(c=>c.id===id);document.getElementById('chats').classList.add('hidden');document.getElementById('chatroom').classList.remove('hidden');document.getElementById('chatav').innerHTML='<img src="'+co.av+'" class="w-full h-full object-cover">';document.getElementById('chatnm').textContent=co.name;renderChatMsgs();}
+function closeChat(){document.getElementById('chatroom').classList.add('hidden');document.getElementById('chats').classList.remove('hidden');curChat=null;}
+function renderChatMsgs(){let area=document.getElementById('msgs');area.innerHTML='';(msgs[curChat]||[]).forEach(m=>{let div=document.createElement('div');div.className='flex '+(m.fromMe?'justify-end':'');if(m.type==='text')div.innerHTML='<div class="'+(m.fromMe?'chat-me px-5 py-3 max-w-[75%]':'chat-other px-5 py-3 max-w-[75%]')+'">'+m.txt+'</div>';else if(m.type==='img')div.innerHTML='<img src="'+m.txt+'" class="max-w-[240px] rounded-3xl">';area.appendChild(div);});area.scrollTop=area.scrollHeight;}
+function sendMsg(){let inp=document.getElementById('msginput');if(!inp.value.trim()||!curChat)return;if(!msgs[curChat])msgs[curChat]=[];msgs[curChat].push({fromMe:true,type:'text',txt:inp.value,time:t(Date.now())});inp.value='';renderChatMsgs();save();setTimeout(fakeReply,1400);}
+function fakeReply(){if(!curChat)return;let replies=["Haha same!","Love this 🔥","Tell me more"];let txt=replies[Math.floor(Math.random()*replies.length)];if(!msgs[curChat])msgs[curChat]=[];msgs[curChat].push({fromMe:false,type:'text',txt:txt,time:t(Date.now())});renderChatMsgs();save();}
+function pickImg(){document.getElementById('imgupload').click();}
+function sendImg(e){let file=e.target.files[0];if(!file||!curChat)return;let reader=new FileReader();reader.onload=function(ev){if(!msgs[curChat])msgs[curChat]=[];msgs[curChat].push({fromMe:true,type:'img',txt:ev.target.result,time:t(Date.now())});renderChatMsgs();save();setTimeout(fakeReply,1200);};reader.readAsDataURL(file);}
+function newStatus(){document.getElementById('statusmodal').classList.remove('hidden');selImg=null;selMusic=null;document.getElementById('musicname').textContent='No song';document.getElementById('statusprev').innerHTML='<input id="statusimg" type="file" accept="image/*" class="hidden" onchange="prevStatusImg(event)"><div class="text-center text-zinc-400"><i class="fa-solid fa-image text-6xl mb-3"></i><p>Choose photo</p></div>';}
+function closeStatusModal(){document.getElementById('statusmodal').classList.add('hidden');}
+function prevStatusImg(e){let f=e.target.files[0];let r=new FileReader();r.onload=function(ev){selImg=ev.target.result;document.getElementById('statusprev').innerHTML='<img src="'+ev.target.result+'" class="w-full h-full object-cover rounded-3xl">';};r.readAsDataURL(f);}
+function setMusic(e){let f=e.target.files[0];let r=new FileReader();r.onload=function(ev){selMusic=ev.target.result;document.getElementById('musicname').textContent=f.name.substring(0,18)+'...';};r.readAsDataURL(f);}
+function postStatus(){if(!selImg){alert('Choose photo first');return;}let cap=document.getElementById('statuscap').value||'No caption';statuses.unshift({id:Date.now(),by:currentUser.name,img:selImg,music:selMusic,cap:cap,ts:Date.now()});save();closeStatusModal();go('status');renderStatuses();setTimeout(()=>{addNotif('Sofia viewed your status');},1500);}
+function renderStatuses(){let me=statuses.find(s=>s.by===currentUser.name);document.getElementById('mystatus').classList.toggle('hidden',!me);if(me){document.getElementById('myimg').src=me.img;document.getElementById('mytime').textContent='Just now';}let c=document.getElementById('friendstatus');c.innerHTML='';statuses.filter(s=>s.by!==currentUser.name).forEach(s=>{let d=document.createElement('div');d.innerHTML='<div onclick="viewStatus('+s.id+')" class="cursor-pointer"><img src="'+s.img+'" class="aspect-square object-cover rounded-3xl ring-2 ring-yellow-400"></div>';c.appendChild(d);});}
+function viewStatus(id){curStatus=statuses.find(s=>s.id===id);document.getElementById('viewer').classList.remove('hidden');document.getElementById('viewimg').src=curStatus.img;document.getElementById('viewcap').textContent=curStatus.cap;document.getElementById('musicbar').classList.toggle('hidden',!curStatus.music);if(curStatus.music)document.getElementById('curmusic').textContent='Song playing';}
+function closeViewer(){document.getElementById('viewer').classList.add('hidden');}
+function saveStatus(){alert('✅ Saved to phone!');closeViewer();}
+function viewMyStatus(){let me=statuses.find(s=>s.by===currentUser.name);if(me)viewStatus(me.id);}
+function newPost(){document.getElementById('postmodal').classList.remove('hidden');selPostImg=null;document.getElementById('posttxt').value='';document.getElementById('postprev').classList.add('hidden');}
+function closePostModal(){document.getElementById('postmodal').classL
