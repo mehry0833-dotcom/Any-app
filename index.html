@@ -3,103 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Music Enhancer App</title>
+<title>Simple Music Enhancer</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #121212; color: #fff; }
+  body { font-family: Arial; text-align: center; padding: 20px; background: #111; color: #fff; }
   input, button { margin: 10px; padding: 10px; font-size: 16px; }
   audio { margin-top: 20px; width: 100%; }
 </style>
 </head>
 <body>
-<h1>Music Enhancer App</h1>
-<input type="file" id="audioFile" accept="audio/*">
-<br>
-<button id="processBtn">Enhance & Download</button>
-<a id="downloadLink" style="display:none;">Download Processed Audio</a>
-<br>
+<h1>Simple Music Enhancer</h1>
+<input type="file" id="audioFile" accept="audio/*"><br>
+<button id="enhanceBtn">Enhance & Download</button>
+<a id="downloadLink" style="display:none;">Download Enhanced Audio</a><br>
 <audio id="player" controls></audio>
 
 <script>
 const audioFileInput = document.getElementById('audioFile');
-const processBtn = document.getElementById('processBtn');
+const enhanceBtn = document.getElementById('enhanceBtn');
 const downloadLink = document.getElementById('downloadLink');
 const player = document.getElementById('player');
 
-let audioContext;
-let sourceNode;
-let processedBuffer;
-
-processBtn.onclick = async () => {
+enhanceBtn.onclick = async () => {
   const file = audioFileInput.files[0];
-  if (!file) { alert('Select a file first'); return; }
+  if (!file) { alert('Select an audio file first'); return; }
 
   const arrayBuffer = await file.arrayBuffer();
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  const audioCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, 44100 * 180, 44100); // max 3 min song
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-  // Create source node
-  sourceNode = audioContext.createBufferSource();
-  sourceNode.buffer = audioBuffer;
+  const source = audioCtx.createBufferSource();
+  source.buffer = audioBuffer;
 
-  // Create basic effects
-  const gainNode = audioContext.createGain();
-  gainNode.gain.value = 1.2; // Boost volume slightly
+  // 1. Noise gate (silence quiet parts)
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = 1.0;
 
-  const biquadFilter = audioContext.createBiquadFilter();
-  biquadFilter.type = 'lowshelf';
-  biquadFilter.frequency.value = 1000;
-  biquadFilter.gain.value = 5; // Reduce harsh highs (simple noise reduction)
+  const compressor = audioCtx.createDynamicsCompressor();
+  compressor.threshold.setValueAtTime(-50, audioCtx.currentTime); // silence anything below -50dB
+  compressor.knee.setValueAtTime(0, audioCtx.currentTime);
+  compressor.ratio.setValueAtTime(20, audioCtx.currentTime);
+  compressor.attack.setValueAtTime(0.005, audioCtx.currentTime);
+  compressor.release.setValueAtTime(0.1, audioCtx.currentTime);
 
-  const compressor = audioContext.createDynamicsCompressor();
-  compressor.threshold.setValueAtTime(-20, audioContext.currentTime);
-  compressor.knee.setValueAtTime(30, audioContext.currentTime);
-  compressor.ratio.setValueAtTime(4, audioContext.currentTime);
-  compressor.attack.setValueAtTime(0.005, audioContext.currentTime);
-  compressor.release.setValueAtTime(0.05, audioContext.currentTime);
+  // 2. EQ (light adjustment)
+  const lowShelf = audioCtx.createBiquadFilter();
+  lowShelf.type = 'lowshelf';
+  lowShelf.frequency.value = 150;
+  lowShelf.gain.value = 3;
+
+  const mid = audioCtx.createBiquadFilter();
+  mid.type = 'peaking';
+  mid.frequency.value = 1000;
+  mid.Q.value = 1;
+  mid.gain.value = 2;
+
+  const highShelf = audioCtx.createBiquadFilter();
+  highShelf.type = 'highshelf';
+  highShelf.frequency.value = 6000;
+  highShelf.gain.value = 2;
 
   // Connect nodes
-  sourceNode.connect(biquadFilter);
-  biquadFilter.connect(gainNode);
-  gainNode.connect(compressor);
-  compressor.connect(audioContext.destination);
+  source.connect(compressor);
+  compressor.connect(lowShelf);
+  lowShelf.connect(mid);
+  mid.connect(highShelf);
+  highShelf.connect(audioCtx.destination);
 
-  // Start processing
-  sourceNode.start();
+  source.start();
+  const renderedBuffer = await audioCtx.startRendering();
 
-  // Render to WAV for download
-  const offlineCtx = new OfflineAudioContext(
-    audioBuffer.numberOfChannels,
-    audioBuffer.length,
-    audioBuffer.sampleRate
-  );
-
-  const offlineSource = offlineCtx.createBufferSource();
-  offlineSource.buffer = audioBuffer;
-
-  const offlineGain = offlineCtx.createGain();
-  offlineGain.gain.value = 1.2;
-
-  const offlineFilter = offlineCtx.createBiquadFilter();
-  offlineFilter.type = 'lowshelf';
-  offlineFilter.frequency.value = 1000;
-  offlineFilter.gain.value = 5;
-
-  const offlineCompressor = offlineCtx.createDynamicsCompressor();
-  offlineCompressor.threshold.setValueAtTime(-20, offlineCtx.currentTime);
-  offlineCompressor.knee.setValueAtTime(30, offlineCtx.currentTime);
-  offlineCompressor.ratio.setValueAtTime(4, offlineCtx.currentTime);
-  offlineCompressor.attack.setValueAtTime(0.005, offlineCtx.currentTime);
-  offlineCompressor.release.setValueAtTime(0.05, offlineCtx.currentTime);
-
-  offlineSource.connect(offlineFilter);
-  offlineFilter.connect(offlineGain);
-  offlineGain.connect(offlineCompressor);
-  offlineCompressor.connect(offlineCtx.destination);
-  offlineSource.start();
-
-  const renderedBuffer = await offlineCtx.startRendering();
-
-  // Convert to WAV
+  // Convert to WAV for download
   function bufferToWave(abuffer) {
     let numOfChan = abuffer.numberOfChannels,
         length = abuffer.length * numOfChan * 2 + 44,
@@ -110,34 +83,21 @@ processBtn.onclick = async () => {
         offset = 0,
         pos = 0;
 
-    // write WAVE header
-    setUint32(0x46464952); // "RIFF"
-    setUint32(length - 8); // file length - 8
-    setUint32(0x45564157); // "WAVE"
+    setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+    setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+    setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
+    setUint16(numOfChan * 2); setUint16(16);
+    setUint32(0x61746164); setUint32(length - pos - 4);
 
-    setUint32(0x20746d66); // "fmt " chunk
-    setUint32(16); // length = 16
-    setUint16(1); // PCM (uncompressed)
-    setUint16(numOfChan);
-    setUint32(abuffer.sampleRate);
-    setUint32(abuffer.sampleRate * 2 * numOfChan);
-    setUint16(numOfChan * 2);
-    setUint16(16); // bits per sample
-
-    setUint32(0x61746164); // "data" - chunk
-    setUint32(length - pos - 4);
-
-    for(let i=0; i<numOfChan; i++)
-        channels.push(abuffer.getChannelData(i));
-
+    for(let i=0; i<numOfChan; i++) channels.push(abuffer.getChannelData(i));
     while(pos < length) {
-        for(let i=0; i<numOfChan; i++) {
-            sample = Math.max(-1, Math.min(1, channels[i][offset]));
-            sample = (0.5 + sample*0.5) * 65535;
-            view.setUint16(pos, sample, true);
-            pos += 2;
-        }
-        offset++;
+      for(let i=0; i<numOfChan; i++) {
+        sample = Math.max(-1, Math.min(1, channels[i][offset]));
+        sample = (0.5 + sample*0.5) * 65535;
+        view.setUint16(pos, sample, true);
+        pos += 2;
+      }
+      offset++;
     }
 
     function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
@@ -150,11 +110,10 @@ processBtn.onclick = async () => {
   const url = URL.createObjectURL(wavBlob);
 
   downloadLink.href = url;
-  downloadLink.download = "enhanced_audio.wav";
+  downloadLink.download = "enhanced_song.wav";
   downloadLink.style.display = 'inline';
   downloadLink.textContent = "Download Enhanced Audio";
 
-  // Play processed audio
   player.src = url;
 };
 </script>
