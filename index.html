@@ -5,178 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zee Chat App</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-    }
-    .dark-mode {
-      background-color: #333;
-      color: #f4f4f9;
-    }
-    .chat-box {
-      width: 80%;
-      height: 400px;
-      overflow-y: auto;
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      background-color: #fff;
-      border-radius: 8px;
-    }
-    .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-      max-width: 70%;
-    }
-    .sent {
-      background-color: #d1f7c4;
-      margin-left: auto;
-    }
-    .received {
-      background-color: #f1f1f1;
-      margin-right: auto;
-    }
-    .message-time {
-      font-size: 12px;
-      color: #777;
-    }
-    .reaction-bar {
-      display: flex;
-      gap: 10px;
-      margin-top: 5px;
-      font-size: 16px;
-    }
-    #statusImage {
-      margin-top: 20px;
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-    .notification {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #28a745;
-      color: white;
-      padding: 10px;
-      border-radius: 5px;
-      z-index: 10;
-    }
-    .emoji-bar {
-      display: flex;
-      gap: 15px;
-      margin-top: 10px;
-    }
-    .emoji {
-      cursor: pointer;
-      font-size: 20px;
-    }
-    #user-name {
-      width: 80%;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    #send-message {
-      width: 80%;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    #status-input {
-      margin-top: 20px;
-      font-size: 16px;
-    }
-    .light-dark-toggle {
-      margin-top: 20px;
-      padding: 10px;
-      cursor: pointer;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; }
+    .dark-mode { background-color: #333; color: #fff; }
+    h1 { padding-top: 20px; margin: 0; font-size: 30px; }
+    #chat-section, #status-section { width: 90%; max-width: 600px; margin-top: 20px; padding: 20px; border-radius: 10px; background-color: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+    .message { padding: 10px; border-radius: 12px; margin: 10px 0; max-width: 70%; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; }
+    .sent { background-color: #d1f7c4; margin-left: auto; }
+    .received { background-color: #f1f1f1; margin-right: auto; }
+    .message-time { font-size: 12px; color: #888; }
+    .message-sender { font-weight: bold; color: #007BFF; font-size: 16px; }
+    .message-options { font-size: 12px; color: #555; cursor: pointer; margin-top: 5px; }
+    #send-btn { width: 60px; height: 60px; background-color: #007BFF; color: white; font-size: 24px; border-radius: 50%; border: none; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); cursor: pointer; }
+    #send-message { width: 90%; padding: 10px; font-size: 16px; margin-top: 10px; border-radius: 12px; border: 1px solid #ccc; }
+    .emoji-bar { display: flex; gap: 15px; font-size: 24px; cursor: pointer; }
+    .light-dark-toggle { margin-top: 20px; padding: 10px 15px; background-color: #28a745; color: white; font-size: 14px; border-radius: 5px; cursor: pointer; }
+    .status-image { width: 150px; height: 150px; object-fit: cover; margin-top: 20px; border-radius: 10px; }
+    .typing-indicator { font-size: 14px; color: #555; font-style: italic; margin-top: 10px; }
   </style>
 </head>
 <body>
+
   <h1>Zee Chat App</h1>
-  <input type="text" id="user-name" placeholder="Enter your name" />
-  <div id="chat-section" style="display: none;">
-    <div class="chat-box" id="chat-box"></div>
-    <input type="text" id="send-message" placeholder="Type a message..." />
-    <button id="send-btn">Send</button>
-    <div class="emoji-bar">
-      <span class="emoji" onclick="addEmoji('👍')">👍</span>
-      <span class="emoji" onclick="addEmoji('❤️')">❤️</span>
-      <span class="emoji" onclick="addEmoji('😂')">😂</span>
-    </div>
-    <button class="light-dark-toggle" onclick="toggleMode()">Toggle Dark/Light Mode</button>
+
+  <!-- User name input -->
+  <div id="user-name-section">
+    <input type="text" id="user-name" placeholder="Enter your name" />
+    <button onclick="startChat()">Start Chat</button>
   </div>
-  <div id="status-input">
+
+  <!-- Chat Section -->
+  <div id="chat-section" style="display: none;">
+    <div id="chat-box"></div>
+    <div class="typing-indicator" id="typing-indicator" style="display: none;">Hold on, your friend is typing...</div>
+    <input type="text" id="send-message" placeholder="Type a message..." />
+    <button id="send-btn">🗨️</button>
+    <div class="emoji-bar">
+      <span onclick="addEmoji('👍')">👍</span>
+      <span onclick="addEmoji('❤️')">❤️</span>
+      <span onclick="addEmoji('😂')">😂</span>
+    </div>
+  </div>
+
+  <!-- Status Section -->
+  <div id="status-section" style="display: none;">
+    <h2>Post Status</h2>
     <input type="file" id="status-file" />
     <button onclick="setStatusPicture()">Post Status</button>
+    <img id="statusImage" class="status-image" src="" alt="Your status image" />
   </div>
-  <div id="statusImage"></div>
+
+  <button class="light-dark-toggle" onclick="toggleMode()">Toggle Dark/Light Mode</button>
 
   <script>
     let currentUser;
+    let typingTimeout;
     const usersMessages = JSON.parse(localStorage.getItem('usersMessages')) || {};
 
-    // Toggle Dark/Light Mode
-    function toggleMode() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    // Start Chat
+    function startChat() {
+      currentUser = document.getElementById('user-name').value;
+      if (currentUser) {
+        document.getElementById('user-name-section').style.display = 'none';
+        document.getElementById('chat-section').style.display = 'block';
+        loadMessages();
+      }
     }
 
-    // User enters name and starts chatting
-    document.getElementById('user-name').addEventListener('input', function (e) {
-      currentUser = e.target.value;
-      if (currentUser) {
-        document.getElementById('chat-section').style.display = 'block';
-      }
-    });
-
-    // Send message
+    // Send Message
     document.getElementById('send-btn').addEventListener('click', function () {
       const messageText = document.getElementById('send-message').value;
       if (!messageText) return;
 
-      // Save message
       const messageData = {
+        sender: currentUser,
         text: messageText,
         time: new Date().toLocaleString(),
       };
 
-      // Store message per user
       if (!usersMessages[currentUser]) {
         usersMessages[currentUser] = [];
       }
       usersMessages[currentUser].push(messageData);
       localStorage.setItem('usersMessages', JSON.stringify(usersMessages));
 
-      // Display message
       displayMessage(messageData);
       document.getElementById('send-message').value = '';
       showNotification('New message from ' + currentUser);
     });
 
-    // Display message
+    // Display Message
     function displayMessage(messageData) {
       const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message', 'sent');
-      messageDiv.innerHTML = `${messageData.text} <br><span class="message-time">${messageData.time}</span>`;
+      messageDiv.classList.add('message', messageData.sender === currentUser ? 'sent' : 'received');
+      messageDiv.innerHTML = `
+        <span class="message-sender">${messageData.sender}</span>
+        ${messageData.text}
+        <span class="message-time">${messageData.time}</span>
+        <span class="message-options" onclick="messageOptions('${messageData.sender}', '${messageData.text}')">(:)</span>
+      `;
       document.getElementById('chat-box').appendChild(messageDiv);
       checkMessageReaction(messageData.text, messageDiv);
       scrollChatToBottom();
     }
 
-    // Message reactions
+    // Check if message ends with '?' or '!'
     function checkMessageReaction(message, messageDiv) {
       if (message.endsWith('?')) {
         messageDiv.innerHTML += "<br><span class='reaction'>Question asked!</span>";
@@ -185,19 +117,35 @@
       }
     }
 
-    // Show notification
+    // Scroll to bottom
+    function scrollChatToBottom() {
+      const chatBox = document.getElementById('chat-box');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Show Notification
     function showNotification(message) {
       const notification = document.createElement('div');
       notification.classList.add('notification');
       notification.innerText = message;
       document.body.appendChild(notification);
 
-      setTimeout(() => {
-        notification.remove();
-      }, 5000);
+      setTimeout(() => notification.remove(), 5000);
     }
 
-    // Set status picture
+    // Add emoji to message
+    function addEmoji(emoji) {
+      const messageField = document.getElementById('send-message');
+      messageField.value += emoji;
+    }
+
+    // Toggle Dark/Light Mode
+    function toggleMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    }
+
+    // Set Status Picture
     function setStatusPicture() {
       const fileInput = document.getElementById('status-file');
       if (fileInput.files && fileInput.files[0]) {
@@ -207,48 +155,23 @@
           localStorage.setItem("statusPicture", pictureUrl);
           document.getElementById("statusImage").src = pictureUrl;
 
-          // Remove the picture after 5 minutes
-          setTimeout(removeStatusPicture, 300000);
+          setTimeout(removeStatusPicture, 300000); // Auto-remove after 5 minutes
         };
         reader.readAsDataURL(fileInput.files[0]);
       }
     }
 
-    // Remove status picture
+    // Remove Status Picture
     function removeStatusPicture() {
       localStorage.removeItem("statusPicture");
       document.getElementById("statusImage").src = "";
     }
 
-    // Add emoji to message
-    function addEmoji(emoji) {
-      const messageField = document.getElementById('send-message');
-      messageField.value += emoji;
-    }
-
-    // Scroll to the bottom of the chat
-    function scrollChatToBottom() {
-      const chatBox = document.getElementById('chat-box');
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // Load saved messages
+    // Load Messages
     function loadMessages() {
       const userMessages = usersMessages[currentUser] || [];
       userMessages.forEach(displayMessage);
     }
-
-    // Initialize app
-    window.onload = function () {
-      const theme = localStorage.getItem("theme") || "light";
-      if (theme === "dark") {
-        document.body.classList.add('dark-mode');
-      }
-
-      if (currentUser) {
-        loadMessages();
-      }
-    };
   </script>
 </body>
-        </html>
+</html>
