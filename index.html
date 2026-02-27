@@ -3,138 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Henicks Boxing Dodge</title>
+<title>Simple Chat</title>
 <style>
-  body {
-    margin:0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    overflow: hidden;
-    color: #fff;
-    text-align: center;
-  }
-  canvas {
-    background: #101820;
-    display: block;
-    margin: 0 auto;
-    border: 3px solid #00e5ff;
-    border-radius: 15px;
-  }
-  .controls {
-    margin-top:10px;
-  }
-  button {
-    padding:12px 16px;
-    margin:4px;
-    border:none;
-    border-radius:10px;
-    font-size:16px;
-    background:#00e5ff;
-    color:#000;
-    cursor:pointer;
-  }
-  button:hover {opacity:0.85;}
-  #scoreBoard {
-    font-size:18px;
-    margin-top:10px;
-  }
+  body { font-family: sans-serif; display:flex; flex-direction:column; height:100vh; margin:0; }
+  #chat { flex:1; padding:10px; overflow:auto; border-bottom:1px solid #ccc; }
+  #chat div { margin:5px 0; }
+  #inputArea { display:flex; padding:5px; }
+  #msg { flex:1; padding:5px; }
+  #send { padding:5px; }
 </style>
 </head>
 <body>
-
-<h1>Henicks Boxing Dodge</h1>
-<canvas id="gameCanvas" width="400" height="600"></canvas>
-<div class="controls">
-  <button onclick="moveLeft()">Walk Left</button>
-  <button onclick="moveRight()">Walk Right</button>
-  <button onclick="runLeft()">Run Left</button>
-  <button onclick="runRight()">Run Right</button>
-  <button onclick="slip()">Slip</button>
-  <button onclick="roll()">Roll</button>
+<div id="chat"></div>
+<div id="inputArea">
+  <input id="msg" placeholder="Type message">
+  <button id="send">Send</button>
 </div>
-<div id="scoreBoard">Score: 0 | Level: 1</div>
-
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+let chat=document.getElementById('chat');
+let msg=document.getElementById('msg');
+let send=document.getElementById('send');
 
-let player = {x:180, y:520, width:40, height:60, color:"#FFD700", slipping:false, rolling:false};
-let punches = [];
-let score = 0;
-let level = 1;
-let gameSpeed = 2;
-let punchInterval = 1500;
-
-// Draw player
-function drawPlayer(){
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+function addMessage(text){
+  if(!text.trim()) return;
+  let d=document.createElement('div');
+  d.textContent=text;
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
+  msg.value='';
 }
 
-// Generate punches
-function addPunch(){
-    const size = 30;
-    const x = Math.random()*(canvas.width - size);
-    punches.push({x:x, y:0, width:size, height:size, color:"#FF0000"});
-}
-setInterval(addPunch, punchInterval);
+send.onclick=()=>addMessage(msg.value);
+msg.onkeypress=e=>{if(e.key==='Enter') addMessage(msg.value);};
 
-// Update game
-function update(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    
-    // Move punches
-    for(let i=punches.length-1;i>=0;i--){
-        punches[i].y += gameSpeed;
-        ctx.fillStyle = punches[i].color;
-        ctx.fillRect(punches[i].x, punches[i].y, punches[i].width, punches[i].height);
-
-        // Collision detection
-        if(!player.slipping && !player.rolling &&
-          punches[i].x < player.x + player.width &&
-          punches[i].x + punches[i].width > player.x &&
-          punches[i].y < player.y + player.height &&
-          punches[i].y + punches[i].height > player.y){
-            alert("You got hit! Score: "+score);
-            document.location.reload();
-        }
-
-        // Remove off-screen punches
-        if(punches[i].y > canvas.height) punches.splice(i,1);
-    }
-
-    drawPlayer();
-    document.getElementById("scoreBoard").innerText = "Score: "+score+" | Level: "+level;
-    requestAnimationFrame(update);
-}
-update();
-
-// Controls
-function moveLeft(){ player.x -= 20; if(player.x<0) player.x=0; }
-function moveRight(){ player.x += 20; if(player.x+player.width>canvas.width) player.x=canvas.width-player.width; }
-function runLeft(){ player.x -= 40; if(player.x<0) player.x=0; }
-function runRight(){ player.x += 40; if(player.x+player.width>canvas.width) player.x=canvas.width-player.width; }
-function slip(){
-    player.slipping=true;
-    player.color="#00FF00"; // green indicates slipping
-    setTimeout(()=>{ player.slipping=false; player.color="#FFD700"; }, 500);
-}
-function roll(){
-    player.rolling=true;
-    player.color="#0000FF"; // blue indicates rolling
-    setTimeout(()=>{ player.rolling=false; player.color="#FFD700"; }, 700);
-}
-
-// Increase score & level over time
-setInterval(()=>{
-    score++;
-    if(score % 20 === 0){
-        level++;
-        gameSpeed += 0.5;
-        if(punchInterval > 400) punchInterval -= 100;
-    }
-},1000);
-
+// Long press example
+let t;
+send.onmousedown=()=>{ t=setTimeout(()=>addMessage("Long press!"),1000); }
+send.onmouseup=()=>clearTimeout(t);
 </script>
 </body>
 </html>
