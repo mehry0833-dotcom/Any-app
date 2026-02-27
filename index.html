@@ -1,61 +1,75 @@
 <!doctype html>
-<html><head><meta charset="utf-8"/><title>Mini Social</title><style>
-body{font-family:Arial; margin:0; padding:0; background:#f5f5f5}
-header{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#222; color:#fff}
-.tabs{display:flex; gap:8px; padding:6px}
-.tab{background:#333; color:#fff; border:1px solid #555; padding:8px 12px; cursor:pointer}
-.tab.active{background:#fff; color:#000; border-color:#ccc}
-.screen{display:none; padding:12px}
-.screen.active{display:block}
-.card{border:1px solid #ddd; background:#fff; padding:8px; border-radius:6px; margin:6px 0}
-.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px}
-img{max-width:100%; height:auto; display:block}
-</style></head>
-<body onload="initApp()">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Mini Social – Fixed</title>
+<style>
+  body{font-family:Arial;margin:0;background:#f5f5f5}
+  header{background:#222;color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
+  .tabs{display:flex;gap:6px;padding:6px;background:#eee}
+  .tab{border:1px solid #ccc;background:#fff;padding:8px 12px;border-radius:6px;cursor:pointer}
+  .tab.active{background:#ddd;font-weight:bold}
+  .screen{display:none;padding:12px}
+  .screen.active{display:block}
+  .card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;margin:6px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px}
+  img{max-width:100%;height:auto;display:block}
+  audio{width:100%}
+  textarea{font-family:inherit}
+</style>
+</head>
+<body>
+
 <header>
   <div>Mini Social</div>
   <div id="notif" aria-live="polite"></div>
 </header>
 
-<div class="tabs" aria-label="Main sections">
-  <button class="tab active" onclick="show('chats')">Chats</button>
-  <button class="tab" onclick="show('status')">Status</button>
-  <button class="tab" onclick="show('posts')">Posts</button>
-  <button class="tab" onclick="show('pictures')">Pictures</button>
-  <button class="tab" onclick="show('happy')">What makes me happy</button>
+<div class="tabs" aria-label="Main sections" id="tabContainer">
+  <button class="tab active" data-screen="chats">Chats</button>
+  <button class="tab" data-screen="status">Status</button>
+  <button class="tab" data-screen="posts">Posts</button>
+  <button class="tab" data-screen="pictures">Pictures</button>
+  <button class="tab" data-screen="happy">What makes me happy</button>
 </div>
 
 <div id="chats" class="screen active">
-  <div id="chatList"></div>
-  <input id="chatName" placeholder="Your name" style="width:40%; margin-right:6px"/>
-  <input id="chatInput" placeholder="Type a message" style="width:40%"/>
-  <input type="file" id="chatImage" accept="image/*" style="display:none" />
-  <button onclick="document.getElementById('chatImage').click()">Attach</button>
-  <button onclick="sendChat()">Send</button>
+  <div id="chatList" class="card" style="max-height:180px;overflow:auto"></div>
+  <div style="margin-top:8px">
+    <input id="chatName" placeholder="Your name" style="width:40%;margin-right:6px"/>
+    <input id="chatInput" placeholder="Type a message" style="width:40%;margin-right:6px"/>
+    <input type="file" id="chatImage" accept="image/*" style="display:none"/>
+    <button onclick="document.getElementById('chatImage').click()">Attach</button>
+    <button onclick="sendChat()">Send</button>
+  </div>
 </div>
 
 <div id="status" class="screen">
-  <div id="statusList"></div>
-  <textarea id="statusText" placeholder="What's new?" style="width:100%; height:60px"></textarea>
-  <input type="file" id="statusImage" accept="image/*" style="display:block"/>
-  <input type="file" id="statusSong" accept="audio/*" style="display:block"/>
-  <button onclick="postStatus()">Post</button>
+  <div id="statusList" class="card" style="max-height:180px;overflow:auto"></div>
+  <div style="margin-top:8px">
+    <input id="statusText" placeholder="What's new?" style="width:60%;margin-right:6px"/>
+    <input type="file" id="statusImage" accept="image/*" style="display:inline-block"/>
+    <input type="file" id="statusSong" accept="audio/*" style="display:inline-block"/>
+    <button onclick="postStatus()">Post</button>
+  </div>
 </div>
 
 <div id="posts" class="screen">
   <div class="card" style="padding:6px 0">
-    <input id="postText" placeholder="Share something..." style="width:70%"/>
+    <input id="postText" placeholder="Share something..." style="width:60%;margin-right:6px"/>
     <input type="file" id="postImage" accept="image/*" style="display:inline-block"/>
     <button onclick="addPost()">Post</button>
   </div>
   <div id="postFeed"></div>
 </div>
 
-<div id="pictures" class="screen grid" style="padding-top:6px"></div>
+<div id="pictures" class="screen">
+  <div class="grid" id="pictureGrid"></div>
+</div>
 
 <div id="happy" class="screen">
   <div class="card" style="padding:6px 0">
-    <textarea id="happyText" placeholder="What makes you happy?" style="width:100%; height:60px"></textarea>
+    <textarea id="happyText" placeholder="What makes you happy?" style="width:100%;height:60px"></textarea>
     <input type="file" id="happyImage" accept="image/*"/>
     <button onclick="postHappy()">Post</button>
   </div>
@@ -64,97 +78,225 @@ img{max-width:100%; height:auto; display:block}
 
 <script>
 let data = JSON.parse(localStorage.getItem('miniSocial')) || {
-  chats: [], statuses: [], posts: [], pictures: [], happy: []
+  chats: [], statuses: [], posts: [], happy: []   // removed pictures array – we now build it dynamically
 };
-function save(){ localStorage.setItem('miniSocial', JSON.stringify(data)); }
-function show(id){ document.querySelectorAll('.screen').forEach(n=>n.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function renderAll(){ renderChats(); renderStatuses(); renderPosts(); renderPics(); renderHappy(); }
 
-function renderChats(){
+function save() {
+  localStorage.setItem('miniSocial', JSON.stringify(data));
+}
+
+// Helper to show a temporary notification
+function notify(msg) {
+  document.getElementById('notif').textContent = msg;
+  setTimeout(() => { document.getElementById('notif').textContent = ''; }, 2000);
+}
+
+// Escape HTML special characters
+function escape(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Tab switching: update active class on both tabs and screens
+function switchTab(screenId) {
+  // Deactivate all screens
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  // Activate target screen
+  document.getElementById(screenId).classList.add('active');
+
+  // Update tab active states
+  document.querySelectorAll('.tab').forEach(tab => {
+    if (tab.dataset.screen === screenId) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+}
+
+// Render functions
+function renderChats() {
   const el = document.getElementById('chatList');
-  el.innerHTML = data.chats.map(m => `<div class="card"><strong>${escape(m.name||'Guest')}</strong>: ${escape(m.text||'')} ${m.image? `<br><img src="${m.image}" style="max-width:100%">`:''}</div>`).join('');
+  el.innerHTML = data.chats.map(c =>
+    `<div class="card"><strong>${escape(c.name)}</strong>: ${escape(c.text)}${c.image ? `<br><img src="${c.image}">` : ''}</div>`
+  ).join('');
 }
-function renderStatuses(){
-  const el = document.getElementById('statusList');
-  el.innerHTML = data.statuses.map(s => `<div class="card">${escape(s.text||'')} ${s.image? `<br><img src="${s.image}" style="max-width:100%">`:''} ${s.song? `<br><audio controls src="${s.song}"></audio>`:''}</div>`).join('');
-}
-function renderPosts(){
-  const el = document.getElementById('postFeed');
-  el.innerHTML = data.posts.map(p => `<div class="card">${escape(p.text||'')} ${p.image? `<br><img src="${p.image}" style="max-width:100%">`:''}</div>`).join('');
-}
-function renderPics(){
-  const el = document.getElementById('pictures');
-  el.innerHTML = data.pictures.map(p => `<img src="${p}" />`).join('');
-}
-function renderHappy(){
-  const el = document.getElementById('happyFeed');
-  el.innerHTML = data.happy.map(h => `<div class="card">${escape(h.text||'')} ${h.image? `<br><img src="${h.image}" style="max-width:100%">`:''}</div>`).join('');
-}
-function escape(t){ return (''+t).replace(/[&<>"']/g, m => ({&:'&amp;',<:'&lt;',>: '&gt;', '"':'&quot;', "'":'&#39;'}[m])); }
 
-function initApp(){
-  renderAll();
-  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', ()=>{}));
+function renderStatuses() {
+  const el = document.getElementById('statusList');
+  el.innerHTML = data.statuses.map(s =>
+    `<div class="card">${escape(s.text)}${s.image ? `<br><img src="${s.image}">` : ''}${s.song ? `<br><audio controls src="${s.song}"></audio>` : ''}</div>`
+  ).join('');
 }
-function sendChat(){
-  const name = (document.getElementById('chatName').value || 'Guest');
-  const text = document.getElementById('chatInput').value;
-  if(!text) return;
-  const img = document.getElementById('chatImage').files[0];
-  if(img){
+
+function renderPosts() {
+  const el = document.getElementById('postFeed');
+  el.innerHTML = data.posts.map(p =>
+    `<div class="card">${escape(p.text)}${p.image ? `<br><img src="${p.image}">` : ''}</div>`
+  ).join('');
+}
+
+function renderPics() {
+  // Collect all images from all sections
+  const allImages = [
+    ...data.chats.filter(c => c.image).map(c => c.image),
+    ...data.statuses.filter(s => s.image).map(s => s.image),
+    ...data.posts.filter(p => p.image).map(p => p.image),
+    ...data.happy.filter(h => h.image).map(h => h.image)
+  ];
+  const el = document.getElementById('pictureGrid');
+  el.innerHTML = allImages.map(src => `<img src="${escape(src)}">`).join('');
+}
+
+function renderHappy() {
+  const el = document.getElementById('happyFeed');
+  el.innerHTML = data.happy.map(h =>
+    `<div class="card">${escape(h.text)}${h.image ? `<br><img src="${h.image}">` : ''}</div>`
+  ).join('');
+}
+
+function renderAll() {
+  renderChats();
+  renderStatuses();
+  renderPosts();
+  renderPics();
+  renderHappy();
+}
+
+// --- Tab click setup ---
+function initApp() {
+  // Attach click listeners to tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', e => {
+      const screenId = e.target.dataset.screen;
+      if (screenId) switchTab(screenId);
+    });
+  });
+
+  // Initial render
+  renderAll();
+}
+
+// --- Posting functions ---
+
+function sendChat() {
+  const name = document.getElementById('chatName').value.trim() || 'Guest';
+  const text = document.getElementById('chatInput').value.trim();
+  if (!text) return notify('Message cannot be empty');
+
+  const imgFile = document.getElementById('chatImage').files[0];
+  const finish = (imageData) => {
+    data.chats.push({ name, text, image: imageData });
+    save();
+    renderChats();
+    document.getElementById('chatInput').value = '';
+    document.getElementById('chatImage').value = '';
+    notify('Sent');
+  };
+
+  if (imgFile) {
     const r = new FileReader();
-    r.onload = e => {
-      data.chats.push({name, text, image:e.target.result});
-      save(); renderChats(); document.getElementById('chatInput').value=''; document.getElementById('chatName').value=''; document.getElementById('chatImage').value='';
-      show('chats'); document.getElementById('notif').textContent='Message sent';
-    }; r.readAsDataURL(img);
+    r.onload = e => finish(e.target.result);
+    r.onerror = () => notify('Error reading image');
+    r.readAsDataURL(imgFile);
   } else {
-    data.chats.push({name, text});
-    save(); renderChats(); document.getElementById('chatInput').value=''; document.getElementById('chatName').value='';
-    document.getElementById('notif').textContent='Message sent';
+    finish(null);
   }
 }
-function postStatus(){
-  const t = document.getElementById('statusText').value;
-  if(!t) return;
-  const img = document.getElementById('statusImage').files[0];
-  const song = document.getElementById('statusSong').files[0];
-  if(img){
+
+function postStatus() {
+  const t = document.getElementById('statusText').value.trim();
+  if (!t) return notify('Status text cannot be empty');
+
+  const imgFile = document.getElementById('statusImage').files[0];
+  const songFile = document.getElementById('statusSong').files[0];
+  const item = { text: t };
+
+  const finish = () => {
+    data.statuses.push(item);
+    save();
+    renderStatuses();
+    document.getElementById('statusText').value = '';
+    document.getElementById('statusImage').value = '';
+    document.getElementById('statusSong').value = '';
+    notify('Posted');
+  };
+
+  if (imgFile) {
     const r = new FileReader();
     r.onload = e => {
-      const item = { text:t, image:e.target.result };
-      if(song){
-        const sr = new FileReader();
-        sr.onload = ee => { item.song = ee.target.result; data.statuses.push(item); save(); renderStatuses(); };
-        sr.readAsDataURL(song);
-      } else { data.statuses.push(item); save(); renderStatuses(); }
-    }; r.readAsDataURL(img);
-  } else if(song){
-    const sr = new FileReader();
-    sr.onload = ee => { data.statuses.push({ text: t, song: ee.target.result }); save(); renderStatuses(); };
-    sr.readAsDataURL(song);
-  } else { data.statuses.push({ text: t }); save(); renderStatuses(); }
-  document.getElementById('statusText').value=''; document.getElementById('statusImage').value=''; document.getElementById('statusSong').value='';
-  show('status'); document.getElementById('notif').textContent='Status posted';
+      item.image = e.target.result;
+      if (songFile) {
+        const s = new FileReader();
+        s.onload = se => { item.song = se.target.result; finish(); };
+        s.onerror = () => notify('Error reading audio');
+        s.readAsDataURL(songFile);
+      } else {
+        finish();
+      }
+    };
+    r.onerror = () => notify('Error reading image');
+    r.readAsDataURL(imgFile);
+  } else if (songFile) {
+    const s = new FileReader();
+    s.onload = se => { item.song = se.target.result; finish(); };
+    s.onerror = () => notify('Error reading audio');
+    s.readAsDataURL(songFile);
+  } else {
+    finish();
+  }
 }
-function addPost(){
-  const t = document.getElementById('postText').value; if(!t) return;
-  const img = document.getElementById('postImage').files[0];
-  if(img){
+
+function addPost() {
+  const t = document.getElementById('postText').value.trim();
+  if (!t) return notify('Post text cannot be empty');
+
+  const imgFile = document.getElementById('postImage').files[0];
+  const finish = (imageData) => {
+    data.posts.push({ text: t, image: imageData });
+    save();
+    renderPosts();
+    document.getElementById('postText').value = '';
+    document.getElementById('postImage').value = '';
+    notify('Post added');
+  };
+
+  if (imgFile) {
     const r = new FileReader();
-    r.onload = e => { data.posts.push({ text:t, image:e.target.result }); save(); renderPosts(); document.getElementById('postText').value=''; document.getElementById('postImage').value=''; };
-    r.readAsDataURL(img);
-  } else { data.posts.push({ text:t }); save(); renderPosts(); document.getElementById('postText').value=''; }
+    r.onload = e => finish(e.target.result);
+    r.onerror = () => notify('Error reading image');
+    r.readAsDataURL(imgFile);
+  } else {
+    finish(null);
+  }
 }
-function postHappy(){
-  const t = document.getElementById('happyText').value; if(!t) return;
-  const img = document.getElementById('happyImage').files[0];
-  if(img){
-    const r=new FileReader();
-    r.onload=e=>{ data.happy.push({ text:t, image:e.target.result }); save(); renderHappy(); document.getElementById('happyText').value=''; document.getElementById('happyImage').value=''; };
-    r.readAsDataURL(img);
-  } else { data.happy.push({ text:t }); save(); renderHappy(); document.getElementById('happyText').value=''; }
+
+function postHappy() {
+  const t = document.getElementById('happyText').value.trim();
+  if (!t) return notify('Please share what makes you happy');
+
+  const imgFile = document.getElementById('happyImage').files[0];
+  const finish = (imageData) => {
+    data.happy.push({ text: t, image: imageData });
+    save();
+    renderHappy();
+    document.getElementById('happyText').value = '';
+    document.getElementById('happyImage').value = '';
+    notify('Happy thought saved');
+  };
+
+  if (imgFile) {
+    const r = new FileReader();
+    r.onload = e => finish(e.target.result);
+    r.onerror = () => notify('Error reading image');
+    r.readAsDataURL(imgFile);
+  } else {
+    finish(null);
+  }
 }
+
+// Start the app
 initApp();
 </script>
-</body></html>
+
+</body>
+      </html>
