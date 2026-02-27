@@ -1,194 +1,556 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>localSocial · working</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
-#app{width:100%;max-width:450px;background:#fff;height:95vh;border-radius:28px 28px 0 0;box-shadow:0 0 20px rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden;position:relative}
-.app-header{background:#075e54;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1.2rem}
-.app-header i{font-size:1.3rem;cursor:pointer}
-.top-tabs{display:flex;background:#075e54;color:#fff;padding:0 16px;gap:24px}
-.top-tab{padding:8px 0 12px;font-weight:500;opacity:.7;border-bottom:3px solid transparent;cursor:pointer}
-.top-tab.active{opacity:1;border-bottom:3px solid #fff}
-.main-content{flex:1;overflow-y:auto;padding:12px 16px;background:#e5ddd5;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23e5ddd5" opacity="0.2"/></svg>')}
-.main-content::-webkit-scrollbar{width:4px}
-.main-content::-webkit-scrollbar-thumb{background:#b3a9a0;border-radius:10px}
-.bottom-nav{display:flex;justify-content:space-around;background:#fff;padding:10px 0 8px;border-top:1px solid #ddd}
-.nav-item{text-align:center;font-size:.7rem;color:#555;cursor:pointer;flex:1}
-.nav-item i{font-size:1.5rem;display:block;margin-bottom:2px}
-.nav-item.active{color:#075e54;font-weight:500}
-.message-bubble{max-width:80%;margin-bottom:8px;padding:8px 12px;border-radius:18px;background:#fff;align-self:flex-start;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.1)}
-.message-bubble.own{background:#dcf8c6;align-self:flex-end}
-.chat-container{display:flex;flex-direction:column}
-.typing-indicator{font-size:.8rem;color:#888;margin-bottom:8px;font-style:italic}
-.chat-input-area{display:flex;gap:6px;background:#fff;padding:10px;border-top:1px solid #ddd;align-items:center;flex-wrap:wrap}
-.chat-input-area input[type="text"]{flex:1;padding:10px;border:1px solid #ccc;border-radius:24px;outline:0}
-.chat-input-area button{background:#075e54;border:0;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer}
-.chat-input-area label{background:#128C7E;color:#fff;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-.status-card{background:#fff;border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.1)}
-.status-media{position:relative;background:#000;min-height:200px;display:flex;align-items:center;justify-content:center}
-.status-media img{width:100%;max-height:300px;object-fit:cover}
-.status-audio{position:absolute;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,.6);padding:8px;border-radius:30px;color:#fff}
-.status-info{padding:10px;display:flex;justify-content:space-between;align-items:center}
-.status-actions i{margin:0 6px;cursor:pointer}
-.post-card,.happy-card{background:#fff;border-radius:12px;padding:12px;margin-bottom:16px}
-.post-header{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.post-image{width:100%;max-height:250px;object-fit:cover;border-radius:12px;margin:10px 0}
-.grid-pictures{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.grid-pictures img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px}
-.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000}
-.modal-card{background:#fff;width:90%;max-width:400px;border-radius:24px;padding:20px;max-height:80vh;overflow-y:auto}
-.flex{display:flex;gap:8px;flex-wrap:wrap}
-.btn{background:#075e54;color:#fff;border:0;padding:10px 16px;border-radius:30px;font-weight:600;cursor:pointer}
-.btn-outline{background:#fff;color:#075e54;border:1px solid #075e54}
-.small{font-size:.75rem;color:gray}
-.hidden{display:none!important}
-</style>
-<body><div id="app"><div class="app-header"><i class="fas fa-user-circle" id="userNameIcon" title="Set name"></i><span>localSocial</span><i class="fas fa-ellipsis-v"></i></div><div id="topTabs" class="top-tabs hidden"><div class="top-tab active" data-tab="chats">Chats</div><div class="top-tab" data-tab="status">Status</div></div><div id="mainContent" class="main-content"></div><div class="bottom-nav" id="bottomNav"><div class="nav-item" data-screen="home"><i class="fas fa-home"></i>Home</div><div class="nav-item active" data-screen="chat"><i class="fas fa-comment-dots"></i>Chat</div><div class="nav-item" data-screen="posts"><i class="fas fa-newspaper"></i>Posts</div><div class="nav-item" data-screen="pictures"><i class="fas fa-images"></i>Pics</div><div class="nav-item" data-screen="happy"><i class="fas fa-smile"></i>Happy</div></div></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>localSocial · all in one</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-<!-- modals -->
-<div id="statusModal" class="modal-overlay"><div class="modal-card"><h3>Add status <i class="fas fa-music"></i></h3><input type="file" id="statusImageInput" accept="image/*" style="margin:10px 0"><input type="file" id="statusAudioInput" accept="audio/*" style="margin:10px 0"><textarea id="statusText" rows="2" placeholder="write..." style="width:100%"></textarea><div class="flex" style="justify-content:space-between;margin-top:12px"><button class="btn-outline" id="cancelStatus">Cancel</button><button class="btn" id="postStatusBtn">Post</button></div></div></div>
-<div id="postModal" class="modal-overlay"><div class="modal-card"><h3>Create post</h3><textarea id="postText" rows="2" placeholder="What's on your mind?" style="width:100%"></textarea><input type="file" id="postImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelPost">Cancel</button><button class="btn" id="createPostBtn">Post</button></div></div></div>
-<div id="happyModal" class="modal-overlay"><div class="modal-card"><h3>What makes me happy</h3><input type="text" id="happyActivity" placeholder="activity" style="width:100%;margin-bottom:8px"><textarea id="happyText" rows="2" placeholder="why?" style="width:100%"></textarea><input type="file" id="happyImageInput" accept="image/*" style="margin:10px 0"><div class="flex" style="justify-content:space-between"><button class="btn-outline" id="cancelHappy">Cancel</button><button class="btn" id="createHappyBtn">Share</button></div></div></div>
-<div id="nameModal" class="modal-overlay" style="display:none"><div class="modal-card"><h3>Enter your name</h3><input type="text" id="userNameInput" placeholder="Your name" style="width:100%;margin:15px 0"><div class="flex" style="justify-content:flex-end"><button class="btn" id="setNameBtn">Set name</button></div></div></div>
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            height: 95vh;
+            border-radius: 28px 28px 0 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* header */
+        .app-header {
+            background: #075e54;
+            color: white;
+            padding: 16px 16px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .app-header i {
+            font-size: 1.3rem;
+        }
+
+        /* top tabs (chats/status) – only visible when bottom nav = chat */
+        .top-tabs {
+            display: flex;
+            background: #075e54;
+            color: white;
+            padding: 0 16px;
+            gap: 24px;
+        }
+        .top-tab {
+            padding: 8px 0 12px;
+            font-weight: 500;
+            opacity: 0.7;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+        }
+        .top-tab.active {
+            opacity: 1;
+            border-bottom: 3px solid white;
+        }
+
+        /* main content area – scrollable */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            background: #e5ddd5;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23e5ddd5" opacity="0.2"/></svg>');
+        }
+        .main-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: #b3a9a0;
+            border-radius: 10px;
+        }
+
+        /* bottom navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: #ffffff;
+            padding: 10px 0 8px;
+            border-top: 1px solid #ddd;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.03);
+        }
+        .nav-item {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #555;
+            cursor: pointer;
+            flex: 1;
+        }
+        .nav-item i {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .nav-item.active {
+            color: #075e54;
+            font-weight: 500;
+        }
+
+        /* cards, bubbles, forms */
+        .message-bubble {
+            max-width: 80%;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            background: white;
+            align-self: flex-start;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .message-bubble.own {
+            background: #dcf8c6;
+            align-self: flex-end;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .typing-indicator {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 6px;
+            background: white;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .chat-input-area input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 24px;
+            outline: none;
+        }
+        .chat-input-area button {
+            background: #075e54;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .chat-input-area label {
+            background: #128C7E;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* status cards */
+        .status-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .status-media {
+            position: relative;
+            background: black;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-media img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        .status-audio {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px;
+            border-radius: 30px;
+            color: white;
+        }
+        .status-info {
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-actions i {
+            margin: 0 6px;
+            cursor: pointer;
+        }
+
+        /* post card */
+        .post-card, .happy-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .post-header, .comment-section {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .post-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+
+        .grid-pictures {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .grid-pictures img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .flex {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #075e54;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-outline {
+            background: white;
+            color: #075e54;
+            border: 1px solid #075e54;
+        }
+        .small {
+            font-size: 0.75rem;
+            color: gray;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-header">
+        <i class="fas fa-user-circle"></i>
+        <span>localSocial</span>
+        <i class="fas fa-ellipsis-v"></i>
+    </div>
+
+    <!-- top tabs: only visible when on chat section -->
+    <div id="topTabs" class="top-tabs hidden">
+        <div class="top-tab active" data-tab="chats">Chats</div>
+        <div class="top-tab" data-tab="status">Status</div>
+    </div>
+
+    <!-- dynamic main content -->
+    <div id="mainContent" class="main-content"></div>
+
+    <!-- bottom navigation -->
+    <div class="bottom-nav" id="bottomNav">
+        <div class="nav-item" data-screen="home"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item active" data-screen="chat"><i class="fas fa-comment-dots"></i>Chat</div>
+        <div class="nav-item" data-screen="posts"><i class="fas fa-newspaper"></i>Posts</div>
+        <div class="nav-item" data-screen="pictures"><i class="fas fa-images"></i>Pics</div>
+        <div class="nav-item" data-screen="happy"><i class="fas fa-smile"></i>Happy</div>
+    </div>
+</div>
+
+<!-- modals for posting etc -->
+<div id="statusModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>Add status <i class="fas fa-music" style="color: #075e54;"></i></h3>
+        <input type="file" id="statusImageInput" accept="image/*" capture="environment" style="margin:10px 0">
+        <input type="file" id="statusAudioInput" accept="audio/*" style="margin:10px 0">
+        <textarea id="statusText" rows="2" placeholder="write something..." style="width:100%"></textarea>
+        <div class="flex" style="justify-content: space-between; margin-top:12px">
+            <button class="btn-outline" id="cancelStatus">Cancel</button>
+            <button class="btn" id="postStatusBtn">Post story</button>
+        </div>
+    </div>
+</div>
+
+<div id="postModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>Create post</h3>
+        <textarea id="postText" rows="2" placeholder="What's on your mind?" style="width:100%"></textarea>
+        <input type="file" id="postImageInput" accept="image/*" style="margin:10px 0">
+        <div class="flex" style="justify-content: space-between">
+            <button class="btn-outline" id="cancelPost">Cancel</button>
+            <button class="btn" id="createPostBtn">Post</button>
+        </div>
+    </div>
+</div>
+
+<div id="happyModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>What makes me happy</h3>
+        <input type="text" id="happyActivity" placeholder="activity (e.g. hiking)" style="width:100%; margin-bottom:8px">
+        <textarea id="happyText" rows="2" placeholder="why?" style="width:100%"></textarea>
+        <input type="file" id="happyImageInput" accept="image/*" style="margin:10px 0">
+        <div class="flex" style="justify-content: space-between">
+            <button class="btn-outline" id="cancelHappy">Cancel</button>
+            <button class="btn" id="createHappyBtn">Share</button>
+        </div>
+    </div>
+</div>
 
 <script>
-(function(){
-let msgs=JSON.parse(localStorage.getItem('messages'))||[];
-let statuses=JSON.parse(localStorage.getItem('statuses'))||[];
-let posts=JSON.parse(localStorage.getItem('posts'))||[];
-let happy=JSON.parse(localStorage.getItem('happyItems'))||[];
-let curUser=localStorage.getItem('currentUser')||'';
-if(!curUser) setTimeout(()=>showName(),100);
-function saveAll(){
-localStorage.setItem('messages',JSON.stringify(msgs));
-let oneDay=Date.now()-24*60*60*1000;
-statuses=statuses.filter(s=>s.timestamp>oneDay);
-localStorage.setItem('statuses',JSON.stringify(statuses));
-localStorage.setItem('posts',JSON.stringify(posts));
-localStorage.setItem('happyItems',JSON.stringify(happy));
-localStorage.setItem('currentUser',curUser);
-}
-const FRIEND='Alex';
-let active='chat', topTab='chats';
-const main=document.getElementById('mainContent'), topTabs=document.getElementById('topTabs'), userIcon=document.getElementById('userNameIcon');
-function showName(){document.getElementById('nameModal').style.display='flex';}
-document.getElementById('setNameBtn').addEventListener('click',function(){
-let n=document.getElementById('userNameInput').value.trim(); if(n){curUser=n; localStorage.setItem('currentUser',curUser); document.getElementById('nameModal').style.display='none'; render(); updateIcon();}
-});
-function updateIcon(){userIcon.title=curUser?`Logged as ${curUser}`:'Set name';}
-userIcon.addEventListener('click',showName); updateIcon();
-function render(){
-if(active==='chat') topTabs.classList.remove('hidden'); else topTabs.classList.add('hidden');
-document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.screen===active));
-document.querySelectorAll('.top-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===topTab));
-if(active==='home') home();
-else if(active==='chat') topTab==='chats'?chats():status();
-else if(active==='posts') postsScreen();
-else if(active==='pictures') pics();
-else if(active==='happy') happyScreen();
-}
-function home(){
-let h='<h3>🌿 home feed</h3>';
-if(posts.length){h+='<h4>Recent posts</h4>';
-posts.slice(-3).reverse().forEach(p=>{h+=`<div class="post-card"><strong>${p.user||'A'}</strong> ${p.text||''}`;
-if(p.image)h+=`<br><img src="${p.image}" class="post-image">`;h+=`<div class="small">❤️ ${p.likes?.length||0} 💬 ${p.comments?.length||0}</div></div>`;});
-}else h+='<p>No posts</p>';
-h+='<h4>✨ happy</h4>';
-happy.slice(-2).forEach(hh=>{h+=`<div class="happy-card"><b>${hh.activity||'act'}</b> – ${hh.text||''}`;
-if(hh.image)h+=`<br><img src="${hh.image}" style="max-width:100%;max-height:150px">`;h+='</div>';});
-main.innerHTML=h;
-}
-function chats(){
-if(!curUser)showName();
-let h='<div class="chat-container">';
-msgs.forEach(m=>{let own=m.sender===curUser?'own':'';h+=`<div class="message-bubble ${own}">`;
-if(m.sender!==curUser)h+=`<b>${m.sender}</b><br>`;
-if(m.text)h+=m.text; if(m.image)h+=`<br><img src="${m.image}" style="max-width:150px;border-radius:10px;">`;
-if(m.audio)h+=`<br><audio src="${m.audio}" controls style="width:200px;"></audio>`;
-h+=`<div class="small">${new Date(m.timestamp).toLocaleTimeString()}</div></div>`;});
-h+='<div class="typing-indicator"><i class="fas fa-ellipsis-h"></i> Alex is typing...</div></div>';
-h+=`<div class="chat-input-area"><input type="text" id="chatMsg" placeholder="Type"><label for="chatImage"><i class="fas fa-camera"></i></label><input type="file" id="chatImage" accept="image/*" style="display:none"><label for="chatAudio"><i class="fas fa-headphones"></i></label><input type="file" id="chatAudio" accept="audio/*" style="display:none"><button id="sendChat"><i class="fas fa-paper-plane"></i></button></div>`;
-main.innerHTML=h;
-document.getElementById('sendChat').addEventListener('click',()=>{
-if(!curUser)return showName(); let inp=document.getElementById('chatMsg'); if(!inp.value.trim())return;
-msgs.push({sender:curUser,text:inp.value,timestamp:Date.now()}); inp.value=''; saveAll(); chats();
-setTimeout(()=>{msgs.push({sender:FRIEND,text:'👍',timestamp:Date.now()}); saveAll(); if(active==='chat'&&topTab==='chats')chats();},800);
-});
-document.getElementById('chatImage').addEventListener('change',function(e){if(!curUser)return showName(); let f=e.target.files[0];if(!f)return;let fr=new FileReader();fr.onload=ev=>{msgs.push({sender:curUser,image:ev.target.result,timestamp:Date.now()});saveAll();chats();};fr.readAsDataURL(f);});
-document.getElementById('chatAudio').addEventListener('change',function(e){if(!curUser)return showName(); let f=e.target.files[0];if(!f)return;let fr=new FileReader();fr.onload=ev=>{msgs.push({sender:curUser,audio:ev.target.result,timestamp:Date.now()});saveAll();chats();};fr.readAsDataURL(f);});
-}
-function status(){
-let h='<div style="margin-bottom:12px"><button id="newStatusBtn" class="btn"><i class="fas fa-plus-circle"></i> Add story</button></div><h4>Updates</h4>';
-if(statuses.length===0)h+='<p>No status yet.</p>';
-statuses.sort((a,b)=>b.timestamp-a.timestamp).forEach(s=>{
-h+=`<div class="status-card"><div class="status-media">`;
-if(s.image)h+=`<img src="${s.image}">`;
-if(s.audio)h+=`<div class="status-audio"><audio src="${s.audio}" controls style="width:100%"></audio></div>`;
-h+=`</div><div class="status-info"><div><strong>${s.user||'A'}</strong> <span class="small">${new Date(s.timestamp).toLocaleString()}</span><br>${s.text||''}</div>`;
-h+=`<div class="status-actions"><i class="far fa-eye" title="views:${s.views?.length||0}"></i><i class="far fa-heart" title="likes:${s.likes?.length||0}"></i><i class="fas fa-download" data-id="${s.id}" data-save></i></div></div></div>`;
-});
-main.innerHTML=h;
-document.getElementById('newStatusBtn')?.addEventListener('click',()=>{if(!curUser)return showName(); document.getElementById('statusModal').style.display='flex';});
-document.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',e=>{let id=e.target.dataset.id,stat=statuses.find(s=>s.id==id);if(stat?.image){let a=document.createElement('a');a.href=stat.image;a.download='status.jpg';a.click();}}));
-}
-function postsScreen(){
-let h='<button id="newPostBtn" class="btn" style="margin-bottom:12px"><i class="fas fa-pen"></i> new post</button>';
-if(posts.length===0)h+='<p>No posts yet.</p>';
-posts.slice().reverse().forEach(p=>{
-h+=`<div class="post-card"><div class="post-header"><i class="fas fa-user-circle"></i> <b>${p.user||'A'}</b> <span class="small">${new Date(p.timestamp).toLocaleString()}</span></div>`;
-if(p.text)h+=`<p>${p.text}</p>`; if(p.image)h+=`<img src="${p.image}" class="post-image">`;
-h+=`<div class="status-actions"><i class="far fa-heart"></i> ${p.likes?.length||0} <i class="far fa-comment"></i> ${p.comments?.length||0} <i class="fas fa-share"></i></div>`;
-if(p.comments?.length){h+='<div style="background:#f0f0f0;padding:6px;border-radius:12px;">';p.comments.slice(-2).forEach(c=>h+=`<div><b>${c.user}:</b> ${c.text}</div>`);h+='</div>';}
-h+='</div>';});
-main.innerHTML=h;
-document.getElementById('newPostBtn')?.addEventListener('click',()=>{if(!curUser)return showName(); document.getElementById('postModal').style.display='flex';});
-}
-function pics(){
-let all=[];
-posts.forEach(p=>{if(p.image)all.push(p.image);});
-statuses.forEach(s=>{if(s.image)all.push(s.image);});
-happy.forEach(h=>{if(h.image)all.push(h.image);});
-if(!all.length){main.innerHTML='<p>No pictures yet.</p>';return;}
-let h='<div class="grid-pictures">';all.forEach(src=>h+=`<img src="${src}">`);h+='</div>';main.innerHTML=h;
-}
-function happyScreen(){
-let h='<button id="newHappyBtn" class="btn" style="margin-bottom:12px"><i class="far fa-smile"></i> add happy moment</button>';
-if(happy.length===0)h+='<p>No happy moments.</p>';
-happy.slice().reverse().forEach(hh=>{
-h+=`<div class="happy-card"><i class="fas fa-heart" style="color:red"></i> <b>${hh.activity||'act'}</b> <span class="small">${new Date(hh.timestamp).toLocaleString()}</span>`;
-if(hh.text)h+=`<p>${hh.text}</p>`; if(hh.image)h+=`<img src="${hh.image}" style="max-width:100%;border-radius:12px;">`;
-h+=`<div><i class="far fa-comment"></i> comments (${hh.comments?.length||0})</div>`;
-if(hh.comments?.length){h+='<div style="background:#eee;padding:6px;border-radius:12px;">';hh.comments.slice(-1).forEach(c=>h+=`<div><b>${c.user}:</b> ${c.text}</div>`);h+='</div>';}
-h+='</div>';});
-main.innerHTML=h;
-document.getElementById('newHappyBtn')?.addEventListener('click',()=>{if(!curUser)return showName(); document.getElementById('happyModal').style.display='flex';});
-}
-document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',e=>{active=e.currentTarget.dataset.screen;if(active!=='chat')topTab='chats';render();}));
-document.querySelectorAll('.top-tab').forEach(el=>el.addEventListener('click',e=>{if(active!=='chat')return;topTab=e.target.dataset.tab;render();}));
-document.getElementById('cancelStatus').addEventListener('click',()=>document.getElementById('statusModal').style.display='none');
-document.getElementById('cancelPost').addEventListener('click',()=>document.getElementById('postModal').style.display='none');
-document.getElementById('cancelHappy').addEventListener('click',()=>document.getElementById('happyModal').style.display='none');
-document.getElementById('postStatusBtn').addEventListener('click',()=>{
-let img=document.getElementById('statusImageInput').files[0],aud=document.getElementById('statusAudioInput').files[0],txt=document.getElementById('statusText').value;
-if(!img&&!aud&&!txt)return; let imgD=null,audD=null,pr=[];
-if(img)pr.push(new Promise(r=>{let fr=new FileReader();fr.onload=e=>{imgD=e.target.result;r();};fr.readAsDataURL(img);}));
-if(aud)pr.push(new Promise(r=>{let fr=new FileReader();fr.onload=e=>{audD=e.target.result;r();};fr.readAsDataURL(aud);}));
-Promise.all(pr).then(()=>{statuses.push({id:Date.now(),user:curUser||'A',image:imgD,audio:audD,text:txt,timestamp:Date.now(),views:[],likes:[]});saveAll();
-document.getElementById('statusModal').style.display='none';document.getElementById('statusImageInput').value='';document.getElementById('statusAudioInput').value='';document.getElementById('statusText').value='';
-if(active==='chat'&&topTab==='status')status();});});
-document.getElementById('createPostBtn').addEventListener('click',()=>{
-let txt=document.getElementById('postText').value,img=document.getElementById('postImageInput').files[0];
-if(!txt&&!img)return;
-if(img){let fr=new FileReader();fr.onload=e=>{posts.push({id:Date.now(),user:curUser||'A',text:txt,image:e.target.result,timestamp:Date.now(),likes:[],comments:[]});saveAll();
-document.getElementById('postModal').style.display='none';document.getElementById('postText').value='';document.getElementById('postImageInput').value='';if(active==='posts')postsScreen();};fr.readAsDataURL(img);}
-else{posts.push({id:Date.now(),user:curUser||'A',text:txt,image:null,timestamp:Date.now(),likes:[],comments:[]});saveAll();document.getElementById('postModal').style.display='none';document.getElementById('postText').value='';if(active==='posts')postsScreen();}});
-document.getElementById('createHappyBtn').addEventListener('click',()=>{
-let act=document.getElementById('happyActivity').value,txt=document.getElementById('happyText').value,img=document.getElementById('happyImageInput').files[0];
-if(!act&&!txt&&!img)return;
-if(img){let fr=new FileReader();fr.onload=e=>{happy.push({id:Date.now(),user:curUser||'A',activity:act,text:txt,image:e.target.result,timestamp:Date.now(),comments:[]});saveAll();
-document.getElementById('happyModal').style.display='none';document.getElementById('happyActivity').value='';document.getElementById('happyText').value='';document.getElementById('happyImageInput').value='';if(active==='happy')happyScreen();};fr.readAsDataURL(img);}
-else{ happy.push({id:Date.now(),user:curUser||'A',activity:act,text:txt,image:null,timestamp:Date.now(),comments:[]});saveAll();document.getElementById('happyModal').style.display='none';document.getElementById('happyActivity').value='';document.getElementById('happyText').value='';if(active==='happy')happyScreen();}});
-window.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.style.display='none';});
-if('Notification'in window)Notification.requestPermission();
-setInterval(()=>{if(Math.random()>0.8&&msgs.length)new Notification('New message from Alex');},20000);
-render();})();
-</script>
-</body></html>
+    (function() {
+        // ----- DATA STORAGE (localStorage) -----
+        let messages = JSON.parse(localStorage.getItem('messages')) || [];
+        let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
+        let posts = JSON.parse(localStorage.getItem('posts')) || [];
+        let happyItems = JSON.parse(localStorage.getItem('happyItems')) || [];
+
+        // helper to save all
+        function saveAll() {
+            localStorage.setItem('messages', JSON.stringify(messages));
+            // filter expired statuses (24h)
+            const oneDayAgo = Date.now() - 24*60*60*1000;
+            statuses = statuses.filter(s => s.timestamp > oneDayAgo);
+            localStorage.setItem('statuses', JSON.stringify(statuses));
+            localStorage.setItem('posts', JSON.stringify(posts));
+            localStorage.setItem('happyItems', JSON.stringify(happyItems));
+        }
+
+        // current user
+        const ME = 'You';
+        const FRIEND = 'Alex';
+
+        // navigation state
+        let activeBottom = 'chat';     // home, chat, posts, pictures, happy
+        let activeTopTab = 'chats';    // chats, status (only when activeBottom='chat')
+
+        // ----- RENDERING FUNCTIONS -----
+        const mainEl = document.getElementById('mainContent');
+        const topTabs = document.getElementById('topTabs');
+
+        function render() {
+            // show/hide top tabs
+            if (activeBottom === 'chat') {
+                topTabs.classList.remove('hidden');
+            } else {
+                topTabs.classList.add('hidden');
+            }
+
+            // highlight bottom nav
+            document.querySelectorAll('.nav-item').forEach(el => {
+                const screen = el.dataset.screen;
+                if (screen === activeBottom) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            // highlight top tabs
+            document.querySelectorAll('.top-tab').forEach(el => {
+                const tab = el.dataset.tab;
+                if (tab === activeTopTab) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            // render main content based on activeBottom + activeTopTab
+            if (activeBottom === 'home') renderHome();
+            else if (activeBottom === 'chat') {
+                if (activeTopTab === 'chats') renderChats();
+                else renderStatus();
+            } else if (activeBottom === 'posts') renderPosts();
+            else if (activeBottom === 'pictures') renderPictures();
+            else if (activeBottom === 'happy') renderHappy();
+        }
+
+        // ----- HOME SCREEN (simple feed) -----
+        function renderHome() {
+            let html = '<h3>🌿 home feed</h3>';
+            // latest posts
+            if (posts.length) {
+                html += '<h4>Recent posts</h4>';
+                posts.slice(-3).reverse().forEach(p => {
+                    html += `<div class="post-card"><strong>${p.user || ME}</strong> ${p.text || ''}`;
+                    if (p.image) html += `<br><img src="${p.image}" class="post-image">`;
+                    html += `<div class="small">❤️ ${p.likes ? p.likes.length : 0}  💬 ${p.comments ? p.comments.length : 0}</div></div>`;
+                });
+            } else html += '<p>No posts yet</p>';
+            html += '<h4>✨ happy moments</h4>';
+            happyItems.slice(-2).forEach(h => {
+                html += `<div class="happy-card"><b>${h.activity || 'activity'}</b> – ${h.text || ''}`;
+                if (h.image) html += `<br><img src="${h.image}" style="max-width:100%; max-height:150px">`;
+                html += '</div>';
+            });
+            mainEl.innerHTML = html;
+        }
+
+        // ----- CHATS -----
+        function renderChats() {
+            let html = '<div class="chat-container">';
+            messages.forEach(msg => {
+                const ownClass = msg.sender === ME ? 'own' : '';
+                html += `<div class="message-bubble ${ownClass}">`;
+                if (msg.sender !== ME) html += `<b>${msg.sender}</b><br>`;
+                if (msg.text) html += msg.text;
+                if (msg.image) html += `<br><img src="${msg.image}" style="max-width:150px; border-radius:10px;">`;
+                if (msg.audio) html += `<br><audio src="${msg.audio}" controls style="width:200px;"></audio>`;
+                html += `<div class="small">${new Date(msg.timestamp).toLocaleTimeString()}</div>`;
+                html += '</div>';
+            });
+            html += '<div class="typing-indicator"><i class="fas fa-ellipsis-h"></i> Alex is typing...</div>';
+            html += '</div>';
+
+            // input area
+            html += `<div class="chat-input-area">
+                <input type="text" id="chatMsg" placeholder="Type a message">
+                <label for="chatImage"><i class="fas fa-camera"></i></label>
+                <input type="file" id="chatImage" accept="image/*" style="display:none">
+                <label for="chatAudio"><i class="fas fa-headphones"></i></label>
+                <input type="file" id="chatAudio" accept="audio/*" style="display:none">
+                <button id="sendChat"><i class="fas fa-paper-plane"></i></button>
+            </div>`;
+
+            mainEl.innerHTML = html;
+
+            // attach events
+            document.getElementById('sendChat').addEventListener('click', sendMessage);
+            document.getElementById('chatImage').addEventListener('change', sendImage);
+            document.getElementById('chatAudio').addEventListener('change', sendAudio);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatMsg');
+            if (!input.value.trim()) return;
+            messages.push({
+                sender: ME,
+                text: input.value,
+                timestamp: Date.now()
+            });
+            // auto reply from friend
+            setTimeout(() => {
+                messages.push({
+                    sender: FRIEND,
+                    text: '👍',
+                    timestamp: Date.now()
+                });
+                saveAll();
+                if (activeBottom === 'chat' && activeTopTab === 'chats') renderChats();
+            }, 800);
+            input.value = '';
+            saveAll();
+            renderChats();
+        }
+
+        function sendImage(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                messages.push({ sender: ME, image: ev.target.result, timestamp: Date.now() });
+                saveAll();
+                renderChats();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function sendAudio(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                messages.push({ sender: ME, audio: ev.target.result, timestamp: Date.now() });
+                saveAll();
+                renderChats();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ----- STATUS -----
+        function renderStatus() {
+            let html = '<div style="margin-bottom:12px"><button id="newStatusBtn" class="btn"><i class="fas fa-plus-circle"></i> Add story</button></div>';
+            html += '<h4>Recent updates</h4>';
+            statuses.sort((a,b) => b.timestamp - a.timestamp).forEach(s => {
+                html += `<div class="status-card">
+                    <div class="status-media">`;
+                if (s.image) html += `<img src="${s.image}">`;
+                if (s.audio) html += `<div class="status-audio"><audio src="${s.audio}" controls style="width:100%"></audio></div>`;
+                html += `</div><div class="status-info">
+                    <div><strong>${s.user || ME}</strong> <span class="small">${new Date(s.timestamp).toLocaleString()}</span><br>${s.text || ''}</div>
+                    <div class="status-actions">
+                        <i class="far fa-eye" title="views: ${s.views ? s.views.length : 0}"></i>
+                        <i class="far fa-heart" title="likes: ${s.likes ? s.likes.length : 0}"></i>
+                        <i class="fas fa-download" data-id="${s.id}" data-save></i>
+                    </div>
+                </div>`;
+            });
+            mainEl.innerHTML = html;
+
+            document.getElementById('newStatusBtn')?.addEventListener('click', () => {
+                document.getElementById('statusModal').style.display = 'flex';
+            });
+
+            document.querySelectorAll('[data-save]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    c
