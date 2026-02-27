@@ -3,43 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simple Chat</title>
+<title>Mini Chat App Creator</title>
 <style>
-  body { font-family: sans-serif; display:flex; flex-direction:column; height:100vh; margin:0; }
-  #chat { flex:1; padding:10px; overflow:auto; border-bottom:1px solid #ccc; }
-  #chat div { margin:5px 0; }
-  #inputArea { display:flex; padding:5px; }
-  #msg { flex:1; padding:5px; }
-  #send { padding:5px; }
+  body { font-family:sans-serif; margin:0; display:flex; flex-direction:column; height:100vh; }
+  #chat { flex:1; padding:10px; border-bottom:1px solid #ccc; overflow-y:auto; background:#f0f0f0; }
+  #chat div { margin:5px 0; padding:5px; background:#fff; border-radius:5px; }
+  #controls { display:flex; padding:5px; gap:5px; flex-wrap:wrap; background:#eee; }
+  #controls input, #controls select { padding:5px; font-size:14px; }
+  button.dynamicBtn { padding:5px 10px; margin:2px; cursor:pointer; }
 </style>
 </head>
 <body>
-<div id="chat"></div>
-<div id="inputArea">
-  <input id="msg" placeholder="Type message">
-  <button id="send">Send</button>
+
+<div id="chat">Chat messages appear here...</div>
+
+<div id="controls">
+  <input id="btnText" placeholder="Button text">
+  <input id="btnColor" type="color" value="#4CAF50">
+  <select id="btnFunc">
+    <option value="send">Send Message</option>
+    <option value="longpress">Long Press Message</option>
+  </select>
+  <button id="addBtn">Add Button</button>
 </div>
+
 <script>
-let chat=document.getElementById('chat');
-let msg=document.getElementById('msg');
-let send=document.getElementById('send');
+const chat=document.getElementById('chat');
+const btnText=document.getElementById('btnText');
+const btnColor=document.getElementById('btnColor');
+const btnFunc=document.getElementById('btnFunc');
+const addBtn=document.getElementById('addBtn');
 
 function addMessage(text){
   if(!text.trim()) return;
-  let d=document.createElement('div');
+  const d=document.createElement('div');
   d.textContent=text;
   chat.appendChild(d);
   chat.scrollTop=chat.scrollHeight;
-  msg.value='';
 }
 
-send.onclick=()=>addMessage(msg.value);
-msg.onkeypress=e=>{if(e.key==='Enter') addMessage(msg.value);};
-
-// Long press example
-let t;
-send.onmousedown=()=>{ t=setTimeout(()=>addMessage("Long press!"),1000); }
-send.onmouseup=()=>clearTimeout(t);
+// Add a new dynamic button
+addBtn.onclick=()=>{
+  if(!btnText.value.trim()) return;
+  const newBtn=document.createElement('button');
+  newBtn.textContent=btnText.value;
+  newBtn.style.backgroundColor=btnColor.value;
+  newBtn.className='dynamicBtn';
+  
+  if(btnFunc.value==='send'){
+    newBtn.onclick=()=>addMessage(btnText.value);
+  }else if(btnFunc.value==='longpress'){
+    let timer;
+    newBtn.onmousedown=()=>{ timer=setTimeout(()=>addMessage(btnText.value+" (long press)"),1000); }
+    newBtn.onmouseup=()=>clearTimeout(timer);
+  }
+  
+  document.getElementById('controls').appendChild(newBtn);
+  btnText.value='';
+}
 </script>
+
 </body>
-</html>
+  </html>
