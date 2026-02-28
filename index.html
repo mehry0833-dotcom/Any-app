@@ -4,16 +4,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>House Talks 🗨️</title>
 <style>
-body { font-family: sans-serif; margin: 0; padding: 0; }
-.screen { display: none; padding: 20px; }
-.active { display: block; }
-.chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 60%; }
-.sent { background: #dcf8c6; margin-left: auto; }
-.received { background: #fff; }
-.status-post { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+body {
+font-family: sans-serif;
+margin: 0;
+padding: 0;
+background-color: #032B44;
+color: #fff;
+}
+.screen {
+display: none;
+padding: 20px;
+padding-top: 60px;
+}
+.active {
+display: block;
+}
+.chat-msg {
+margin: 10px 0;
+padding: 10px;
+border-radius: 8px;
+max-width: 60%;
+}
+.sent {
+background: #00BFFF;
+margin-left: auto;
+color: #fff;
+}
+.received {
+background: #1E90FF;
+color: #fff;
+}
+.status-post {
+margin: 10px 0;
+padding: 10px;
+border: 1px solid #ddd;
+background-color: #05386B;
+}
+.nav {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+background-color: #032B44;
+padding: 10px;
+text-align: center;
+}
+.nav button {
+background-color: #1E90FF;
+color: #fff;
+border: none;
+padding: 10px 20px;
+border-radius: 50%;
+margin: 0 10px;
+cursor: pointer;
+}
 </style>
 </head>
 <body>
+<div class="nav">
+<button onclick="showScreen('chats')">Chats 🗨️</button>
+<button onclick="showScreen('status')">Status 🌟</button>
+<button onclick="showScreen('posts')">Posts 📝</button>
+<button onclick="showScreen('pictures')">Pictures 🖼️</button>
+<button onclick="showScreen('happy')">Happy 😊</button>
+</div>
+
 <div id="name-screen" class="screen active">
 <h2>Enter Name</h2>
 <input id="name-input" placeholder="Your name">
@@ -22,7 +77,6 @@ body { font-family: sans-serif; margin: 0; padding: 0; }
 
 <div id="chats-screen" class="screen">
 <h2>Chats 🗨️</h2>
-<input id="name-chat-input" placeholder="Your name">
 <input id="msg-input" placeholder="Message">
 <button onclick="sendMsg()">Send</button>
 <div id="chat-log"></div>
@@ -59,14 +113,6 @@ body { font-family: sans-serif; margin: 0; padding: 0; }
 <div id="happy-log"></div>
 </div>
 
-<nav>
-<button onclick="showScreen('chats')">Chats 🗨️</button>
-<button onclick="showScreen('status')">Status 🌟</button>
-<button onclick="showScreen('posts')">Posts 📝</button>
-<button onclick="showScreen('pictures')">Pictures 🖼️</button>
-<button onclick="showScreen('happy')">Happy 😊</button>
-</nav>
-
 <script>
 let name = localStorage.getItem('name') || '';
 let chats = JSON.parse(localStorage.getItem('chats')) || [];
@@ -92,28 +138,35 @@ function setName() {
 }
 
 function sendMsg() {
+  if (!name) {
+    alert('Please enter your name');
+    return;
+  }
   const msg = document.getElementById('msg-input').value;
-  const chatName = document.getElementById('name-chat-input').value;
-  chats.push({ from: chatName, msg });
+  const chatName = name;
+  chats.push({ from: chatName, msg, time: new Date().toLocaleTimeString() });
   localStorage.setItem('chats', JSON.stringify(chats));
   document.getElementById('msg-input').value = '';
   loadChats();
-  notify('Message sent!');
 }
 
 function loadChats() {
   const log = document.getElementById('chat-log');
   log.innerHTML = '';
   chats.forEach((c, i) => {
-    log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}">${c.from}: ${c.msg}</div>`;
+    log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}"><span style="font-weight: bold;">${c.from}</span><br>${c.msg}<br><small>${c.time}</small></div>`;
   });
 }
 
 function postStatus() {
+  if (!name) {
+    alert('Please enter your name');
+    return;
+  }
   const status = document.getElementById('status-input').value;
   const img = document.getElementById('status-image').files[0];
   const music = document.getElementById('status-music').files[0];
-  statuses.push({ user: name, status, img: img ? URL.createObjectURL(img) : null, music: music ? URL.createObjectURL(music) : null });
+  statuses.push({ user: name, status, img: img ? URL.createObjectURL(img) : null, music: music ? URL.createObjectURL(music) : null, time: new Date().toLocaleTimeString() });
   localStorage.setItem('statuses', JSON.stringify(statuses));
   document.getElementById('status-input').value = '';
   loadStatuses();
@@ -122,15 +175,23 @@ function postStatus() {
 function loadStatuses() {
   const log = document.getElementById('status-log');
   log.innerHTML = '';
-  statuses.forEach(s => {
-    log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p>${s.img ? '<img src="'+s.img+'" width="100">' : ''}${s.music ? '<audio controls src="'+s.music+'"></audio>' : ''}</div>`;
+  statuses.forEach((s, i) => {
+    log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p>${s.img ? '<img src="'+s.img+'" width="100">' : ''}${s.music ? '<audio controls src="'+s.music+'"></audio>' : ''}<p><small>${s.time}</small></p><button onclick="likeStatus(${i})">👍</button></div>`;
   });
 }
 
+function likeStatus(i) {
+  alert('Status liked!');
+}
+
 function post() {
+  if (!name) {
+    alert('Please enter your name');
+    return;
+  }
   const post = document.getElementById('post-input').value;
   const img = document.getElementById('post-image').files[0];
-  posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null, likes: 0 });
+  posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null, likes: 0, time: new Date().toLocaleTimeString() });
   localStorage.setItem('posts', JSON.stringify(posts));
   document.getElementById('post-input').value = '';
   loadPosts();
@@ -140,7 +201,7 @@ function loadPosts() {
   const log = document.getElementById('post-log');
   log.innerHTML = '';
   posts.forEach((p, i) => {
-    log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}<p>Likes: ${p.likes}</p><button onclick="likePost(${i})">👍</button><button onclick="commentPost(${i})">💬</button></div>`;
+    log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}<p>Likes: ${p.likes}</p><p><small>${p.time}</small></p><button onclick="likePost(${i})">👍</button></div>`;
   });
 }
 
@@ -148,11 +209,6 @@ function likePost(i) {
   posts[i].likes++;
   localStorage.setItem('posts', JSON.stringify(posts));
   loadPosts();
-}
-
-function commentPost(i) {
-  const comment = prompt('Enter comment');
-  // add comment logic
 }
 
 function loadPics() {
@@ -164,29 +220,10 @@ function loadPics() {
 }
 
 function postHappy() {
+  if (!name) {
+    alert('Please enter your name');
+    return;
+  }
   const happy = document.getElementById('happy-input').value;
   const img = document.getElementById('happy-image').files[0];
-  happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL(img) : null });
-  localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
-  document.getElementById('happy-input').value = '';
-  loadHappy();
-}
-
-function loadHappy() {
-  const log = document.getElementById('happy-log');
-  log.innerHTML = '';
-  happyPosts.forEach(h => {
-    log.innerHTML += `<div class="status-post"><p>${h.user}: ${h.happy}</p>${h.img ? '<img src="'+h.img+'" width="100">' : ''}</div>`;
-  });
-}
-
-function notify(msg) {
-  alert(msg);
-}
-
-if (name) showScreen('chats');
-else showScreen('name');
-
-</script>
-</body>
-  </html>
+  happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL
