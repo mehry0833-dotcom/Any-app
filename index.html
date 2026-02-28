@@ -1,243 +1,218 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>House Talks 🗨️</title>
-  <style>
-    body { 
-      font-family: sans-serif; 
-      margin: 0; 
-      padding: 0; 
-      background-color: #032B44; 
-      color: #fff;
-    }
-    .screen { 
-      display: none; 
-      padding: 20px; 
-      padding-top: 60px;
-    }
-    .active { 
-      display: block; 
-    }
-    .chat-msg { 
-      margin: 10px 0; 
-      padding: 10px; 
-      border-radius: 8px; 
-      max-width: 60%; 
-    }
-    .sent { 
-      background: #00BFFF; 
-      margin-left: auto; 
-      color: #fff;
-    }
-    .received { 
-      background: #1E90FF; 
-      color: #fff;
-    }
-    .status-post { 
-      margin: 10px 0; 
-      padding: 10px; 
-      border: 1px solid #ddd; 
-      background-color: #05386B;
-    }
-    .nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #032B44;
-      padding: 10px;
-      text-align: center;
-    }
-    .nav button {
-      background-color: #1E90FF;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 50%;
-      margin: 0 10px;
-      cursor: pointer;
-    }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Talks 🗨️</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:0;background:#032B44;color:#fff;}
+.screen{display:none;padding:20px;padding-top:60px;}
+.active{display:block;}
+.chat-msg{margin:10px 0;padding:10px;border-radius:8px;max-width:60%;}
+.sent{background:#00BFFF;margin-left:auto;color:#fff;}
+.received{background:#1E90FF;color:#fff;}
+.status-post{margin:10px 0;padding:10px;border:1px solid #ddd;background:#05386B;}
+.nav{position:fixed;top:0;left:0;width:100%;background:#032B44;padding:10px;text-align:center;}
+.nav button{background:#1E90FF;color:#fff;border:none;padding:10px 20px;border-radius:50%;margin:0 10px;cursor:pointer;}
+</style>
 </head>
 <body>
-  <div class="nav">
-    <button onclick="showScreen('chats')">Chats 🗨️</button>
-    <button onclick="showScreen('status')">Status 🌟</button>
-    <button onclick="showScreen('posts')">Posts 📝</button>
-    <button onclick="showScreen('pictures')">Pictures 🖼️</button>
-    <button onclick="showScreen('happy')">Happy 😊</button>
-  </div>
 
-  <div id="name-screen" class="screen active">
-    <h2>Enter Name</h2>
-    <input id="name-input" placeholder="Your name">
-    <button onclick="setName()">Enter</button>
-  </div>
+<div class="nav">
+<button onclick="showScreen('chats')">Chats 🗨️</button>
+<button onclick="showScreen('status')">Status 🌟</button>
+<button onclick="showScreen('posts')">Posts 📝</button>
+<button onclick="showScreen('pictures')">Pictures 🖼️</button>
+<button onclick="showScreen('happy')">Happy 😊</button>
+</div>
 
-  <div id="chats-screen" class="screen">
-    <h2>Chats 🗨️</h2>
-    <input id="msg-input" placeholder="Message">
-    <button onclick="sendMsg()">Send</button>
-    <div id="chat-log"></div>
-    <p id="typing-indicator" style="display: none;">Hold on, someone is typing...</p>
-  </div>
+<div id="chats-screen" class="screen active">
+<h2>Chats 🗨️</h2>
 
-  <div id="status-screen" class="screen">
-    <h2>Status 🌟</h2>
-    <input id="status-input" placeholder="What's up?">
-    <input type="file" id="status-image">
-    <input type="file" id="status-music" accept="audio/*">
-    <button onclick="postStatus()">Post</button>
-    <div id="status-log"></div>
-  </div>
+<input id="name-input" placeholder="Enter your name">
+<button onclick="setName()">Save Name</button>
+<br><br>
 
-  <div id="posts-screen" class="screen">
-    <h2>Posts 📝</h2>
-    <input id="post-input" placeholder="What's on your mind?">
-    <input type="file" id="post-image">
-    <button onclick="post()">Post</button>
-    <div id="post-log"></div>
-  </div>
+<input id="msg-input" placeholder="Message">
+<button onclick="sendMsg()">Send</button>
+<button onclick="clearChats()">Delete All Chats</button>
 
-  <div id="pictures-screen" class="screen">
-    <h2>Pictures 🖼️</h2>
-    <div id="pics-log"></div>
-  </div>
+<div id="chat-log"></div>
+</div>
 
-  <div id="happy-screen" class="screen">
-    <h2>What makes you happy? 😊</h2>
-    <input id="happy-input" placeholder="Share something">
-    <input type="file" id="happy-image">
-    <button onclick="postHappy()">Post</button>
-    <div id="happy-log"></div>
-  </div>
+<div id="status-screen" class="screen">
+<h2>Status 🌟</h2>
+<input id="status-input" placeholder="What's up?">
+<input type="file" id="status-image">
+<input type="file" id="status-music" accept="audio/*">
+<button onclick="postStatus()">Post</button>
+<div id="status-log"></div>
+</div>
 
-  <script>
-    let name = localStorage.getItem('name') || '';
-    let chats = JSON.parse(localStorage.getItem('chats')) || [];
-    let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
-    let posts = JSON.parse(localStorage.getItem('posts')) || [];
-    let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
-    let typing = false;
+<div id="posts-screen" class="screen">
+<h2>Posts 📝</h2>
+<input id="post-input" placeholder="What's on your mind?">
+<input type="file" id="post-image">
+<button onclick="post()">Post</button>
+<div id="post-log"></div>
+</div>
 
-    function showScreen(screen) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(`${screen}-screen`).classList.add('active');
-      if (screen === 'chats') loadChats();
-      if (screen === 'status') loadStatuses();
-      if (screen === 'posts') loadPosts();
-      if (screen === 'pictures') loadPics();
-      if (screen === 'happy') loadHappy();
-    }
+<div id="pictures-screen" class="screen">
+<h2>Pictures 🖼️</h2>
+<div id="pics-log"></div>
+</div>
 
-    function setName() {
-      name = document.getElementById('name-input').value;
-      localStorage.setItem('name', name);
-      showScreen('chats');
-    }
+<div id="happy-screen" class="screen">
+<h2>What makes you happy? 😊</h2>
+<input id="happy-input" placeholder="Share something">
+<input type="file" id="happy-image">
+<button onclick="postHappy()">Post</button>
+<div id="happy-log"></div>
+</div>
 
-    function sendMsg() {
-      if (!name) {
-        alert('Please enter your name');
-        return;
-      }
-      const msg = document.getElementById('msg-input').value;
-      chats.push({ from: name, msg, time: new Date().toLocaleTimeString() });
-      localStorage.setItem('chats', JSON.stringify(chats));
-      document.getElementById('msg-input').value = '';
-      loadChats();
-    }
+<script>
+let name=localStorage.getItem('name')||'';
+let chats=JSON.parse(localStorage.getItem('chats'))||[];
+let statuses=JSON.parse(localStorage.getItem('statuses'))||[];
+let posts=JSON.parse(localStorage.getItem('posts'))||[];
+let happyPosts=JSON.parse(localStorage.getItem('happyPosts'))||[];
 
-    function loadChats() {
-      const log = document.getElementById('chat-log');
-      log.innerHTML = '';
-      chats.forEach((c) => {
-        log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}"><span style="font-weight: bold;">${c.from}</span><br>${c.msg}<br><small>${c.time}</small></div>`;
-      });
-    }
+function showScreen(screen){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(screen+'-screen').classList.add('active');
+if(screen==='chats')loadChats();
+if(screen==='status')loadStatuses();
+if(screen==='posts')loadPosts();
+if(screen==='pictures')loadPics();
+if(screen==='happy')loadHappy();
+}
 
-    function postStatus() {
-      if (!name) {
-        alert('Please enter your name');
-        return;
-      }
-      const status = document.getElementById('status-input').value;
-      const img = document.getElementById('status-image').files[0];
-      const music = document.getElementById('status-music').files[0];
-      statuses.push({ user: name, status, img: img ? URL.createObjectURL(img) : null, music: music ? URL.createObjectURL(music) : null, time: new Date().toLocaleTimeString() });
-      localStorage.setItem('statuses', JSON.stringify(statuses));
-      document.getElementById('status-input').value = '';
-      loadStatuses();
-    }
+function setName(){
+name=document.getElementById('name-input').value;
+localStorage.setItem('name',name);
+}
 
-    function loadStatuses() {
-      const log = document.getElementById('status-log');
-      log.innerHTML = '';
-      statuses.forEach((s, i) => {
-        log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p>${s.img ? '<img src="'+s.img+'" width="100">' : ''}${s.music ? '<audio controls src="'+s.music+'"></audio>' : ''}<p><small>${s.time}</small></p><button onclick="likeStatus(${i})">👍</button></div>`;
-      });
-    }
+function sendMsg(){
+if(!name){alert('Enter your name first');return;}
+let msg=document.getElementById('msg-input').value;
+if(!msg)return;
+chats.push({from:name,msg,time:new Date().toLocaleTimeString()});
+localStorage.setItem('chats',JSON.stringify(chats));
+document.getElementById('msg-input').value='';
+loadChats();
+}
 
-    function likeStatus(i) {
-      alert('Status liked!');
-    }
+function loadChats(){
+let log=document.getElementById('chat-log');
+log.innerHTML='';
+chats.forEach(c=>{
+log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
+<b>${c.from}</b><br>${c.msg}<br><small>${c.time}</small></div>`;
+});
+}
 
-    function post() {
-      if (!name) {
-        alert('Please enter your name');
-        return;
-      }
-      const post = document.getElementById('post-input').value;
-      const img = document.getElementById('post-image').files[0];
-      posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null, likes: 0, time: new Date().toLocaleTimeString() });
-      localStorage.setItem('posts', JSON.stringify(posts));
-      document.getElementById('post-input').value = '';
-      loadPosts();
-    }
+function clearChats(){
+chats=[];
+localStorage.removeItem('chats');
+loadChats();
+}
 
-    function loadPosts() {
-      const log = document.getElementById('post-log');
-      log.innerHTML = '';
-      posts.forEach((p, i) => {
-        log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}<p>Likes: ${p.likes}</p><p><small>${p.time}</small></p><button onclick="likePost(${i})">👍</button></div>`;
-      });
-    }
+function postStatus(){
+if(!name){alert('Enter your name first');return;}
+let status=document.getElementById('status-input').value;
+let img=document.getElementById('status-image').files[0];
+let music=document.getElementById('status-music').files[0];
+statuses.push({
+user:name,
+status,
+img:img?URL.createObjectURL(img):null,
+music:music?URL.createObjectURL(music):null,
+time:new Date().toLocaleTimeString()
+});
+localStorage.setItem('statuses',JSON.stringify(statuses));
+document.getElementById('status-input').value='';
+loadStatuses();
+}
 
-    function likePost(i) {
-      posts[i].likes++;
-      localStorage.setItem('posts', JSON.stringify(posts));
-      loadPosts();
-    }
+function loadStatuses(){
+let log=document.getElementById('status-log');
+log.innerHTML='';
+statuses.forEach((s,i)=>{
+log.innerHTML+=`
+<div class="status-post">
+<p>${s.user}: ${s.status}</p>
+${s.img?'<img src="'+s.img+'" width="100%">':''}
+${s.music?'<audio src="'+s.music+'" autoplay loop controls></audio>':''}
+<p><small>${s.time}</small></p>
+<button onclick="deleteStatus(${i})">Delete</button>
+</div>`;
+});
+}
 
-    function loadPics() {
-      const log = document.getElementById('pics-log');
-      log.innerHTML = '';
-      posts.forEach(p => {
-        if (p.img) log.innerHTML += `<img src="${p.img}" width="100">`;
-      });
-    }
+function deleteStatus(i){
+statuses.splice(i,1);
+localStorage.setItem('statuses',JSON.stringify(statuses));
+loadStatuses();
+}
 
-    function postHappy() {
-      if (!name) {
-        alert('Please enter your name');
-        return;
-      }
-      const happy = document.getElementById('happy-input').value;
-      const img = document.getElementById('happy-image').files[0];
-      happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL(img) : null, time: new Date().toLocaleTimeString() });
-      localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
-      document.getElementById('happy-input').value = '';
-      loadHappy();
-    }
+function post(){
+if(!name){alert('Enter your name first');return;}
+let post=document.getElementById('post-input').value;
+let img=document.getElementById('post-image').files[0];
+posts.push({user:name,post,img:img?URL.createObjectURL(img):null,likes:0,time:new Date().toLocaleTimeString()});
+localStorage.setItem('posts',JSON.stringify(posts));
+document.getElementById('post-input').value='';
+loadPosts();
+}
 
-    function loadHappy() {
-      const log = document.getElementById('happy-log');
-      log.innerHTML = '';
-      happyPosts.forEach(h => {
-        log.innerHTML += `<div class="status-post"><p>${h.user}: ${h.happy}</p>${h.img ? '<img src="'+h.img+'" width="100">' : ''}<p><small>${h.time}</small></p></div>`;
-      });
-    }
-  </script>
+function loadPosts(){
+let log=document.getElementById('post-log');
+log.innerHTML='';
+posts.forEach((p,i)=>{
+log.innerHTML+=`<div class="status-post">
+<p>${p.user}: ${p.post}</p>
+${p.img?'<img src="'+p.img+'" width="100%">':''}
+<p>Likes:${p.likes}</p>
+<p><small>${p.time}</small></p>
+<button onclick="likePost(${i})">👍</button>
+</div>`;
+});
+}
+
+function likePost(i){
+posts[i].likes++;
+localStorage.setItem('posts',JSON.stringify(posts));
+loadPosts();
+}
+
+function loadPics(){
+let log=document.getElementById('pics-log');
+log.innerHTML='';
+posts.forEach(p=>{if(p.img)log.innerHTML+=`<img src="${p.img}" width="100%">`;});
+}
+
+function postHappy(){
+if(!name){alert('Enter your name first');return;}
+let happy=document.getElementById('happy-input').value;
+let img=document.getElementById('happy-image').files[0];
+happyPosts.push({user:name,happy,img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()});
+localStorage.setItem('happyPosts',JSON.stringify(happyPosts));
+document.getElementById('happy-input').value='';
+loadHappy();
+}
+
+function loadHappy(){
+let log=document.getElementById('happy-log');
+log.innerHTML='';
+happyPosts.forEach(h=>{
+log.innerHTML+=`<div class="status-post">
+<p>${h.user}: ${h.happy}</p>
+${h.img?'<img src="'+h.img+'" width="100%">':''}
+<p><small>${h.time}</small></p>
+</div>`;
+});
+}
+
+loadChats();
+</script>
 </body>
-    </html>
+  </html>
