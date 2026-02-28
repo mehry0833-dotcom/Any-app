@@ -1,155 +1,252 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zee Ultra Pro Chat</title>
+<title>Zee Social App</title>
 <style>
-body{
-  margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
-  background:#ece5dd;display:flex;flex-direction:column;height:100vh;
-}
-header{
-  background:#075e54;color:white;padding:15px;font-weight:bold;text-align:center;
-}
-.tabs{
-  display:flex;
-  justify-content:space-around;
-  background:white;
-  border-bottom:1px solid #ddd;
-}
-.tabs button{
-  flex:1;padding:10px;font-size:16px;border:none;background:white;cursor:pointer;
-}
-.tabs button.active{background:#128c7e;color:white;font-weight:bold;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#f0f0f0;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+header{background:#075e54;color:white;text-align:center;padding:15px;font-size:20px;font-weight:bold;}
+.tabs{display:flex;border-bottom:1px solid #ccc;}
+.tabs button{flex:1;padding:10px;font-size:14px;border:none;background:#fff;cursor:pointer;}
+.tabs button.active{background:#128c7e;color:#fff;font-weight:bold;}
 .screen{flex:1;overflow-y:auto;padding:5px;display:none;}
-#chatScreen{display:flex;flex-direction:column;}
-.message{max-width:75%;padding:10px;margin:5px;border-radius:12px;position:relative;word-wrap:break-word;}
-.left{background:white;align-self:flex-start;}
+#chatScreen,#statusScreen,#postsScreen,#picturesScreen,#happyScreen,#homeScreen{display:none;flex-direction:column;}
+.message{max-width:70%;padding:10px;margin:5px;border-radius:12px;word-wrap:break-word;position:relative;}
+.left{background:#fff;align-self:flex-start;}
 .right{background:#dcf8c6;align-self:flex-end;}
 .sender{font-size:12px;font-weight:bold;margin-bottom:3px;}
 .time{font-size:10px;opacity:.6;margin-top:3px;}
 .options{font-size:11px;cursor:pointer;margin-top:2px;opacity:.7;}
 .reactions{font-size:14px;margin-top:3px;display:flex;gap:10px;cursor:pointer;}
-#typing{font-size:12px;padding-left:10px;color:#555;}
-.inputBar{display:flex;padding:5px;background:white;gap:5px;}
+.inputBar{display:flex;gap:5px;padding:5px;background:#fff;align-items:center;}
 .inputBar input[type=text]{flex:1;padding:8px;border-radius:20px;border:1px solid #ccc;}
-.inputBar button{border:none;border-radius:20px;padding:8px 12px;background:#128c7e;color:white;cursor:pointer;}
-#statusScreen{display:flex;flex-direction:column;padding:10px;}
-.statusImg{width:100%;max-height:250px;border-radius:10px;margin-top:5px;object-fit:cover;}
-.statusAudio, .statusVideo{width:100%;margin-top:5px;}
+.inputBar button{padding:8px 12px;border:none;border-radius:20px;background:#128c7e;color:white;cursor:pointer;}
+.statusImg{width:100%;border-radius:10px;margin-top:5px;object-fit:cover;max-height:250px;}
+.statusAudio,.statusVideo{width:100%;margin-top:5px;}
+.postBox{border:1px solid #ccc;padding:8px;border-radius:10px;margin-bottom:8px;background:#fff;}
+.likeCommentShare{display:flex;justify-content:space-around;font-size:12px;margin-top:5px;cursor:pointer;}
+.pictureItem{width:100%;margin-bottom:5px;border-radius:10px;object-fit:cover;}
+.commentBox{border-top:1px solid #ccc;margin-top:5px;padding-top:5px;}
 </style>
 </head>
 <body>
 
-<header>Zee Ultra Pro Chat</header>
+<header>Zee Social App</header>
+
 <div class="tabs">
-<button id="chatTab" class="active" onclick="showScreen('chat')">Chats</button>
-<button id="statusTab" onclick="showScreen('status')">Status</button>
+<button class="active" onclick="showScreen('chat')">Chats</button>
+<button onclick="showScreen('status')">Status</button>
+<button onclick="showScreen('posts')">Posts</button>
+<button onclick="showScreen('pictures')">Pictures</button>
+<button onclick="showScreen('happy')">What I Like</button>
+<button onclick="showScreen('home')">Home</button>
+</div>
+
+<!-- Screens -->
+<div id="homeScreen" class="screen">
+<h3 style="text-align:center;">Welcome to Zee Social</h3>
+<p style="text-align:center;">Notifications</p>
+<div id="notifications"></div>
 </div>
 
 <div id="chatScreen" class="screen">
-  <div id="chat"></div>
-  <div id="typing">Typing...</div>
+<div id="chat"></div>
+<div id="typing">Typing...</div>
+<div class="inputBar">
+<input id="nameInput" placeholder="Your name">
+<input id="messageInput" placeholder="Type a message">
+<button onclick="sendMessage()">Send</button>
+<button onclick="recordAudio()">🎤</button>
+<input type="file" id="chatFileInput" hidden>
+<button onclick="chatFileInput.click()">+</button>
+</div>
 </div>
 
 <div id="statusScreen" class="screen">
-  <input type="text" id="statusText" placeholder="Write something for your status">
-  <input type="file" id="statusFile">
-  <input type="file" id="statusMusic" accept="audio/*">
-  <button onclick="postStatus()">Post Status</button>
-  <div id="statusDisplay"></div>
+<input type="text" id="statusText" placeholder="Write your status">
+<input type="file" id="statusFile">
+<input type="file" id="statusMusic" accept="audio/*">
+<button onclick="postStatus()">Post Status</button>
+<div id="statusDisplay"></div>
 </div>
 
-<div class="inputBar">
-  <input id="nameInput" placeholder="Your name">
-  <input id="messageInput" placeholder="Type a message">
-  <button onclick="send()">Send</button>
-  <button onclick="recordAudio()">🎤</button>
-  <input type="file" id="fileInput" hidden>
-  <button onclick="fileInput.click()">+</button>
+<div id="postsScreen" class="screen">
+<input type="text" id="postText" placeholder="What's on your mind?">
+<input type="file" id="postFile">
+<button onclick="postPost()">Post</button>
+<div id="postsDisplay"></div>
+</div>
+
+<div id="picturesScreen" class="screen">
+<div id="picturesDisplay"></div>
+</div>
+
+<div id="happyScreen" class="screen">
+<input type="text" id="happyText" placeholder="What makes you happy?">
+<input type="file" id="happyFile">
+<input type="text" id="happyActivity" placeholder="Activity">
+<button onclick="postHappy()">Post</button>
+<div id="happyDisplay"></div>
 </div>
 
 <script>
-let messages = JSON.parse(localStorage.getItem("zeeChat"))||[];
-let mediaRecorder;
-let chunks = [];
+// LocalStorage init
+let messages=JSON.parse(localStorage.getItem("zeeChat"))||[];
+let statusData=JSON.parse(localStorage.getItem("zeeStatus"))||[];
+let postsData=JSON.parse(localStorage.getItem("zeePosts"))||[];
+let picturesData=JSON.parse(localStorage.getItem("zeePictures"))||[];
+let happyData=JSON.parse(localStorage.getItem("zeeHappy"))||[];
 
-function showScreen(s){
-  if(s==='chat'){chatScreen.style.display='flex';statusScreen.style.display='none';chatTab.classList.add('active');statusTab.classList.remove('active');}
-  else{chatScreen.style.display='none';statusScreen.style.display='flex';chatTab.classList.remove('active');statusTab.classList.add('active');}
+// Tabs
+function showScreen(screen){
+document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+document.getElementById(screen+'Screen').style.display='flex';
+event.target.classList.add('active');
 }
 
-function save(){localStorage.setItem("zeeChat",JSON.stringify(messages));}
-function render(){
-  chat.innerHTML="";let side=true;
-  messages.forEach((m,i)=>{
-    let div=document.createElement("div");
-    div.className="message "+(side?"right":"left");side=!side;
-    let mediaHTML=m.media||"";
-    div.innerHTML=`<div class="sender">${m.name}</div><div>${m.text}</div>${mediaHTML}<div class="time">${m.time}</div><div class="options" onclick="menu(${i})">(:)</div><div class="reactions"><span onclick="react(${i},'👍')">👍</span><span onclick="react(${i},'❤️')">❤️</span><span onclick="react(${i},'👎')">👎</span></div>`;
-    chat.appendChild(div);
-  });
-  chat.scrollTop=chat.scrollHeight;
+// Chat
+function saveChat(){localStorage.setItem("zeeChat",JSON.stringify(messages));}
+function renderChat(){chat.innerHTML="";let side=true;
+messages.forEach((m,i)=>{
+let div=document.createElement("div");
+div.className="message "+(side?"right":"left");side=!side;
+let media=m.media||"";
+div.innerHTML=`<div class="sender">${m.name}</div><div>${m.text}</div>${media}<div class="time">${m.time}</div><div class="options" onclick="chatMenu(${i})">(:)</div><div class="reactions"><span onclick="chatReact(${i},'👍')">👍</span><span onclick="chatReact(${i},'❤️')">❤️</span><span onclick="chatReact(${i},'👎')">👎</span></div>`;
+chat.appendChild(div);
+});chat.scrollTop=chat.scrollHeight;}
+function sendMessage(){
+let name=nameInput.value.trim();
+let text=messageInput.value.trim();
+if(!name||!text)return alert("Enter name & message");
+messages.push({name,text,time:new Date().toLocaleTimeString()});
+saveChat();renderChat();messageInput.value="";nameInput.value="";
 }
-function send(){
-  let name=nameInput.value.trim();
-  let text=messageInput.value.trim();
-  if(!name||!text)return alert("Enter name & message");
-  messages.push({name,text,time:new Date().toLocaleTimeString()});
-  save();render();
-  messageInput.value="";nameInput.value="";
+function chatMenu(i){
+let action=prompt("edit/delete/info");
+if(action==='edit'){let t=prompt("Edit",messages[i].text);if(t){messages[i].text=t;saveChat();renderChat();}}
+if(action==='delete'){messages.splice(i,1);saveChat();renderChat();}
+if(action==='info'){alert("Sent at: "+messages[i].time);}
 }
-function menu(i){
-  let action=prompt("edit / delete / info");
-  if(action==="edit"){let t=prompt("Edit",messages[i].text);if(t){messages[i].text=t;save();render();}}
-  if(action==="delete"){messages.splice(i,1);save();render();}
-  if(action==="info"){alert("Sent at: "+messages[i].time);}
-}
-function react(i,e){messages[i].text+=" "+e;save();render();}
-messageInput.addEventListener("input",()=>{typing.innerText="Typing...";clearTimeout(window.tt);window.tt=setTimeout(()=>typing.innerText="",1000);});
+function chatReact(i,e){messages[i].text+=" "+e;saveChat();renderChat();}
 
+// Record Audio
 function recordAudio(){
 navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
-mediaRecorder=new MediaRecorder(stream);
+let mediaRecorder=new MediaRecorder(stream);
+let chunks=[];
 mediaRecorder.start();
-chunks=[];
 mediaRecorder.ondataavailable=e=>chunks.push(e.data);
 mediaRecorder.onstop=()=>{
 let blob=new Blob(chunks);
 let url=URL.createObjectURL(blob);
 messages.push({name:nameInput.value||"Unknown",text:"Voice message",media:`<audio controls src='${url}'></audio>`,time:new Date().toLocaleTimeString()});
-save();render();nameInput.value="";};
+saveChat();renderChat();nameInput.value="";
+}
 setTimeout(()=>mediaRecorder.stop(),3000);
 });
 }
 
-fileInput.addEventListener("change",()=>{
-let file=fileInput.files[0];let reader=new FileReader();
+// Chat File Input
+chatFileInput.addEventListener("change",()=>{
+let file=chatFileInput.files[0];let reader=new FileReader();
 reader.onload=e=>{
 let tag=file.type.startsWith("video")?`<video controls src='${e.target.result}' class='statusVideo'></video>`:`<img src='${e.target.result}' class='statusImg'>`;
 messages.push({name:nameInput.value||"Unknown",text:"Media",media:tag,time:new Date().toLocaleTimeString()});
-save();render();nameInput.value="";
-};
+saveChat();renderChat();nameInput.value="";
+}
 reader.readAsDataURL(file);
 });
 
+// Status
+function saveStatus(){localStorage.setItem("zeeStatus",JSON.stringify(statusData));}
+function renderStatus(){
+statusDisplay.innerHTML="";
+statusData.forEach((s)=>{
+let html=`<p>${s.text}</p><img src='${s.photo}' class='statusImg'>`;
+if(s.music) html+=`<audio controls src='${s.music}' class='statusAudio'></audio>`;
+html+=`<p>Likes: ${s.likes.length} | Viewed: ${s.viewed.length} | Time: ${s.time}</p>`;
+statusDisplay.innerHTML+=html;
+});
+}
 function postStatus(){
-let t=statusText.value;
+let text=statusText.value;
 let file=statusFile.files[0];
 let music=statusMusic.files[0];
-let html="";
-if(t) html+="<p>"+t+"</p>";
-if(file){let reader=new FileReader();reader.onload=e=>{html+="<img src='"+e.target.result+"' class='statusImg'>";if(music){let r2=new FileReader();r2.onload=ev=>{html+="<audio controls src='"+ev.target.result+"'></audio>";statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);};r2.readAsDataURL(music);}else{statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);}};reader.readAsDataURL(file);}
-else if(music){let reader=new FileReader();reader.onload=e=>{html+="<audio controls src='"+e.target.result+"'></audio>";statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);};reader.readAsDataURL(music);}
-else{statusDisplay.innerHTML=html;localStorage.setItem("zeeStatus",html);}
+if(!music)return alert("Select music before posting");
+let reader1=new FileReader();
+reader1.onload=e1=>{
+let photoData=e1.target.result||"";
+let reader2=new FileReader();
+reader2.onload=e2=>{
+let musicData=e2.target.result;
+statusData.push({text,text,photo:photoData,music:musicData,time:new Date().toLocaleString(),likes:[],viewed:[]});
+saveStatus();renderStatus();
 statusText.value="";statusFile.value="";statusMusic.value="";
+picturesData.push(photoData);localStorage.setItem("zeePictures",JSON.stringify(picturesData));
+renderPictures();
+};
+reader2.readAsDataURL(music);
+};
+if(file) reader1.readAsDataURL(file);
+else{statusData.push({text,text,photo:null,music:null,time:new Date().toLocaleString(),likes:[],viewed:[]});saveStatus();renderStatus();}
 }
 
-let savedStatus=localStorage.getItem("zeeStatus");
-if(savedStatus) statusDisplay.innerHTML=savedStatus;
+// Posts
+function savePosts(){localStorage.setItem("zeePosts",JSON.stringify(postsData));}
+function renderPosts(){postsDisplay.innerHTML="";postsData.forEach((p,i)=>{
+let html=`<div class='postBox'><p>${p.text}</p>`;
+if(p.photo) html+=`<img src='${p.photo}' class='statusImg'>`;
+html+=`<div class='likeCommentShare'><span onclick="likePost(${i})">Like (${p.likes.length})</span><span onclick="commentPost(${i})">Comment (${p.comments.length})</span><span onclick="alert('Shared!')">Share</span></div></div>`;
+postsDisplay.innerHTML+=html;
+});}
+function postPost(){
+let text=postText.value;
+let file=postFile.files[0];
+let reader=new FileReader();
+reader.onload=e=>{
+let photo=e.target.result||null;
+postsData.push({text,photo,likes:[],comments:[],time:new Date().toLocaleString()});
+savePosts();renderPosts();
+picturesData.push(photo);localStorage.setItem("zeePictures",JSON.stringify(picturesData));
+renderPictures();
+postText.value="";postFile.value="";
+};
+if(file) reader.readAsDataURL(file);
+else{postsData.push({text,photo:null,likes:[],comments:[],time:new Date().toLocaleString()});savePosts();renderPosts();postText.value="";}
+}
 
-render();
+// Pictures
+function renderPictures(){picturesDisplay.innerHTML="";picturesData.forEach(p=>{picturesDisplay.innerHTML+=`<img src='${p}' class='pictureItem'>`;});}
+
+// Happiness
+function saveHappy(){localStorage.setItem("zeeHappy",JSON.stringify(happyData));}
+function renderHappy(){happyDisplay.innerHTML="";happyData.forEach((h)=>{
+let html=`<div class='postBox'><p>${h.text}</p>`;
+if(h.photo) html+=`<img src='${h.photo}' class='statusImg'>`;
+if(h.activity) html+=`<p>Activity: ${h.activity}</p>`;
+html+=`<div class='commentBox'>Comments: ${h.comments.join(', ')}</div></div>`;
+happyDisplay.innerHTML+=html;
+});}
+function postHappy(){
+let text=happyText.value;
+let file=happyFile.files[0];
+let activity=happyActivity.value;
+let reader=new FileReader();
+reader.onload=e=>{
+let photo=e.target.result||null;
+happyData.push({text,photo,activity,comments:[],time:new Date().toLocaleString()});
+saveHappy();renderHappy();
+happyText.value="";happyFile.value="";happyActivity.value="";
+};
+if(file) reader.readAsDataURL(file);
+else{happyData.push({text,photo:null,activity,comments:[],time:new Date().toLocaleString()});saveHappy();renderHappy();}
+}
+
+// Initial render
+renderChat();renderStatus();renderPosts();renderPictures();renderHappy();
 </script>
-
 </body>
-                                         </html>
+  </html>
