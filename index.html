@@ -1,167 +1,192 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>App</title>
-  <style>
-    body { font-family: sans-serif; margin: 0; padding: 0; }
-    .screen { display: none; padding: 20px; }
-    .active { display: block; }
-    .chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 60%; }
-    .sent { background: #dcf8c6; margin-left: auto; }
-    .received { background: #fff; }
-    .status-post { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Talks 🗨️</title>
+<style>
+body { font-family: sans-serif; margin: 0; padding: 0; }
+.screen { display: none; padding: 20px; }
+.active { display: block; }
+.chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 60%; }
+.sent { background: #dcf8c6; margin-left: auto; }
+.received { background: #fff; }
+.status-post { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+</style>
 </head>
 <body>
-  <div id="name-screen" class="screen active">
-    <h2>Enter Name</h2>
-    <input id="name-input" placeholder="Your name">
-    <button onclick="setName()">Enter</button>
-  </div>
+<div id="name-screen" class="screen active">
+<h2>Enter Name</h2>
+<input id="name-input" placeholder="Your name">
+<button onclick="setName()">Enter</button>
+</div>
 
-  <div id="chats-screen" class="screen">
-    <h2>Chats</h2>
-    <input id="msg-input" placeholder="Message">
-    <button onclick="sendMsg()">Send</button>
-    <div id="chat-log"></div>
-  </div>
+<div id="chats-screen" class="screen">
+<h2>Chats 🗨️</h2>
+<input id="name-chat-input" placeholder="Your name">
+<input id="msg-input" placeholder="Message">
+<button onclick="sendMsg()">Send</button>
+<div id="chat-log"></div>
+<p id="typing-indicator" style="display: none;">Hold on, someone is typing...</p>
+</div>
 
-  <div id="status-screen" class="screen">
-    <h2>Status</h2>
-    <input id="status-input" placeholder="What's up?">
-    <button onclick="postStatus()">Post</button>
-    <div id="status-log"></div>
-  </div>
+<div id="status-screen" class="screen">
+<h2>Status 🌟</h2>
+<input id="status-input" placeholder="What's up?">
+<input type="file" id="status-image">
+<input type="file" id="status-music" accept="audio/*">
+<button onclick="postStatus()">Post</button>
+<div id="status-log"></div>
+</div>
 
-  <div id="posts-screen" class="screen">
-    <h2>Posts</h2>
-    <input id="post-input" placeholder="What's on your mind?">
-    <input type="file" id="post-image">
-    <button onclick="post()">Post</button>
-    <div id="post-log"></div>
-  </div>
+<div id="posts-screen" class="screen">
+<h2>Posts 📝</h2>
+<input id="post-input" placeholder="What's on your mind?">
+<input type="file" id="post-image">
+<button onclick="post()">Post</button>
+<div id="post-log"></div>
+</div>
 
-  <div id="pictures-screen" class="screen">
-    <h2>Pictures</h2>
-    <div id="pics-log"></div>
-  </div>
+<div id="pictures-screen" class="screen">
+<h2>Pictures 🖼️</h2>
+<div id="pics-log"></div>
+</div>
 
-  <div id="happy-screen" class="screen">
-    <h2>What makes you happy?</h2>
-    <input id="happy-input" placeholder="Share something">
-    <input type="file" id="happy-image">
-    <button onclick="postHappy()">Post</button>
-    <div id="happy-log"></div>
-  </div>
+<div id="happy-screen" class="screen">
+<h2>What makes you happy? 😊</h2>
+<input id="happy-input" placeholder="Share something">
+<input type="file" id="happy-image">
+<button onclick="postHappy()">Post</button>
+<div id="happy-log"></div>
+</div>
 
-  <nav>
-    <button onclick="showScreen('chats')">Chats</button>
-    <button onclick="showScreen('status')">Status</button>
-    <button onclick="showScreen('posts')">Posts</button>
-    <button onclick="showScreen('pictures')">Pictures</button>
-    <button onclick="showScreen('happy')">Happy</button>
-  </nav>
+<nav>
+<button onclick="showScreen('chats')">Chats 🗨️</button>
+<button onclick="showScreen('status')">Status 🌟</button>
+<button onclick="showScreen('posts')">Posts 📝</button>
+<button onclick="showScreen('pictures')">Pictures 🖼️</button>
+<button onclick="showScreen('happy')">Happy 😊</button>
+</nav>
 
-  <script>
-    let name = localStorage.getItem('name') || '';
-    let chats = JSON.parse(localStorage.getItem('chats')) || [];
-    let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
-    let posts = JSON.parse(localStorage.getItem('posts')) || [];
-    let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
+<script>
+let name = localStorage.getItem('name') || '';
+let chats = JSON.parse(localStorage.getItem('chats')) || [];
+let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
+let posts = JSON.parse(localStorage.getItem('posts')) || [];
+let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
+let typing = false;
 
-    function showScreen(screen) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(`${screen}-screen`).classList.add('active');
-      if (screen === 'chats') loadChats();
-      if (screen === 'status') loadStatuses();
-      if (screen === 'posts') loadPosts();
-      if (screen === 'pictures') loadPics();
-      if (screen === 'happy') loadHappy();
-    }
+function showScreen(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`${screen}-screen`).classList.add('active');
+  if (screen === 'chats') loadChats();
+  if (screen === 'status') loadStatuses();
+  if (screen === 'posts') loadPosts();
+  if (screen === 'pictures') loadPics();
+  if (screen === 'happy') loadHappy();
+}
 
-    function setName() {
-      name = document.getElementById('name-input').value;
-      localStorage.setItem('name', name);
-      showScreen('chats');
-    }
+function setName() {
+  name = document.getElementById('name-input').value;
+  localStorage.setItem('name', name);
+  showScreen('chats');
+}
 
-    function sendMsg() {
-      const msg = document.getElementById('msg-input').value;
-      chats.push({ from: name, msg });
-      localStorage.setItem('chats', JSON.stringify(chats));
-      document.getElementById('msg-input').value = '';
-      loadChats();
-    }
+function sendMsg() {
+  const msg = document.getElementById('msg-input').value;
+  const chatName = document.getElementById('name-chat-input').value;
+  chats.push({ from: chatName, msg });
+  localStorage.setItem('chats', JSON.stringify(chats));
+  document.getElementById('msg-input').value = '';
+  loadChats();
+  notify('Message sent!');
+}
 
-    function loadChats() {
-      const log = document.getElementById('chat-log');
-      log.innerHTML = '';
-      chats.forEach(c => {
-        log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}">${c.from}: ${c.msg}</div>`;
-      });
-    }
+function loadChats() {
+  const log = document.getElementById('chat-log');
+  log.innerHTML = '';
+  chats.forEach((c, i) => {
+    log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}">${c.from}: ${c.msg}</div>`;
+  });
+}
 
-    function postStatus() {
-      const status = document.getElementById('status-input').value;
-      statuses.push({ user: name, status, time: new Date().toLocaleString() });
-      localStorage.setItem('statuses', JSON.stringify(statuses));
-      document.getElementById('status-input').value = '';
-      loadStatuses();
-    }
+function postStatus() {
+  const status = document.getElementById('status-input').value;
+  const img = document.getElementById('status-image').files[0];
+  const music = document.getElementById('status-music').files[0];
+  statuses.push({ user: name, status, img: img ? URL.createObjectURL(img) : null, music: music ? URL.createObjectURL(music) : null });
+  localStorage.setItem('statuses', JSON.stringify(statuses));
+  document.getElementById('status-input').value = '';
+  loadStatuses();
+}
 
-    function loadStatuses() {
-      const log = document.getElementById('status-log');
-      log.innerHTML = '';
-      statuses.forEach(s => {
-        log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p><small>${s.time}</small></div>`;
-      });
-    }
+function loadStatuses() {
+  const log = document.getElementById('status-log');
+  log.innerHTML = '';
+  statuses.forEach(s => {
+    log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p>${s.img ? '<img src="'+s.img+'" width="100">' : ''}${s.music ? '<audio controls src="'+s.music+'"></audio>' : ''}</div>`;
+  });
+}
 
-    function post() {
-      const post = document.getElementById('post-input').value;
-      const img = document.getElementById('post-image').files[0];
-      posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null });
-      localStorage.setItem('posts', JSON.stringify(posts));
-      document.getElementById('post-input').value = '';
-      loadPosts();
-    }
+function post() {
+  const post = document.getElementById('post-input').value;
+  const img = document.getElementById('post-image').files[0];
+  posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null, likes: 0 });
+  localStorage.setItem('posts', JSON.stringify(posts));
+  document.getElementById('post-input').value = '';
+  loadPosts();
+}
 
-    function loadPosts() {
-      const log = document.getElementById('post-log');
-      log.innerHTML = '';
-      posts.forEach(p => {
-        log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}</div>`;
-      });
-    }
+function loadPosts() {
+  const log = document.getElementById('post-log');
+  log.innerHTML = '';
+  posts.forEach((p, i) => {
+    log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}<p>Likes: ${p.likes}</p><button onclick="likePost(${i})">👍</button><button onclick="commentPost(${i})">💬</button></div>`;
+  });
+}
 
-    function loadPics() {
-      const log = document.getElementById('pics-log');
-      log.innerHTML = '';
-      posts.forEach(p => {
-        if (p.img) log.innerHTML += `<img src="${p.img}" width="100">`;
-      });
-    }
+function likePost(i) {
+  posts[i].likes++;
+  localStorage.setItem('posts', JSON.stringify(posts));
+  loadPosts();
+}
 
-    function postHappy() {
-      const happy = document.getElementById('happy-input').value;
-      const img = document.getElementById('happy-image').files[0];
-      happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL(img) : null });
-      localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
-      document.getElementById('happy-input').value = '';
-      loadHappy();
-    }
+function commentPost(i) {
+  const comment = prompt('Enter comment');
+  // add comment logic
+}
 
-    function loadHappy() {
-      const log = document.getElementById('happy-log');
-      log.innerHTML = '';
-      happyPosts.forEach(h => {
-        log.innerHTML += `<div class="status-post"><p>${h.user}: ${h.happy}</p>${h.img ? '<img src="'+h.img+'" width="100">' : ''}</div>`;
-      });
-    }
+function loadPics() {
+  const log = document.getElementById('pics-log');
+  log.innerHTML = '';
+  posts.forEach(p => {
+    if (p.img) log.innerHTML += `<img src="${p.img}" width="100">`;
+  });
+}
 
-    if (name) showScreen('chats');
-    else showScreen('name');
-  </script>
+function postHappy() {
+  const happy = document.getElementById('happy-input').value;
+  const img = document.getElementById('happy-image').files[0];
+  happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL(img) : null });
+  localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
+  document.getElementById('happy-input').value = '';
+  loadHappy();
+}
+
+function loadHappy() {
+  const log = document.getElementById('happy-log');
+  log.innerHTML = '';
+  happyPosts.forEach(h => {
+    log.innerHTML += `<div class="status-post"><p>${h.user}: ${h.happy}</p>${h.img ? '<img src="'+h.img+'" width="100">' : ''}</div>`;
+  });
+}
+
+function notify(msg) {
+  alert(msg);
+}
+
+if (name) showScreen('chats');
+else showScreen('name');
+
+</script>
 </body>
   </html>
