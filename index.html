@@ -7,16 +7,21 @@
     body { font-family: sans-serif; margin: 0; padding: 0; }
     .screen { display: none; padding: 20px; }
     .active { display: block; }
-    nav { position: fixed; bottom: 0; left: 0; right: 0; background: #eee; padding: 10px; display: flex; justify-content: space-around; }
-    nav button { padding: 10px; width: 45%; }
-    #chat-log p, #status-log p { background: #f2f2f2; padding: 8px; border-radius: 6px; margin-bottom: 6px; }
+    .chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 60%; }
+    .sent { background: #dcf8c6; margin-left: auto; }
+    .received { background: #fff; }
+    .status-post { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
-
-  <div id="chats-screen" class="screen active">
-    <h2>Chats</h2>
+  <div id="name-screen" class="screen active">
+    <h2>Enter Name</h2>
     <input id="name-input" placeholder="Your name">
+    <button onclick="setName()">Enter</button>
+  </div>
+
+  <div id="chats-screen" class="screen">
+    <h2>Chats</h2>
     <input id="msg-input" placeholder="Message">
     <button onclick="sendMsg()">Send</button>
     <div id="chat-log"></div>
@@ -29,36 +34,134 @@
     <div id="status-log"></div>
   </div>
 
+  <div id="posts-screen" class="screen">
+    <h2>Posts</h2>
+    <input id="post-input" placeholder="What's on your mind?">
+    <input type="file" id="post-image">
+    <button onclick="post()">Post</button>
+    <div id="post-log"></div>
+  </div>
+
+  <div id="pictures-screen" class="screen">
+    <h2>Pictures</h2>
+    <div id="pics-log"></div>
+  </div>
+
+  <div id="happy-screen" class="screen">
+    <h2>What makes you happy?</h2>
+    <input id="happy-input" placeholder="Share something">
+    <input type="file" id="happy-image">
+    <button onclick="postHappy()">Post</button>
+    <div id="happy-log"></div>
+  </div>
+
   <nav>
     <button onclick="showScreen('chats')">Chats</button>
     <button onclick="showScreen('status')">Status</button>
+    <button onclick="showScreen('posts')">Posts</button>
+    <button onclick="showScreen('pictures')">Pictures</button>
+    <button onclick="showScreen('happy')">Happy</button>
   </nav>
 
   <script>
-    let name = '';
+    let name = localStorage.getItem('name') || '';
+    let chats = JSON.parse(localStorage.getItem('chats')) || [];
+    let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
+    let posts = JSON.parse(localStorage.getItem('posts')) || [];
+    let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
 
     function showScreen(screen) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`${screen}-screen`).classList.add('active');
+      if (screen === 'chats') loadChats();
+      if (screen === 'status') loadStatuses();
+      if (screen === 'posts') loadPosts();
+      if (screen === 'pictures') loadPics();
+      if (screen === 'happy') loadHappy();
+    }
+
+    function setName() {
+      name = document.getElementById('name-input').value;
+      localStorage.setItem('name', name);
+      showScreen('chats');
     }
 
     function sendMsg() {
       const msg = document.getElementById('msg-input').value;
-      const chatLog = document.getElementById('chat-log');
-      chatLog.innerHTML += `<p>${name}: ${msg}</p>`;
+      chats.push({ from: name, msg });
+      localStorage.setItem('chats', JSON.stringify(chats));
       document.getElementById('msg-input').value = '';
+      loadChats();
+    }
+
+    function loadChats() {
+      const log = document.getElementById('chat-log');
+      log.innerHTML = '';
+      chats.forEach(c => {
+        log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}">${c.from}: ${c.msg}</div>`;
+      });
     }
 
     function postStatus() {
       const status = document.getElementById('status-input').value;
-      const statusLog = document.getElementById('status-log');
-      statusLog.innerHTML += `<p>${status}</p>`;
+      statuses.push({ user: name, status, time: new Date().toLocaleString() });
+      localStorage.setItem('statuses', JSON.stringify(statuses));
       document.getElementById('status-input').value = '';
+      loadStatuses();
     }
 
-    name = prompt('Enter name');
-    document.getElementById('name-input').value = name;
-  </script>
+    function loadStatuses() {
+      const log = document.getElementById('status-log');
+      log.innerHTML = '';
+      statuses.forEach(s => {
+        log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p><small>${s.time}</small></div>`;
+      });
+    }
 
+    function post() {
+      const post = document.getElementById('post-input').value;
+      const img = document.getElementById('post-image').files[0];
+      posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null });
+      localStorage.setItem('posts', JSON.stringify(posts));
+      document.getElementById('post-input').value = '';
+      loadPosts();
+    }
+
+    function loadPosts() {
+      const log = document.getElementById('post-log');
+      log.innerHTML = '';
+      posts.forEach(p => {
+        log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}</div>`;
+      });
+    }
+
+    function loadPics() {
+      const log = document.getElementById('pics-log');
+      log.innerHTML = '';
+      posts.forEach(p => {
+        if (p.img) log.innerHTML += `<img src="${p.img}" width="100">`;
+      });
+    }
+
+    function postHappy() {
+      const happy = document.getElementById('happy-input').value;
+      const img = document.getElementById('happy-image').files[0];
+      happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL(img) : null });
+      localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
+      document.getElementById('happy-input').value = '';
+      loadHappy();
+    }
+
+    function loadHappy() {
+      const log = document.getElementById('happy-log');
+      log.innerHTML = '';
+      happyPosts.forEach(h => {
+        log.innerHTML += `<div class="status-post"><p>${h.user}: ${h.happy}</p>${h.img ? '<img src="'+h.img+'" width="100">' : ''}</div>`;
+      });
+    }
+
+    if (name) showScreen('chats');
+    else showScreen('name');
+  </script>
 </body>
-</html>
+  </html>
