@@ -15,12 +15,9 @@ body{font-family:sans-serif;margin:0;padding:0;background:#032B44;color:#fff}
 .nav button{background:#1E90FF;color:#fff;border:none;padding:8px 12px;border-radius:20px;margin:3px;cursor:pointer}
 img{max-width:100%;border-radius:6px;margin-top:5px}
 audio{width:100%;margin-top:5px}
-#welcome-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000c;color:#fff;display:flex;justify-content:center;align-items:center;font-size:24px;z-index:20}
 </style>
 </head>
 <body>
-
-<div id="welcome-screen">Welcome to House Talks! Loading...</div>
 
 <div class="nav">
 <button onclick="showScreen('home')">🏠</button>
@@ -79,13 +76,6 @@ audio{width:100%;margin-top:5px}
 </div>
 
 <script>
-window.onload = function(){
-  setTimeout(()=>{
-    const welcome=document.getElementById('welcome-screen');
-    if(welcome) welcome.style.display='none';
-  },2000);
-}
-
 let name=localStorage.getItem('name')||''
 let chats=JSON.parse(localStorage.getItem('chats'))||[]
 let statuses=JSON.parse(localStorage.getItem('statuses'))||[]
@@ -102,10 +92,8 @@ if(s==='pictures')loadPics()
 if(s==='happy')loadHappy()
 }
 
-function setName(){
-name=document.getElementById('name-input').value
-localStorage.setItem('name',name)
-}
+// Name
+function setName(){name=document.getElementById('name-input').value;localStorage.setItem('name',name)}
 
 // Chats
 function sendMsg(){
@@ -121,10 +109,8 @@ document.getElementById('chat-image').value=''
 document.getElementById('chat-audio').value=''
 loadChats()
 }
-
 function loadChats(){
-let log=document.getElementById('chat-log')
-log.innerHTML=''
+let log=document.getElementById('chat-log');log.innerHTML=''
 chats.forEach((c,i)=>{
 log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
 <b>${c.from||''}</b><br>${c.msg||''}
@@ -134,9 +120,7 @@ ${c.audio?`<audio controls src="${c.audio}"></audio>`:''}
 <button onclick="deleteChat(${i})">Delete</button>
 <button onclick="editMsg(${i})">Edit</button>
 </div>`
-})
-}
-
+})}
 function deleteChat(i){chats.splice(i,1);localStorage.setItem('chats',JSON.stringify(chats));loadChats()}
 function editMsg(i){let m=prompt('Edit message',chats[i].msg);if(m!==null){chats[i].msg=m;localStorage.setItem('chats',JSON.stringify(chats));loadChats()}}
 function clearChats(){chats=[];localStorage.removeItem('chats');loadChats()}
@@ -155,10 +139,7 @@ document.getElementById('status-image').value=''
 document.getElementById('status-music').value=''
 loadStatuses()
 }
-
-function loadStatuses(){
-let log=document.getElementById('status-log')
-log.innerHTML=''
+function loadStatuses(){let log=document.getElementById('status-log');log.innerHTML=''
 statuses.forEach((s,i)=>{
 log.innerHTML+=`<div class="status-post">
 <b>${s.user||''}</b><br>${s.status||''}
@@ -167,71 +148,46 @@ ${s.music?`<audio controls src="${s.music}"></audio>`:''}
 <br><small>${s.time||''}</small><br>
 <button onclick="deleteStatus(${i})">Delete</button>
 </div>`
-})
-}
-
+})}
 function deleteStatus(i){statuses.splice(i,1);localStorage.setItem('statuses',JSON.stringify(statuses));loadStatuses()}
 
 // Posts
-function post(){
-let txt=document.getElementById('post-input').value
-let img=document.getElementById('post-image').files[0]
-if(!txt&&!img)return
+function post(){let txt=document.getElementById('post-input').value
+let img=document.getElementById('post-image').files[0];if(!txt&&!img)return
 posts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()})
 localStorage.setItem('posts',JSON.stringify(posts))
 document.getElementById('post-input').value=''
 document.getElementById('post-image').value=''
-loadPosts()
-}
-
-function loadPosts(){
-let log=document.getElementById('post-log')
-log.innerHTML=''
-posts.forEach((p,i)=>{
-log.innerHTML+=`<div class="status-post">
+loadPosts()}
+function loadPosts(){let log=document.getElementById('post-log');log.innerHTML=''
+posts.forEach((p,i)=>{log.innerHTML+=`<div class="status-post">
 ${p.txt||''}
 ${p.img?`<img src="${p.img}">`:''}
 <br><small>${p.time||''}</small><br>
 <button onclick="deletePost(${i})">Delete</button>
-</div>`
-})
-}
-
+</div>`})}
 function deletePost(i){posts.splice(i,1);localStorage.setItem('posts',JSON.stringify(posts));loadPosts()}
 
 // Happy
-function postHappy(){
-let txt=document.getElementById('happy-input').value
-let img=document.getElementById('happy-image').files[0]
-if(!txt&&!img)return
+function postHappy(){let txt=document.getElementById('happy-input').value
+let img=document.getElementById('happy-image').files[0];if(!txt&&!img)return
 happyPosts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()})
 localStorage.setItem('happyPosts',JSON.stringify(happyPosts))
 document.getElementById('happy-input').value=''
 document.getElementById('happy-image').value=''
-loadHappy()
-}
-
-function loadHappy(){
-let log=document.getElementById('happy-log')
-log.innerHTML=''
-happyPosts.forEach((h,i)=>{
-log.innerHTML+=`<div class="status-post">
+loadHappy()}
+function loadHappy(){let log=document.getElementById('happy-log');log.innerHTML=''
+happyPosts.forEach((h,i)=>{log.innerHTML+=`<div class="status-post">
 ${h.txt||''}
 ${h.img?`<img src="${h.img}">`:''}
 <br><small>${h.time||''}</small><br>
 <button onclick="deleteHappy(${i})">Delete</button>
-</div>`
-})
-}
-
+</div>`})}
 function deleteHappy(i){happyPosts.splice(i,1);localStorage.setItem('happyPosts',JSON.stringify(happyPosts));loadHappy()}
 
 // Pictures
-function loadPics(){
-let log=document.getElementById('pics-log')
-log.innerHTML=''
-[...chats,...statuses,...posts,...happyPosts].forEach(p=>{if(p.img)log.innerHTML+=`<img src="${p.img}">`})
-}
+function loadPics(){let log=document.getElementById('pics-log');log.innerHTML=''
+[...chats,...statuses,...posts,...happyPosts].forEach(p=>{if(p.img)log.innerHTML+=`<img src="${p.img}">`})}
 </script>
 </body>
   </html>
