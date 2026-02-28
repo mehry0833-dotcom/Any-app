@@ -1,116 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>House Talks 🗨️</title>
 <style>
 body {
-font-family: sans-serif;
-margin: 0;
-padding: 0;
-background-color: #032B44;
-color: #fff;
+  margin: 0;
+  font-family: sans-serif;
+  background: #001f3f;
+  color: #fff;
 }
-.screen {
-display: none;
-padding: 20px;
-padding-top: 60px;
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
 }
-.active {
-display: block;
+nav button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(45deg, #00cfff, #001f3f);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
 }
+.screen { display: none; padding: 20px; }
+.active { display: block; }
+input, button { padding: 8px; margin: 5px 0; border-radius: 5px; border: none; }
+button { cursor: pointer; background: #00cfff; color: #001f3f; font-weight: bold; }
+.chat-log, .status-log, .post-log, .pics-log, .happy-log { margin-top: 10px; }
 .chat-msg {
-margin: 10px 0;
-padding: 10px;
-border-radius: 8px;
-max-width: 60%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 60%;
+  word-wrap: break-word;
+  position: relative;
 }
-.sent {
-background: #00BFFF;
-margin-left: auto;
-color: #fff;
-}
-.received {
-background: #1E90FF;
-color: #fff;
-}
-.status-post {
-margin: 10px 0;
-padding: 10px;
-border: 1px solid #ddd;
-background-color: #05386B;
-}
-.nav {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-background-color: #032B44;
-padding: 10px;
-text-align: center;
-}
-.nav button {
-background-color: #1E90FF;
-color: #fff;
-border: none;
-padding: 10px 20px;
-border-radius: 50%;
-margin: 0 10px;
-cursor: pointer;
-}
+.sent { background: #00cfff; color: #001f3f; margin-left: auto; text-align: right; }
+.received { background: #0074d9; color: #fff; margin-right: auto; text-align: left; }
+.status-post, .post-item, .happy-item { margin: 10px 0; padding: 10px; border-radius: 10px; background: #001f3f; border: 1px solid #00cfff; }
+.status-post img, .post-item img, .happy-item img { cursor: pointer; border-radius: 5px; margin-top: 5px; }
+.typing { font-style: italic; color: #00ffff; }
+.time { font-size: 10px; color: #7fdbff; }
 </style>
 </head>
 <body>
-<div class="nav">
-<button onclick="showScreen('chats')">Chats 🗨️</button>
-<button onclick="showScreen('status')">Status 🌟</button>
-<button onclick="showScreen('posts')">Posts 📝</button>
-<button onclick="showScreen('pictures')">Pictures 🖼️</button>
-<button onclick="showScreen('happy')">Happy 😊</button>
-</div>
 
+<!-- Top Navigation -->
+<nav>
+<button onclick="showScreen('chats')">Chat</button>
+<button onclick="showScreen('status')">Status</button>
+<button onclick="showScreen('posts')">Post</button>
+<button onclick="showScreen('notifications')">Notification</button>
+<button onclick="showScreen('pictures')">Pictures</button>
+<button onclick="showScreen('happy')">Happy</button>
+</nav>
+
+<!-- Name Screen -->
 <div id="name-screen" class="screen active">
-<h2>Enter Name</h2>
+<h2>Enter Your Name</h2>
 <input id="name-input" placeholder="Your name">
 <button onclick="setName()">Enter</button>
 </div>
 
+<!-- Chat Screen -->
 <div id="chats-screen" class="screen">
 <h2>Chats 🗨️</h2>
 <input id="msg-input" placeholder="Message">
+<input type="file" id="chat-image" accept="image/*">
+<input type="file" id="chat-audio" accept="audio/*">
 <button onclick="sendMsg()">Send</button>
-<div id="chat-log"></div>
-<p id="typing-indicator" style="display: none;">Hold on, someone is typing...</p>
+<p id="typing-indicator" class="typing" style="display:none;">Someone is typing...</p>
+<div id="chat-log" class="chat-log"></div>
 </div>
 
+<!-- Status Screen -->
 <div id="status-screen" class="screen">
 <h2>Status 🌟</h2>
 <input id="status-input" placeholder="What's up?">
-<input type="file" id="status-image">
+<input type="file" id="status-image" accept="image/*">
 <input type="file" id="status-music" accept="audio/*">
 <button onclick="postStatus()">Post</button>
-<div id="status-log"></div>
+<div id="status-log" class="status-log"></div>
 </div>
 
+<!-- Posts Screen -->
 <div id="posts-screen" class="screen">
 <h2>Posts 📝</h2>
 <input id="post-input" placeholder="What's on your mind?">
-<input type="file" id="post-image">
+<input type="file" id="post-image" accept="image/*">
 <button onclick="post()">Post</button>
-<div id="post-log"></div>
+<div id="post-log" class="post-log"></div>
 </div>
 
+<!-- Pictures Screen -->
 <div id="pictures-screen" class="screen">
 <h2>Pictures 🖼️</h2>
-<div id="pics-log"></div>
+<div id="pics-log" class="pics-log"></div>
 </div>
 
+<!-- Happy Screen -->
 <div id="happy-screen" class="screen">
 <h2>What makes you happy? 😊</h2>
 <input id="happy-input" placeholder="Share something">
-<input type="file" id="happy-image">
+<input type="file" id="happy-image" accept="image/*">
 <button onclick="postHappy()">Post</button>
-<div id="happy-log"></div>
+<div id="happy-log" class="happy-log"></div>
 </div>
 
 <script>
@@ -119,111 +118,161 @@ let chats = JSON.parse(localStorage.getItem('chats')) || [];
 let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
 let posts = JSON.parse(localStorage.getItem('posts')) || [];
 let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
-let typing = false;
 
+// Show screen
 function showScreen(screen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`${screen}-screen`).classList.add('active');
-  if (screen === 'chats') loadChats();
-  if (screen === 'status') loadStatuses();
-  if (screen === 'posts') loadPosts();
-  if (screen === 'pictures') loadPics();
-  if (screen === 'happy') loadHappy();
+  document.getElementById(screen + '-screen').classList.add('active');
+  if(screen==='chats') loadChats();
+  if(screen==='status') loadStatuses();
+  if(screen==='posts') loadPosts();
+  if(screen==='pictures') loadPics();
+  if(screen==='happy') loadHappy();
 }
 
+// Set Name
 function setName() {
-  name = document.getElementById('name-input').value;
+  const inputName = document.getElementById('name-input').value.trim();
+  if(!inputName){ alert('Name required!'); return; }
+  name = inputName;
   localStorage.setItem('name', name);
   showScreen('chats');
 }
 
+// Send Chat Message
 function sendMsg() {
-  if (!name) {
-    alert('Please enter your name');
+  if(!name){ alert('Enter your name first!'); return; }
+  const msg = document.getElementById('msg-input').value.trim();
+  if(!msg && !document.getElementById('chat-image').files[0] && !document.getElementById('chat-audio').files[0]){
+    alert('Enter message or attach file!');
     return;
   }
-  const msg = document.getElementById('msg-input').value;
-  const chatName = name;
-  chats.push({ from: chatName, msg, time: new Date().toLocaleTimeString() });
+  const imgFile = document.getElementById('chat-image').files[0];
+  const audioFile = document.getElementById('chat-audio').files[0];
+  chats.push({from:name, msg, img: imgFile?URL.createObjectURL(imgFile):null, audio: audioFile?URL.createObjectURL(audioFile):null, time: new Date().toLocaleTimeString()});
   localStorage.setItem('chats', JSON.stringify(chats));
-  document.getElementById('msg-input').value = '';
+  document.getElementById('msg-input').value='';
+  document.getElementById('chat-image').value='';
+  document.getElementById('chat-audio').value='';
   loadChats();
 }
 
 function loadChats() {
   const log = document.getElementById('chat-log');
-  log.innerHTML = '';
-  chats.forEach((c, i) => {
-    log.innerHTML += `<div class="chat-msg ${c.from === name ? 'sent' : 'received'}"><span style="font-weight: bold;">${c.from}</span><br>${c.msg}<br><small>${c.time}</small></div>`;
+  log.innerHTML='';
+  chats.forEach(c=>{
+    log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
+      <strong>${c.from}</strong><br>${c.msg||''}
+      ${c.img?`<br><img src="${c.img}" width="100" onclick="saveFile('${c.img}')">`:''}
+      ${c.audio?`<br><audio controls src="${c.audio}"></audio>`:''}
+      <div class="time">${c.time}</div>
+    </div>`;
   });
 }
 
-function postStatus() {
-  if (!name) {
-    alert('Please enter your name');
-    return;
-  }
-  const status = document.getElementById('status-input').value;
-  const img = document.getElementById('status-image').files[0];
-  const music = document.getElementById('status-music').files[0];
-  statuses.push({ user: name, status, img: img ? URL.createObjectURL(img) : null, music: music ? URL.createObjectURL(music) : null, time: new Date().toLocaleTimeString() });
-  localStorage.setItem('statuses', JSON.stringify(statuses));
-  document.getElementById('status-input').value = '';
+// Post Status
+function postStatus(){
+  if(!name){ alert('Enter your name first!'); return; }
+  const status = document.getElementById('status-input').value.trim();
+  const imgFile = document.getElementById('status-image').files[0];
+  const musicFile = document.getElementById('status-music').files[0];
+  if(!status && !imgFile && !musicFile){ alert('Enter status or attach file!'); return; }
+  statuses.push({user:name,status,img:imgFile?URL.createObjectURL(imgFile):null,music:musicFile?URL.createObjectURL(musicFile):null,likes:0,views:[],time:new Date().toLocaleTimeString()});
+  localStorage.setItem('statuses',JSON.stringify(statuses));
+  document.getElementById('status-input').value='';
+  document.getElementById('status-image').value='';
+  document.getElementById('status-music').value='';
   loadStatuses();
 }
 
-function loadStatuses() {
+function loadStatuses(){
   const log = document.getElementById('status-log');
-  log.innerHTML = '';
-  statuses.forEach((s, i) => {
-    log.innerHTML += `<div class="status-post"><p>${s.user}: ${s.status}</p>${s.img ? '<img src="'+s.img+'" width="100">' : ''}${s.music ? '<audio controls src="'+s.music+'"></audio>' : ''}<p><small>${s.time}</small></p><button onclick="likeStatus(${i})">👍</button></div>`;
+  log.innerHTML='';
+  statuses.forEach((s,i)=>{
+    log.innerHTML+=`<div class="status-post" onclick="likeStatus(${i})">
+      <strong>${s.user}</strong>: ${s.status}<br>
+      ${s.img?`<img src="${s.img}" width="100" onclick="saveFile('${s.img}')">`:''}
+      ${s.music?`<audio controls src="${s.music}"></audio>`:''}
+      <div>Likes: ${s.likes} | Views: ${s.views.length} | <span class="time">${s.time}</span></div>
+    </div>`;
+    if(!s.views.includes(name)) { s.views.push(name); localStorage.setItem('statuses', JSON.stringify(statuses)); }
   });
 }
 
-function likeStatus(i) {
-  alert('Status liked!');
+function likeStatus(i){
+  statuses[i].likes++;
+  localStorage.setItem('statuses',JSON.stringify(statuses));
+  loadStatuses();
 }
 
-function post() {
-  if (!name) {
-    alert('Please enter your name');
-    return;
-  }
-  const post = document.getElementById('post-input').value;
-  const img = document.getElementById('post-image').files[0];
-  posts.push({ user: name, post, img: img ? URL.createObjectURL(img) : null, likes: 0, time: new Date().toLocaleTimeString() });
-  localStorage.setItem('posts', JSON.stringify(posts));
-  document.getElementById('post-input').value = '';
+// Posts
+function post(){
+  if(!name){ alert('Enter your name first!'); return; }
+  const postText = document.getElementById('post-input').value.trim();
+  const imgFile = document.getElementById('post-image').files[0];
+  if(!postText && !imgFile){ alert('Enter post or attach image!'); return; }
+  posts.push({user:name,post:postText,img:imgFile?URL.createObjectURL(imgFile):null,likes:0,time:new Date().toLocaleTimeString()});
+  localStorage.setItem('posts',JSON.stringify(posts));
+  document.getElementById('post-input').value='';
+  document.getElementById('post-image').value='';
   loadPosts();
 }
 
-function loadPosts() {
+function loadPosts(){
   const log = document.getElementById('post-log');
-  log.innerHTML = '';
-  posts.forEach((p, i) => {
-    log.innerHTML += `<div class="status-post"><p>${p.user}: ${p.post}</p>${p.img ? '<img src="'+p.img+'" width="100">' : ''}<p>Likes: ${p.likes}</p><p><small>${p.time}</small></p><button onclick="likePost(${i})">👍</button></div>`;
+  log.innerHTML='';
+  posts.forEach((p,i)=>{
+    log.innerHTML+=`<div class="post-item">
+      <strong>${p.user}</strong>: ${p.post}<br>
+      ${p.img?`<img src="${p.img}" width="100" onclick="saveFile('${p.img}')">`:''}
+      <div>Likes: ${p.likes} | <span class="time">${p.time}</span></div>
+      <button onclick="likePost(${i})">👍</button>
+    </div>`;
   });
 }
 
-function likePost(i) {
-  posts[i].likes++;
-  localStorage.setItem('posts', JSON.stringify(posts));
-  loadPosts();
-}
+function likePost(i){ posts[i].likes++; localStorage.setItem('posts',JSON.stringify(posts)); loadPosts(); }
 
-function loadPics() {
+// Pictures
+function loadPics(){
   const log = document.getElementById('pics-log');
-  log.innerHTML = '';
-  posts.forEach(p => {
-    if (p.img) log.innerHTML += `<img src="${p.img}" width="100">`;
+  log.innerHTML='';
+  posts.forEach(p=>{ if(p.img) log.innerHTML+=`<img src="${p.img}" width="100" onclick="saveFile('${p.img}')">`; });
+}
+
+// Happy
+function postHappy(){
+  if(!name){ alert('Enter your name first!'); return; }
+  const happyText = document.getElementById('happy-input').value.trim();
+  const imgFile = document.getElementById('happy-image').files[0];
+  if(!happyText && !imgFile){ alert('Enter happy post or attach image!'); return; }
+  happyPosts.push({user:name,happy:happyText,img:imgFile?URL.createObjectURL(imgFile):null,time:new Date().toLocaleTimeString()});
+  localStorage.setItem('happyPosts',JSON.stringify(happyPosts));
+  document.getElementById('happy-input').value='';
+  document.getElementById('happy-image').value='';
+  loadHappy();
+}
+
+function loadHappy(){
+  const log = document.getElementById('happy-log');
+  log.innerHTML='';
+  happyPosts.forEach(h=>{
+    log.innerHTML+=`<div class="happy-item">
+      <strong>${h.user}</strong>: ${h.happy}<br>
+      ${h.img?`<img src="${h.img}" width="100" onclick="saveFile('${h.img}')">`:''}
+      <div class="time">${h.time}</div>
+    </div>`;
   });
 }
 
-function postHappy() {
-  if (!name) {
-    alert('Please enter your name');
-    return;
-  }
-  const happy = document.getElementById('happy-input').value;
-  const img = document.getElementById('happy-image').files[0];
-  happyPosts.push({ user: name, happy, img: img ? URL.createObjectURL
+// Save image
+function saveFile(url){
+  const a=document.createElement('a'); a.href=url; a.download='image'; a.click();
+}
+
+// Load on start
+if(name) showScreen('chats');
+else showScreen('name');
+</script>
+</body>
+  </html>
