@@ -17,6 +17,22 @@ button{cursor:pointer}
 .received{background:#1E90FF}
 img{max-width:100%;border-radius:6px;margin-top:5px}
 audio{width:100%;margin-top:5px}
+
+/* Pictures tab grid */
+.pics-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:10px;
+}
+.pics-grid img {
+  width:100%;
+  height:100px;
+  object-fit:cover;
+  border-radius:8px;
+  cursor:pointer;
+  transition: transform 0.2s;
+}
+.pics-grid img:hover { transform: scale(1.05); }
 </style>
 </head>
 <body>
@@ -66,7 +82,7 @@ audio{width:100%;margin-top:5px}
 
 <div id="pictures-screen" class="screen">
 <h2>All Pictures</h2>
-<div id="pics-log"></div>
+<div id="pics-log" class="pics-grid"></div>
 </div>
 
 <div id="happy-screen" class="screen">
@@ -77,9 +93,14 @@ audio{width:100%;margin-top:5px}
 <div id="happy-log"></div>
 </div>
 
+<!-- Fullscreen overlay for swipe gallery -->
+<div id="img-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);justify-content:center;align-items:center;z-index:50;overflow:hidden;">
+  <img id="full-img" src="" style="max-width:95%;max-height:95%;border-radius:10px;touch-action:none">
+</div>
+
 <script>
-// Storage
-let name = localStorage.getItem('name') || '';
+// Local storage
+let name = localStorage.getItem('name')||'';
 let chats = JSON.parse(localStorage.getItem('chats')||'[]');
 let statuses = JSON.parse(localStorage.getItem('statuses')||'[]');
 let posts = JSON.parse(localStorage.getItem('posts')||'[]');
@@ -97,26 +118,26 @@ function showScreen(screen){
 
 // Name
 function setName(){ 
-  name = document.getElementById('name-input').value.trim();
+  name=document.getElementById('name-input').value.trim();
   if(name) localStorage.setItem('name', name);
 }
 
-// Chat Functions
+// --- Chats ---
 function sendMsg(){
-  if(!name){alert('Enter your name first'); return;}
-  let msg = document.getElementById('msg-input').value;
-  let img = document.getElementById('chat-image').files[0];
-  let audio = document.getElementById('chat-audio').files[0];
-  if(!msg && !img && !audio) return;
+  if(!name){alert('Enter your name first');return;}
+  let msg=document.getElementById('msg-input').value;
+  let img=document.getElementById('chat-image').files[0];
+  let audio=document.getElementById('chat-audio').files[0];
+  if(!msg&&!img&&!audio) return;
   chats.push({from:name,msg:msg||'',img:img?URL.createObjectURL(img):null,audio:audio?URL.createObjectURL(audio):null,time:new Date().toLocaleTimeString()});
-  localStorage.setItem('chats', JSON.stringify(chats));
+  localStorage.setItem('chats',JSON.stringify(chats));
   document.getElementById('msg-input').value=''; document.getElementById('chat-image').value=''; document.getElementById('chat-audio').value='';
   loadChats();
 }
 function loadChats(){
-  let log = document.getElementById('chat-log'); log.innerHTML='';
+  let log=document.getElementById('chat-log'); log.innerHTML='';
   chats.forEach((c,i)=>{
-    log.innerHTML += `<div class="chat-msg ${c.from===name?'sent':'received'}">
+    log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
       <b>${c.from}</b><br>${c.msg||''}
       ${c.img?`<img src="${c.img}">`:''}
       ${c.audio?`<audio controls src="${c.audio}"></audio>`:''}
@@ -125,25 +146,25 @@ function loadChats(){
     </div>`;
   });
 }
-function deleteChat(i){ chats.splice(i,1); localStorage.setItem('chats',JSON.stringify(chats)); loadChats(); }
-function clearChats(){ chats=[]; localStorage.removeItem('chats'); loadChats(); }
+function deleteChat(i){chats.splice(i,1); localStorage.setItem('chats',JSON.stringify(chats)); loadChats();}
+function clearChats(){chats=[]; localStorage.removeItem('chats'); loadChats();}
 
-// Status
+// --- Status ---
 function postStatus(){
-  if(!name){alert('Enter your name first'); return;}
+  if(!name){alert('Enter your name first');return;}
   let txt=document.getElementById('status-input').value;
   let img=document.getElementById('status-image').files[0];
   let music=document.getElementById('status-music').files[0];
-  if(!txt && !img && !music) return;
+  if(!txt&&!img&&!music) return;
   statuses.push({user:name,status:txt||'',img:img?URL.createObjectURL(img):null,music:music?URL.createObjectURL(music):null,time:new Date().toLocaleTimeString()});
-  localStorage.setItem('statuses', JSON.stringify(statuses));
+  localStorage.setItem('statuses',JSON.stringify(statuses));
   document.getElementById('status-input').value=''; document.getElementById('status-image').value=''; document.getElementById('status-music').value='';
   loadStatuses();
 }
 function loadStatuses(){
   let log=document.getElementById('status-log'); log.innerHTML='';
   statuses.forEach((s,i)=>{
-    log.innerHTML += `<div class="status-post">
+    log.innerHTML+=`<div class="status-post">
       <b>${s.user}</b><br>${s.status||''}
       ${s.img?`<img src="${s.img}">`:''}
       ${s.music?`<audio controls src="${s.music}"></audio>`:''}
@@ -154,11 +175,11 @@ function loadStatuses(){
 }
 function deleteStatus(i){statuses.splice(i,1); localStorage.setItem('statuses',JSON.stringify(statuses)); loadStatuses();}
 
-// Posts
+// --- Posts ---
 function post(){
   let txt=document.getElementById('post-input').value;
   let img=document.getElementById('post-image').files[0];
-  if(!txt && !img) return;
+  if(!txt&&!img) return;
   posts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()});
   localStorage.setItem('posts',JSON.stringify(posts));
   document.getElementById('post-input').value=''; document.getElementById('post-image').value='';
@@ -167,7 +188,7 @@ function post(){
 function loadPosts(){
   let log=document.getElementById('post-log'); log.innerHTML='';
   posts.forEach((p,i)=>{
-    log.innerHTML += `<div class="status-post">
+    log.innerHTML+=`<div class="status-post">
       ${p.txt||''}
       ${p.img?`<img src="${p.img}">`:''}
       <br><small>${p.time}</small><br>
@@ -177,11 +198,11 @@ function loadPosts(){
 }
 function deletePost(i){posts.splice(i,1); localStorage.setItem('posts',JSON.stringify(posts)); loadPosts();}
 
-// Happy
+// --- Happy ---
 function postHappy(){
   let txt=document.getElementById('happy-input').value;
   let img=document.getElementById('happy-image').files[0];
-  if(!txt && !img) return;
+  if(!txt&&!img) return;
   happyPosts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()});
   localStorage.setItem('happyPosts',JSON.stringify(happyPosts));
   document.getElementById('happy-input').value=''; document.getElementById('happy-image').value='';
@@ -190,7 +211,7 @@ function postHappy(){
 function loadHappy(){
   let log=document.getElementById('happy-log'); log.innerHTML='';
   happyPosts.forEach((h,i)=>{
-    log.innerHTML += `<div class="status-post">
+    log.innerHTML+=`<div class="status-post">
       ${h.txt||''}
       ${h.img?`<img src="${h.img}">`:''}
       <br><small>${h.time}</small><br>
@@ -200,12 +221,40 @@ function loadHappy(){
 }
 function deleteHappy(i){happyPosts.splice(i,1); localStorage.setItem('happyPosts',JSON.stringify(happyPosts)); loadHappy();}
 
-// Pictures
+// --- Pictures tab with swipe gallery ---
+let allImages=[]; let currentIndex=0;
 function loadPics(){
+  allImages=[];
   let log=document.getElementById('pics-log'); log.innerHTML='';
-  [...chats,...statuses,...posts,...happyPosts].forEach(p=>{ if(p.img) log.innerHTML += `<img src="${p.img}">`});
+  [...chats,...statuses,...posts,...happyPosts].forEach(p=>{
+    if(p.img){
+      allImages.push(p.img);
+      let imgEl=document.createElement('img');
+      imgEl.src=p.img;
+      imgEl.onclick=()=>{ openFullScreen(allImages.indexOf(p.img)); };
+      log.appendChild(imgEl);
+    }
+  });
 }
+function openFullScreen(index){
+  currentIndex=index;
+  document.getElementById('full-img').src=allImages[currentIndex];
+  document.getElementById('img-overlay').style.display='flex';
+}
+document.getElementById('img-overlay').onclick=()=>{ document.getElementById('img-overlay').style.display='none'; };
 
+// Swipe
+let startX=0;
+let overlay=document.getElementById('img-overlay');
+let img=document.getElementById('full-img');
+overlay.addEventListener('touchstart', e => { startX=e.touches[0].clientX; });
+overlay.addEventListener('touchend', e => {
+  let endX=e.changedTouches[0].clientX;
+  if(endX-startX>50){ currentIndex=(currentIndex-1+allImages.length)%allImages.length; }
+  else if(startX-endX>50){ currentIndex=(currentIndex+1)%allImages.length; }
+  else return;
+  img.src=allImages[currentIndex];
+});
 </script>
 </body>
   </html>
