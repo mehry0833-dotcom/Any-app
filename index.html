@@ -102,13 +102,14 @@ name=document.getElementById('name-input').value
 localStorage.setItem('name',name)
 }
 
+// Chats
 function sendMsg(){
 if(!name)return alert('Enter name first')
 let msg=document.getElementById('msg-input').value
 let img=document.getElementById('chat-image').files[0]
 let audio=document.getElementById('chat-audio').files[0]
 if(!msg&&!img&&!audio)return
-chats.push({from:name,msg,img:img?URL.createObjectURL(img):null,audio:audio?URL.createObjectURL(audio):null,time:new Date().toLocaleTimeString()})
+chats.push({from:name,msg:msg||'',img:img?URL.createObjectURL(img):null,audio:audio?URL.createObjectURL(audio):null,time:new Date().toLocaleTimeString()})
 localStorage.setItem('chats',JSON.stringify(chats))
 document.getElementById('msg-input').value=''
 loadChats()
@@ -119,40 +120,28 @@ let log=document.getElementById('chat-log')
 log.innerHTML=''
 chats.forEach((c,i)=>{
 log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
-<b>${c.from}</b><br>${c.msg||''}
+<b>${c.from||''}</b><br>${c.msg||''}
 ${c.img?`<img src="${c.img}">`:''}
 ${c.audio?`<audio controls src="${c.audio}"></audio>`:''}
-<br><small>${c.time}</small><br>
+<br><small>${c.time||''}</small><br>
 <button onclick="deleteChat(${i})">Delete</button>
 <button onclick="editMsg(${i})">Edit</button>
 </div>`
 })
 }
 
-function deleteChat(i){
-chats.splice(i,1)
-localStorage.setItem('chats',JSON.stringify(chats))
-loadChats()
-}
+function deleteChat(i){chats.splice(i,1);localStorage.setItem('chats',JSON.stringify(chats));loadChats()}
+function editMsg(i){let m=prompt('Edit message',chats[i].msg);if(m!==null){chats[i].msg=m;localStorage.setItem('chats',JSON.stringify(chats));loadChats()}}
+function clearChats(){chats=[];localStorage.removeItem('chats');loadChats()}
 
-function editMsg(i){
-let m=prompt('Edit message',chats[i].msg)
-if(m!==null){chats[i].msg=m;localStorage.setItem('chats',JSON.stringify(chats));loadChats()}
-}
-
-function clearChats(){
-chats=[]
-localStorage.removeItem('chats')
-loadChats()
-}
-
+// Status
 function postStatus(){
 if(!name)return alert('Enter name first')
 let status=document.getElementById('status-input').value
 let img=document.getElementById('status-image').files[0]
 let music=document.getElementById('status-music').files[0]
 if(!status&&!img&&!music)return
-statuses.push({user:name,status,img:img?URL.createObjectURL(img):null,music:music?URL.createObjectURL(music):null,time:new Date().toLocaleTimeString()})
+statuses.push({user:name,status:status||'',img:img?URL.createObjectURL(img):null,music:music?URL.createObjectURL(music):null,time:new Date().toLocaleTimeString()})
 localStorage.setItem('statuses',JSON.stringify(statuses))
 document.getElementById('status-input').value=''
 loadStatuses()
@@ -161,21 +150,25 @@ loadStatuses()
 function loadStatuses(){
 let log=document.getElementById('status-log')
 log.innerHTML=''
-statuses.forEach(s=>{
+statuses.forEach((s,i)=>{
 log.innerHTML+=`<div class="status-post">
-<b>${s.user}</b><br>${s.status||''}
+<b>${s.user||''}</b><br>${s.status||''}
 ${s.img?`<img src="${s.img}">`:''}
 ${s.music?`<audio controls src="${s.music}"></audio>`:''}
-<br><small>${s.time}</small>
+<br><small>${s.time||''}</small><br>
+<button onclick="deleteStatus(${i})">Delete</button>
 </div>`
 })
 }
 
+function deleteStatus(i){statuses.splice(i,1);localStorage.setItem('statuses',JSON.stringify(statuses));loadStatuses()}
+
+// Posts
 function post(){
 let txt=document.getElementById('post-input').value
 let img=document.getElementById('post-image').files[0]
 if(!txt&&!img)return
-posts.push({txt,img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()})
+posts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()})
 localStorage.setItem('posts',JSON.stringify(posts))
 document.getElementById('post-input').value=''
 loadPosts()
@@ -184,28 +177,24 @@ loadPosts()
 function loadPosts(){
 let log=document.getElementById('post-log')
 log.innerHTML=''
-posts.forEach(p=>{
+posts.forEach((p,i)=>{
 log.innerHTML+=`<div class="status-post">
 ${p.txt||''}
 ${p.img?`<img src="${p.img}">`:''}
-<br><small>${p.time}</small>
+<br><small>${p.time||''}</small><br>
+<button onclick="deletePost(${i})">Delete</button>
 </div>`
 })
 }
 
-function loadPics(){
-let log=document.getElementById('pics-log')
-log.innerHTML=''
-;[...chats,...statuses,...posts,...happyPosts].forEach(p=>{
-if(p.img)log.innerHTML+=`<img src="${p.img}">`
-})
-}
+function deletePost(i){posts.splice(i,1);localStorage.setItem('posts',JSON.stringify(posts));loadPosts()}
 
+// Happy
 function postHappy(){
 let txt=document.getElementById('happy-input').value
 let img=document.getElementById('happy-image').files[0]
 if(!txt&&!img)return
-happyPosts.push({txt,img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()})
+happyPosts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()})
 localStorage.setItem('happyPosts',JSON.stringify(happyPosts))
 document.getElementById('happy-input').value=''
 loadHappy()
@@ -214,15 +203,24 @@ loadHappy()
 function loadHappy(){
 let log=document.getElementById('happy-log')
 log.innerHTML=''
-happyPosts.forEach(h=>{
-log.innerHTML+=`<div class="status-post">
+happyPosts.forEach((h,i)=>{
+log.innerHTML=`${log.innerHTML}<div class="status-post">
 ${h.txt||''}
 ${h.img?`<img src="${h.img}">`:''}
-<br><small>${h.time}</small>
+<br><small>${h.time||''}</small><br>
+<button onclick="deleteHappy(${i})">Delete</button>
 </div>`
 })
 }
-</script>
 
+function deleteHappy(i){happyPosts.splice(i,1);localStorage.setItem('happyPosts',JSON.stringify(happyPosts));loadHappy()}
+
+// Pictures
+function loadPics(){
+let log=document.getElementById('pics-log')
+log.innerHTML=''
+[...chats,...statuses,...posts,...happyPosts].forEach(p=>{if(p.img)log.innerHTML+=`<img src="${p.img}">`})
+}
+</script>
 </body>
   </html>
