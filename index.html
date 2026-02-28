@@ -1,380 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>House Talks 🗨️</title>
-<style>
-body{margin:0;padding:0;font-family:sans-serif;background:#032B44;color:#fff}
-.screen{display:none;padding:20px;padding-top:60px}
-.active{display:block}
-.nav{position:fixed;top:0;width:100%;background:#021c2e;padding:10px;text-align:center;z-index:10}
-.nav button{background:#1E90FF;color:#fff;border:none;padding:8px 12px;border-radius:20px;margin:3px;cursor:pointer}
-input{padding:6px;margin:5px 0;width:calc(100% - 12px);border-radius:5px;border:none}
-button{cursor:pointer}
-.chat-msg,.status-post{padding:10px;margin:10px 0;border-radius:8px;background:#05386B}
-.sent{background:#00BFFF;margin-left:auto}
-.received{background:#1E90FF}
-img{max-width:100%;border-radius:6px;margin-top:5px}
-audio{width:100%;margin-top:5px}
-.pics-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;}
-.pics-grid img {width:100%;height:100px;object-fit:cover;border-radius:8px;cursor:pointer;transition: transform 0.2s;}
-.pics-grid img:hover { transform: scale(1.05); }
-.friend-item{padding:6px;margin:5px 0;border-radius:6px;background:#064663;cursor:pointer;}
-</style>
-</head>
-<body>
-<div class="nav">
-<button onclick="showScreen('home')">🏠</button>
-<button onclick="showScreen('friends')">👥 Friends</button>
-<button onclick="showScreen('chats')">💬 Chats</button>
-<button onclick="showScreen('status')">🎵 Status</button>
-<button onclick="showScreen('posts')">📝 Posts</button>
-<button onclick="showScreen('pictures')">🖼️ Pictures</button>
-<button onclick="showScreen('happy')">😊 Happy</button>
-<button onclick="logout()" style="background:#FF4500">🚪 Logout</button>
-</div>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>House Talks 🏡</title><style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#1c1e21}
+.screen{display:none;min-height:100vh;background:#fff}.active{display:block}
+.auth-container{max-width:400px;margin:50px auto;padding:20px;background:#fff;border-radius:8px;box-shadow:0 2px 4px #0000001a}
+.auth-container h2{text-align:center;margin-bottom:20px;color:#1877f2}
+.auth-container input,.auth-container button{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ddd}
+.auth-container button{background:#1877f2;color:#fff;font-weight:700;border:none;cursor:pointer}
+.auth-container button:hover{background:#166fe5}
+#login-msg,#signup-msg{color:red;text-align:center}
+.dashboard-header{background:#1877f2;color:#fff;padding:20px;text-align:center;font-size:24px;font-weight:700}
+.dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:20px}
+.dashboard-item{background:#fff;border-radius:8px;box-shadow:0 1px 3px #0000001a;text-align:center;padding:20px;cursor:pointer;transition:.2s}
+.dashboard-item:hover{background:#f5f5f5}.dashboard-item span{font-size:40px;display:block}
+.dashboard-item p{margin-top:10px;font-weight:500}
+.feature-screen{background:#fff;min-height:100vh}
+.feature-header{background:#1877f2;color:#fff;padding:15px;display:flex;align-items:center;position:sticky;top:0;z-index:10}
+.back-btn{background:0;border:none;color:#fff;font-size:24px;margin-right:15px;cursor:pointer}
+.feature-header h3{flex:1;text-align:center;margin-right:30px}
+.feature-content{padding:20px}
+input,textarea,select,button{font-size:16px}
+.friend-item,.user-item{padding:12px;margin:5px 0;background:#f0f2f5;border-radius:6px;display:flex;align-items:center;cursor:pointer}
+.friend-item img,.user-item img{width:40px;height:40px;border-radius:50%;margin-right:10px;object-fit:cover}
+.chat-messages{max-height:60vh;overflow-y:auto;border:1px solid #ddd;padding:10px;margin-bottom:10px}
+.chat-msg{padding:8px 12px;margin:5px 0;border-radius:18px;max-width:70%;clear:both}
+.sent{background:#1877f2;color:#fff;float:right}
+.received{background:#e4e6eb;float:left}
+.msg-input-area{display:flex;gap:10px;align-items:center}
+.msg-input-area input[type=text]{flex:1;padding:12px;border:1px solid #ddd;border-radius:20px}
+.pics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:5px}
+.pics-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;cursor:pointer}
+.status-post,.post-item{background:#f0f2f5;padding:15px;border-radius:8px;margin-bottom:10px}
+.status-post img,.post-item img{max-width:100%;border-radius:8px;margin-top:10px}
+.profile-pic{width:100px;height:100px;border-radius:50%;object-fit:cover;margin:10px auto;display:block}
+#img-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#000000e6;display:none;justify-content:center;align-items:center;z-index:100}
+#full-img{max-width:95%;max-height:95%;border-radius:10px}
+</style></head><body>
 
-<!-- Login / Signup -->
-<div id="login-screen" class="screen active">
-<h2>Login / Sign Up</h2>
-<input id="email" placeholder="Email" type="email">
-<input id="password" placeholder="Password" type="password">
-<input id="username" placeholder="Username">
-<input type="file" id="profile-pic" accept="image/*">
-<button onclick="signup()">Sign Up</button>
-<button onclick="login()">Login</button>
-<div id="login-msg" style="color: #ffcc00;"></div>
-</div>
+<!-- Login -->
+<div id="login-screen" class="screen active"><div class="auth-container"><h2>House Talks</h2><input type="email" id="login-email" placeholder="Email"><input type="password" id="login-password" placeholder="Password"><button onclick="login()">Log In</button><p style="text-align:center">Don't have an account? <a href="#" onclick="showAuth('signup')">Sign Up</a></p><div id="login-msg"></div></div></div>
 
-<!-- Home -->
-<div id="home-screen" class="screen">
-<h2>Welcome to House Talks</h2>
-<p id="current-user"></p>
-</div>
+<!-- Signup -->
+<div id="signup-screen" class="screen"><div class="auth-container"><h2>Create Account</h2><input type="text" id="signup-name" placeholder="Full Name"><input type="email" id="signup-email" placeholder="Email"><input type="password" id="signup-password" placeholder="Password"><input type="file" id="signup-profile-pic" accept="image/*"><button onclick="signup()">Sign Up</button><p style="text-align:center">Already have an account? <a href="#" onclick="showAuth('login')">Log In</a></p><div id="signup-msg"></div></div></div>
 
-<!-- Friends -->
-<div id="friends-screen" class="screen">
-<h2>Search Friends</h2>
-<input id="friend-search" placeholder="Type username">
-<div id="search-results"></div>
-<h3>Your Friends</h3>
-<div id="friend-list"></div>
-</div>
+<!-- Dashboard -->
+<div id="dashboard-screen" class="screen"><div class="dashboard-header">House Talks</div><div class="dashboard-grid"><div class="dashboard-item" onclick="goToFeature('chats')"><span>💬</span><p>Chats</p></div><div class="dashboard-item" onclick="goToFeature('friends')"><span>👥</span><p>Friends</p></div><div class="dashboard-item" onclick="goToFeature('status')"><span>🎵</span><p>Status</p></div><div class="dashboard-item" onclick="goToFeature('pictures')"><span>🖼️</span><p>Pictures</p></div><div class="dashboard-item" onclick="goToFeature('happy')"><span>😊</span><p>Happy</p></div><div class="dashboard-item" onclick="goToFeature('profile')"><span>👤</span><p>Profile</p></div><div class="dashboard-item" onclick="goToFeature('settings')"><span>⚙️</span><p>Settings</p></div></div></div>
 
 <!-- Chats -->
-<div id="chats-screen" class="screen">
-<h2>Chats</h2>
-<div id="chat-rooms"></div>
-<div id="chat-window" style="display:none;">
-<h3 id="chat-with"></h3>
-<input id="msg-input" placeholder="Message">
-<input type="file" id="chat-image" accept="image/*">
-<input type="file" id="chat-audio" accept="audio/*">
-<button onclick="sendMsg()">Send</button>
-<button onclick="leaveChat()">Leave Chat</button>
-<div id="chat-log"></div>
-</div>
-</div>
+<div id="chats-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>Chats</h3></div><div class="feature-content"><div id="chat-list"></div><div id="chat-window" style="display:none"><div style="display:flex;gap:10px;margin-bottom:10px"><button onclick="closeChatWindow()">← Back</button><h4 id="chat-with-name"></h4></div><div id="chat-messages" class="chat-messages"></div><div class="msg-input-area"><input type="text" id="msg-text" placeholder="Type a message"><input type="file" id="chat-img" accept="image/*" style="display:none"><input type="file" id="chat-audio" accept="audio/*" style="display:none"><button onclick="document.getElementById('chat-img').click()">📷</button><button onclick="document.getElementById('chat-audio').click()">🎤</button><button onclick="sendChatMessage()">Send</button></div></div></div></div>
+
+<!-- Friends -->
+<div id="friends-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>Friends</h3></div><div class="feature-content"><input type="text" id="friend-search-input" placeholder="Search users..."><button onclick="searchUsers()">Search</button><div id="search-results"></div><h4>Your Friends</h4><div id="friend-list"></div></div></div>
 
 <!-- Status -->
-<div id="status-screen" class="screen">
-<h2>Status</h2>
-<input id="status-input" placeholder="What's up?">
-<input type="file" id="status-image" accept="image/*">
-<input type="file" id="status-music" accept="audio/*">
-<button onclick="postStatus()">Post</button>
-<div id="status-log"></div>
-</div>
-
-<!-- Posts -->
-<div id="posts-screen" class="screen">
-<h2>Posts</h2>
-<input id="post-input" placeholder="Share something">
-<input type="file" id="post-image" accept="image/*">
-<button onclick="post()">Post</button>
-<div id="post-log"></div>
-</div>
+<div id="status-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>Status</h3></div><div class="feature-content"><textarea id="status-text" placeholder="What's on your mind?" rows="3"></textarea><input type="file" id="status-img" accept="image/*"><input type="file" id="status-audio" accept="audio/*"><button onclick="postStatus()">Post Status</button><div id="status-feed"></div></div></div>
 
 <!-- Pictures -->
-<div id="pictures-screen" class="screen">
-<h2>All Pictures</h2>
-<div id="pics-log" class="pics-grid"></div>
-</div>
+<div id="pictures-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>All Pictures</h3></div><div class="feature-content"><div id="pictures-grid" class="pics-grid"></div></div></div>
 
 <!-- Happy -->
-<div id="happy-screen" class="screen">
-<h2>Happy Zone</h2>
-<input id="happy-input" placeholder="What makes you happy?">
-<input type="file" id="happy-image" accept="image/*">
-<button onclick="postHappy()">Post</button>
-<div id="happy-log"></div>
-</div>
+<div id="happy-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>Happy Zone</h3></div><div class="feature-content"><textarea id="happy-text" placeholder="What makes you happy?" rows="3"></textarea><input type="file" id="happy-img" accept="image/*"><button onclick="postHappy()">Post</button><div id="happy-feed"></div></div></div>
 
-<!-- Fullscreen overlay for swipe gallery -->
-<div id="img-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);justify-content:center;align-items:center;z-index:50;overflow:hidden;">
-  <img id="full-img" src="" style="max-width:95%;max-height:95%;border-radius:10px;touch-action:none">
-</div>
+<!-- Profile -->
+<div id="profile-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>Profile</h3></div><div class="feature-content"><img id="profile-pic-display" class="profile-pic" src=""><p><strong>Name:</strong> <span id="profile-name"></span></p><p><strong>Email:</strong> <span id="profile-email"></span></p><input type="file" id="new-profile-pic" accept="image/*"><button onclick="updateProfilePic()">Update Picture</button></div></div>
+
+<!-- Settings -->
+<div id="settings-screen" class="screen feature-screen"><div class="feature-header"><button class="back-btn" onclick="goToDashboard()">←</button><h3>Settings</h3></div><div class="feature-content"><button onclick="logout()" style="background:#f02849;color:#fff;padding:12px;border:none;border-radius:6px;width:100%">Logout</button></div></div>
+
+<!-- Fullscreen image overlay -->
+<div id="img-overlay" onclick="this.style.display='none'"><img id="full-img" src=""></div>
 
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-// ================= YOUR FIREBASE CONFIGURATION =================
-const firebaseConfig = {
-  apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-  authDomain: "zeeworldyhi.firebaseapp.com",
-  databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
-  projectId: "zeeworldyhi",
-  storageBucket: "zeeworldyhi.firebasestorage.app",
-  messagingSenderId: "154414924399",
-  appId: "1:154414924399:web:31c3767fdbea93feba439a",
-  measurementId: "G-XD5Z8T76EE"
-};
-// ================================================================
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-const MAX_FILE_SIZE = 1*1024*1024; // 1MB
-
-let currentUser = null;
-let allImages = [], currentIndex = 0;
-let currentChatId = null;
-let currentChatWith = null;
-
-// --- Auth ---
-auth.onAuthStateChanged(user=>{
-  if(user){
-    currentUser = user;
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    showScreen('home');
-    document.getElementById('current-user').innerText = 'Logged in as: '+user.email;
-    loadFriends(); loadChats(); loadStatuses(); loadPosts(); loadHappy();
-  } else {
-    currentUser = null;
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('login-screen').classList.add('active');
-  }
-});
-
-function signup(){
-  let email=document.getElementById('email').value.trim();
-  let password=document.getElementById('password').value;
-  let username=document.getElementById('username').value.trim();
-  let file=document.getElementById('profile-pic').files[0];
-  if(!username){ alert('Enter username'); return; }
-  auth.createUserWithEmailAndPassword(email,password)
-    .then(res=>{
-      let uid=res.user.uid;
-      fileToBase64(file,data=>{
-        db.ref('users/'+uid).set({username,email,profilePic:data||null})
-          .then(() => {
-            document.getElementById('login-msg').innerText="Sign Up Successful!";
-          });
-      });
-    }).catch(e=>{
-      document.getElementById('login-msg').innerText='Error: '+e.message;
-    });
-}
-
-function login(){
-  let email=document.getElementById('email').value.trim();
-  let password=document.getElementById('password').value;
-  auth.signInWithEmailAndPassword(email,password)
-    .then(()=>document.getElementById('login-msg').innerText="")
-    .catch(e=>{
-      document.getElementById('login-msg').innerText='Login failed: '+e.message;
-    });
-}
-
-function logout(){ auth.signOut(); }
-
-function showScreen(screen){
-  if(!currentUser) return;
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(screen+'-screen').classList.add('active');
-  if(screen === 'pictures') loadPics();
-}
-
-// --- File to Base64 ---
-function fileToBase64(file, callback){
-  if(!file){ callback(null); return; }
-  if(file.type.startsWith('image/')){
-    let img = new Image();
-    let reader = new FileReader();
-    reader.onload = e => { img.src = e.target.result; img.onload = ()=>{
-      const MAX_DIM = 800;
-      let w=img.width, h=img.height;
-      if(w>MAX_DIM || h>MAX_DIM){ if(w>h){ h=h*(MAX_DIM/w); w=MAX_DIM; } else { w=w*(MAX_DIM/h); h=MAX_DIM; } }
-      let canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
-      let ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
-      callback(canvas.toDataURL('image/jpeg',0.7));
-    };};
-    reader.readAsDataURL(file);
-  } else {
-    if(file.size>MAX_FILE_SIZE){ alert('File too large!'); callback(null); return; }
-    let reader = new FileReader(); reader.onload = e=>callback(e.target.result); reader.readAsDataURL(file);
-  }
-}
-
-// --- Friends ---
-function loadFriends(){
-  db.ref('friends/'+currentUser.uid).once('value',snap=>{
-    let friends=snap.val()||{};
-    let list=document.getElementById('friend-list'); list.innerHTML='';
-    Object.keys(friends).forEach(uid=>{
-      db.ref('users/'+uid).once('value',s=>{ let u=s.val(); if(u) list.innerHTML+='<div class="friend-item" onclick="openChat(\''+uid+'\',\''+u.username+'\')">'+u.username+'</div>'; });
-    });
-  });
-}
-
-document.getElementById('friend-search')?.addEventListener('input', e=>{
-  let term=e.target.value.trim().toLowerCase();
-  if(!term) { document.getElementById('search-results').innerHTML=''; return; }
-  db.ref('users').once('value',snap=>{
-    let users=snap.val()||{}; let res='';
-    Object.keys(users).forEach(uid=>{
-      let u=users[uid];
-      if(u.username.toLowerCase().includes(term) && uid!==currentUser.uid){
-        res+='<div class="friend-item" onclick="addFriend(\''+uid+'\',\''+u.username+'\')">'+u.username+'</div>';
-      }
-    });
-    document.getElementById('search-results').innerHTML=res;
-  });
-});
-
-function addFriend(uid,name){
-  db.ref('friends/'+currentUser.uid+'/'+uid).set(true);
-  db.ref('friends/'+uid+'/'+currentUser.uid).set(true);
-  alert('You are now friends with '+name);
-  loadFriends();
-}
-
-// --- Chat Functions ---
-function loadChats(){ loadFriends(); }
-function openChat(friendUid,friendName){
-  currentChatWith=friendName;
-  document.getElementById('chat-with').innerText='Chat with '+friendName;
-  document.getElementById('chat-window').style.display='block';
-  let chatId = [currentUser.uid,friendUid].sort().join('_');
-  currentChatId=chatId;
-  loadChatMessages();
-}
-function leaveChat(){ document.getElementById('chat-window').style.display='none'; currentChatId=null; currentChatWith=null; document.getElementById('chat-log').innerHTML=''; }
-function sendMsg(){
-  if(!currentChatId) return alert('Open a chat first');
-  let msg=document.getElementById('msg-input').value;
-  let imgFile=document.getElementById('chat-image').files[0];
-  let audioFile=document.getElementById('chat-audio').files[0];
-  if(!msg&&!imgFile&&!audioFile) return;
-  let msgRef=db.ref('chats/'+currentChatId+'/messages').push();
-  let msgData={from:currentUser.uid,msg:msg||'',img:null,audio:null,time:new Date().toLocaleTimeString()};
-  fileToBase64(imgFile,imgData=>{ msgData.img=imgData; fileToBase64(audioFile,audioData=>{ msgData.audio=audioData; msgRef.set(msgData).then(()=>{ document.getElementById('msg-input').value=''; document.getElementById('chat-image').value=''; document.getElementById('chat-audio').value=''; loadChatMessages(); }); }); });
-}
-function loadChatMessages(){
-  if(!currentChatId) return;
-  db.ref('chats/'+currentChatId+'/messages').once('value',snap=>{
-    let msgs=snap.val()||{}; let log=document.getElementById('chat-log'); log.innerHTML='';
-    Object.keys(msgs).forEach(k=>{
-      let m=msgs[k]; let cls=m.from===currentUser.uid?'sent':'received';
-      log.innerHTML+='<div class="chat-msg '+cls+'">'+m.msg+(m.img?'<br><img src="'+m.img+'">':'')+(m.audio?'<br><audio controls src="'+m.audio+'"></audio>':'')+'<br><small>'+m.time+'</small></div>';
-    });
-    log.scrollTop=log.scrollHeight;
-  });
-}
-
-// --- Status / Posts / Happy / Pictures ---
-function postStatus(){ if(!currentUser) return alert('Login first'); let txt=document.getElementById('status-input').value; let img=document.getElementById('status-image').files[0]; let music=document.getElementById('status-music').files[0]; if(!txt&&!img&&!music) return; let ref=db.ref('statuses').push(); let data={user:currentUser.uid,status:txt||'',img:null,music:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; fileToBase64(music,a=>{ data.music=a; ref.set(data).then(()=>{ loadStatuses(); }); }); }); document.getElementById('status-input').value=''; document.getElementById('status-image').value=''; document.getElementById('status-music').value=''; }
-function loadStatuses(){ db.ref('statuses').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('status-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; db.ref('users/'+v.user).once('value',u=>{ if(u.val()) log.innerHTML+='<div class="status-post"><b>'+u.val().username+'</b><br>'+v.status+(v.img?'<br><img src="'+v.img+'">':'')+(v.music?'<br><audio controls src="'+v.music+'"></audio>':'')+'<br><small>'+v.time+'</small></div>'; }); }); }); }
-function post(){ let txt=document.getElementById('post-input').value; let img=document.getElementById('post-image').files[0]; if(!txt&&!img) return; let ref=db.ref('posts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data).then(()=>{ loadPosts(); }); }); document.getElementById('post-input').value=''; document.getElementById('post-image').value=''; }
-function loadPosts(){ db.ref('posts').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('post-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; log.innerHTML+='<div class="status-post">'+v.txt+(v.img?'<br><img src="'+v.img+'">':'')+'<br><small>'+v.time+'</small></div>'; }); }); }
-function postHappy(){ let txt=document.getElementById('happy-input').value; let img=document.getElementById('happy-image').files[0]; if(!txt&&!img) return; let ref=db.ref('happyPosts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data).then(()=>{ loadHappy(); }); }); document.getElementById('happy-input').value=''; document.getElementById('happy-image').value=''; }
-function loadHappy(){ db.ref('happyPosts').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('happy-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; log.innerHTML+='<div class="status-post">'+v.txt+(v.img?'<br><img src="'+v.img+'">':'')+'<br><small>'+v.time+'</small></div>'; }); }); }
-
-function loadPics(){
-  allImages=[];
-  let log=document.getElementById('pics-log');
-  log.innerHTML='';
-  Promise.all([
-    db.ref('chats').once('value'),
-    db.ref('statuses').once('value'),
-    db.ref('posts').once('value'),
-    db.ref('happyPosts').once('value')
-  ]).then(([cSnap,sSnap,pSnap,hSnap])=>{
-    let items = [
-      ...Object.values(cSnap.val()||{}),
-      ...Object.values(sSnap.val()||{}),
-      ...Object.values(pSnap.val()||{}),
-      ...Object.values(hSnap.val()||{})
-    ];
-    items.forEach(p=>{
-      if(p.messages){
-        Object.values(p.messages).forEach(m=>{
-          if(m.img){
-            allImages.push(m.img);
-            let imgEl=document.createElement('img');
-            imgEl.src=m.img;
-            imgEl.onclick=()=>{ openFullScreen(allImages.indexOf(m.img)); };
-            log.appendChild(imgEl);
-          }
-        });
-      } else if(p.img){
-        allImages.push(p.img);
-        let imgEl=document.createElement('img');
-        imgEl.src=p.img;
-        imgEl.onclick=()=>{ openFullScreen(allImages.indexOf(p.img)); };
-        log.appendChild(imgEl);
-      }
-    });
-  });
-}
-
-function openFullScreen(index){
-  currentIndex=index;
-  document.getElementById('full-img').src=allImages[currentIndex];
-  document.getElementById('img-overlay').style.display='flex';
-}
-
-// --- Fullscreen swipe gallery ---
-let overlay = document.getElementById('img-overlay');
-let fullImg = document.getElementById('full-img');
-let startX = 0;
-
-// Click to close
-overlay.addEventListener('click', function() {
-  overlay.style.display = 'none';
-});
-
-// Swipe navigation for touch devices
-overlay.addEventListener('touchstart', function(e) {
-  e.stopPropagation();
-  startX = e.touches[0].clientX;
-});
-
-overlay.addEventListener('touchend', function(e) {
-  if (startX === 0) return;
-  let endX = e.changedTouches[0].clientX;
-  let diff = endX - startX;
-  if (Math.abs(diff) > 50) { // threshold
-    if (diff > 0) {
-      // swipe right -> previous
-      currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
-    } else {
-      // swipe left -> next
-      currentIndex = (currentIndex + 1) % allImages.length;
-    }
-    fullImg.src = allImages[currentIndex];
-  }
-  startX = 0;
-});
-
-// Prevent accidental page scroll while swiping
-overlay.addEventListener('touchmove', function(e) {
-  e.preventDefault();
-}, { passive: false });
-
-</script>
-</body>
-  </html>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script><script>
+const fc={apiKey:"AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",authDomain:"zeeworldyhi.firebaseapp.com",databaseURL:"https://zeeworldyhi-default-rtdb.firebaseio.com",projectId:"zeeworldyhi",storageBucket:"zeeworldyhi.firebasestorage.app",messagingSenderId:"154414924399",appId:"1:154414924399:web:31c3767fdbea93feba439a",measurementId:"G-XD5Z8T76EE"};
+firebase.initializeApp(fc);const auth=firebase.auth(),db=firebase.database();let cu=null,allImgs=[],curChatId=null,curFriend=null;
+function fileToBase64(f,cb){if(!f){cb(null);return}if(f.type.startsWith('image/')){let r=new FileReader();r.onload=e=>{let i=new Image();i.src=e.target.result;i.onload=()=>{let cn=document.createElement('canvas'),MAX=800,w=i.width,h=i.height;if(w>MAX||h>MAX){if(w>h){h*=MAX/w;w=MAX}else{w*=MAX/h;h=MAX}}cn.width=w;cn.height=h;cn.getContext('2d').drawImage(i,0,0,w,h);cb(cn.toDataURL('image/jpeg',0.7))}};r.readAsDataURL(f)}else{if(f.size>1048576){alert('File too large');cb(null);return}let r=new FileReader();r.onload=e=>cb(e.target.result);r.readAsDataURL(f)}}
+function showAuth(s){document.getElementById('login-screen').classList.remove('active');document.getElementById('signup-screen').classList.remove('active');document.getElementById(s+'-screen').classList.add('active')}
+function signup(){let n=document.getElementById('signup-name').value.trim(),e=document.getElementById('signup-email').value.trim(),p=document.getElementById('signup-password').value,f=document.getElementById('signup-profile-pic').files[0];if(!n||!e||!p){document.getElementById('signup-msg').innerText='All fields required';return}
+auth.createUserWithEmailAndPassword(e,p).then(c=>{fileToBase64(f,b=>{db.ref('users/'+c.user.uid).set({name:n,email:e,profilePic:b||null})})}).catch(err=>document.getElementById('signup-msg').innerText=err.message)}
+function login(){let e=document.getElementById('login-email').value.trim(),p=document.getElementById('login-password').value;auth.signInWithEmailAndPassword(e,p).catch(err=>document.getElementById('login-msg').innerText=err.message)}
+function logout(){auth.signOut()}
+auth.onAuthStateChanged(u=>{if(u){cu=u;db.ref('users/'+u.uid).once('value',s=>{let d=s.val();if(d){document.getElementById('profile-name').innerText=d.name||'';document.getElementById('profile-email').innerText=d.email||'';document.getElementById('profile-pic-display').src=d.profilePic||''}});document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('dashboard-screen').classList.add('active')}else{cu=null;showAuth('login')}});
+function goToDashboard(){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('dashboard-screen').classList.add('active')}
+function goToFeature(f){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(f+'-screen').classList.add('active');if(f=='chats')loadChats();if(f=='friends'){loadFriendList();document.getElementById('search-results').innerHTML=''}if(f=='status')loadStatus();if(f=='pictures')loadPics();if(f=='happy')loadHappy();if(f=='profile')loadProfile()}
+function searchUsers(){let t=document.getElementById('friend-search-input').value.toLowerCase();if(!t)return;db.ref('users').once('value',s=>{let u=s.val()||{},h='';Object.entries(u).forEach(([id,us])=>{if(id!==cu.uid&&us.name&&us.name.toLowerCase().includes(t))h+=`<div class="user-item" onclick="addFriend('${id}')"><img src="${us.profilePic||''}" onerror="this.src='https://via.placeholder.com/40'"><span>${us.name}</span></div>`});document.getElementById('search-results').innerHTML=h||'No users'})}
+function addFriend(id){db.ref('friends/'+cu.uid+'/'+id).set(true);db.ref('friends/'+id+'/'+cu.uid).set(true);alert('Friend added');loadFriendList()}
+function loadFriendList(){db.ref('friends/'+cu.uid).once('value',s=>{let f=s.val()||{},l=document.getElementById('friend-list');l.innerHTML='';Object.keys(f).forEach(id=>{db.ref('users/'+id).once('value',us=>{let u=us.val();if(u)l.innerHTML+=`<div class="friend-item" onclick="openChat('${id}','${u.name}')"><img src="${u.profilePic||''}" onerror="this.src='https://via.placeholder.com/40'"><span>${u.name}</span></div>`})})})}
+function loadChats(){db.ref('friends/'+cu.uid).once('value',s=>{let f=s.val()||{},l=document.getElementById('chat-list');l.innerHTML='';Object.keys(f).forEach(id=>{db.ref('users/'+id).once('value',us=>{let u=us.val();if(u)l.innerHTML+=`<div class="friend-item" onclick="openChat('${id}','${u.name}')"><img src="${u.profilePic||''}" onerror="this.src='https://via.placeholder.com/40'"><span>${u.name}</span></div>`})})})}
+function openChat(id,name){curFriend={uid:id,name};curChatId=[cu.uid,id].sort().join('_');document.getElementById('chat-list').style.display='none';document.getElementById('chat-window').style.display='block';document.getElementById('chat-with-name').innerText=name;loadMessages()}
+function closeChatWindow(){document.getElementById('chat-window').style.display='none';document.getElementById('chat-list').style.display='block';curChatId=null}
+function loadMessages(){if(!curChatId)return;db.ref('chats/'+curChatId+'/messages').once('value',s=>{let m=s.val()||{},c=document.getElementById('chat-messages');c.innerHTML='';Object.values(m).forEach(m=>{let d=document.createElement('div');d.className='chat-msg '+(m.from===cu.uid?'sent':'received');d.innerHTML=m.msg||'';if(m.img)d.innerHTML+='<br><img src="'+m.img+'" style="max-width:200px">';if(m.audio)d.innerHTML+='<br><audio controls src="'+m.audio+'"></audio>';d.innerHTML+='<br><small>'+(m.time||'')+'</small>';c.appendChild(d)});c.scrollTop=c.scrollHeight})}
+function sendChatMessage(){let t=document.getElementById('msg-text').value,imgF=document.getElementById('chat-img').files[0],audF=document.getElementById('chat-audio').files[0];if(!t&&!imgF&&!audF)return;let ref=db.ref('chats/'+curChatId+'/messages').push(),d={from:cu.uid,msg:t,time:new Date().toLocaleTimeString()};fileToBase64(imgF,i=>{d.img=i;fileToBase64(audF,a=>{d.audio=a;ref.set(d).then(()=>{document.getElementById('msg-text').value='';document.getElementById('chat-img').value='';document.getElementById('chat-audio').value='';loadMessages()})})})}
+function postStatus(){let t=document.getElementById('status-text').value,i=document.getElementById('status-img').files[0],a=document.getElementById('status-audio').files[0];if(!t&&!i&&!a)return;let ref=db.ref('statuses').push(),d={user:cu.uid,status:t,time:new Date().toLocaleTimeString()};fileToBase64(i,img=>{d.img=img;fileToBase64(a,aud=>{d.audio=aud;ref.set(d).then(loadStatus)}});document.getElementById('status-text').value='';document.getElementById('status-img').value='';document.getElementById('status-audio').value=''}
+function loadStatus(){db.ref('statuses').once('value',s=>{let p=s.val()||{},f=document.getElementById('status-feed');f.innerHTML='';Object.values(p).reverse().forEach(p=>{db.ref('users/'+p.user).once('value',u=>{let us=u.val()||{name:'Unknown'};f.innerHTML+=`<div class="status-post"><b>${us.name}</b><br>${p.status||''}${p.img?'<br><img src="'+p.img+'">':''}${p.audio?'<br><audio controls src="'+p.audio+'"></audio>':''}<br><small>${p.time}</small></div>`})})})}
+function postHappy(){let t=document.getElementById('happy-text').value,i=document.getElementById('happy-img').files[0];if(!t&&!i)return;let ref=db.ref('happyPosts').push(),d={user:cu.uid,text:t,time:new Date().toLocaleTimeString()};fileToBase64(i,img=>{d.img=img;ref.set(d).then(loadHappy)});document.getElementById('happy-text').value='';document.getElementById('happy-img').value=''}
+function loadHappy(){db.ref('happyPosts').once('value',s=>{let p=s.val()||{},f=document.getElementById('happy-feed');f.innerHTML='';Object.values(p).reverse().forEach(p=>{f.innerHTML+=`<div class="post-item">${p.text||''}${p.img?'<br><img src="'+p.img+'">':''}<br><small>${p.time}</small></div>`})})}
+function loadPics(){allImgs=[];let g=document.getElementById('pictures-grid');g.innerHTML='';Promise.all([db.ref('chats').once('value'),db.ref('statuses').once('value'),db.ref('happyPosts').once('value')]).then(([c,s,h])=>{let its=[...Object.values(c.val()||{}),...Object.values(s.val()||{}),...Object.values(h.val()||{})];its.forEach(it=>{if(it.messages)Object.values(it.messages).forEach(m=>{if(m.img)addImg(m.img)});else if(it.img)addImg(it.img)});function addImg(src){allImgs.push(src);let img=document.createElement('img');img.src=src;img.onclick=()=>openFull(allImgs.indexOf(src));g.appendChild(img)}})}
+function openFull(i){document.getElementById('full-img').src=allImgs[i];document.getElementById('img-overlay').style.display='flex'}
+function loadProfile(){db.ref('users/'+cu.uid).once('value',s=>{let d=s.val();if(d){document.getElementById('profile-name').innerText=d.name||'';document.getElementById('profile-email').innerText=d.email||'';document.getElementById('profile-pic-display').src=d.profilePic||''}})}
+function updateProfilePic(){let f=document.getElementById('new-profile-pic').files[0];if(!f)return;fileToBase64(f,b=>{db.ref('users/'+cu.uid+'/profilePic').set(b).then(()=>{document.getElementById('profile-pic-display').src=b;alert('Profile pic updated')})})}
+document.getElementById('img-overlay').addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+</script></body></html>
