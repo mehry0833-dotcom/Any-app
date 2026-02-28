@@ -4,215 +4,453 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>House Talks 🗨️</title>
 <style>
-body{font-family:sans-serif;margin:0;padding:0;background:#032B44;color:#fff;}
-.screen{display:none;padding:20px;padding-top:60px;}
-.active{display:block;}
-.chat-msg{margin:10px 0;padding:10px;border-radius:8px;max-width:60%;}
-.sent{background:#00BFFF;margin-left:auto;color:#fff;}
-.received{background:#1E90FF;color:#fff;}
-.status-post{margin:10px 0;padding:10px;border:1px solid #ddd;background:#05386B;}
-.nav{position:fixed;top:0;left:0;width:100%;background:#032B44;padding:10px;text-align:center;}
-.nav button{background:#1E90FF;color:#fff;border:none;padding:10px 20px;border-radius:50%;margin:0 10px;cursor:pointer;}
+  body { font-family: sans-serif; margin: 0; padding: 0; background: #032B44; color: #fff; }
+  .screen { display: none; padding: 20px; padding-top: 80px; }
+  .active { display: block; }
+  .chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 80%; position: relative; }
+  .sent { background: #00BFFF; margin-left: auto; color: #fff; }
+  .received { background: #1E90FF; color: #fff; }
+  .status-post, .post-item, .happy-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; background: #05386B; border-radius: 8px; position: relative; }
+  .nav { position: fixed; top: 0; left: 0; width: 100%; background: #032B44; padding: 10px 0; text-align: center; z-index: 10; border-bottom: 2px solid #1E90FF; }
+  .nav button { background: #1E90FF; color: #fff; border: none; padding: 8px 15px; border-radius: 30px; margin: 0 5px; cursor: pointer; font-size: 14px; }
+  .top-format { background: #05386B; padding: 8px; margin: 0; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px; border-bottom: 2px solid #00BFFF; color: #fff; position: fixed; top: 0; left: 0; width: 100%; z-index: 20; }
+  .splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #032B44; color: white; display: flex; justify-content: center; align-items: center; font-size: 2rem; z-index: 100; flex-direction: column; }
+  .splash small { font-size: 1rem; margin-top: 10px; color: #aaa; }
+  .msg-media { max-width: 200px; margin-top: 5px; border-radius: 5px; }
+  .audio-player { width: 100%; margin-top: 5px; }
+  .reaction-bar { display: flex; gap: 5px; margin-top: 5px; }
+  .reaction-btn { background: none; border: 1px solid #fff; color: #fff; border-radius: 12px; padding: 2px 8px; cursor: pointer; font-size: 12px; }
+  .reply-indicator { background: rgba(255,255,255,0.2); padding: 4px; border-left: 3px solid #fff; font-size: 0.85em; margin-bottom: 5px; }
+  .emoji-picker { display: flex; gap: 5px; margin: 5px 0; flex-wrap: wrap; }
+  .emoji-picker span { font-size: 24px; cursor: pointer; }
+  .typing-indicator { color: #aaa; font-style: italic; margin-top: 5px; }
+  .delete-btn, .edit-btn { margin-left: 10px; background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 4px; cursor: pointer; padding: 2px 6px; font-size: 12px; }
+  .small-btn { background: #1E90FF; border: none; color: white; border-radius: 12px; padding: 4px 8px; cursor: pointer; font-size: 12px; margin: 2px; }
+  input, button, input[type="file"] { margin: 5px 0; padding: 8px; border-radius: 6px; border: none; }
+  input[type="text"], input[type="file"] { width: calc(100% - 20px); background: #fff; color: #000; }
+  button { background: #1E90FF; color: white; cursor: pointer; }
+  #chat-log, #status-log, #post-log, #happy-log, #pics-log { margin-top: 20px; }
+  /* adjust for fixed header */
+  body { padding-top: 100px; }
+  .screen { padding-top: 100px; }
+  .top-format { line-height: 2; }
 </style>
 </head>
 <body>
 
+<!-- Splash Screen -->
+<div id="splash" class="splash">
+  <div>🏠 Welcome to House Talks 🗨️</div>
+  <small>loading memories...</small>
+</div>
+
+<!-- Format header (as requested) -->
+<div class="top-format">
+  ┌───────────────────────────────┐<br>
+  | 🏠 Home   💬 Chats   🎵 Status |<br>
+  └───────────────────────────────┘
+</div>
+
+<!-- Navigation -->
 <div class="nav">
-<button onclick="showScreen('chats')">Chats 🗨️</button>
-<button onclick="showScreen('status')">Status 🌟</button>
-<button onclick="showScreen('posts')">Posts 📝</button>
-<button onclick="showScreen('pictures')">Pictures 🖼️</button>
-<button onclick="showScreen('happy')">Happy 😊</button>
+  <button onclick="showScreen('chats')">Chats 🗨️</button>
+  <button onclick="showScreen('status')">Status 🌟</button>
+  <button onclick="showScreen('posts')">Posts 📝</button>
+  <button onclick="showScreen('pictures')">Pictures 🖼️</button>
+  <button onclick="showScreen('happy')">Happy 😊</button>
 </div>
 
+<!-- CHATS SCREEN -->
 <div id="chats-screen" class="screen active">
-<h2>Chats 🗨️</h2>
-
-<input id="name-input" placeholder="Enter your name">
-<button onclick="setName()">Save Name</button>
-<br><br>
-
-<input id="msg-input" placeholder="Message">
-<button onclick="sendMsg()">Send</button>
-<button onclick="clearChats()">Delete All Chats</button>
-
-<div id="chat-log"></div>
+  <h2>Chats 🗨️</h2>
+  <input id="name-input" placeholder="Enter your name" value="">
+  <button onclick="setName()">Save Name</button>
+  <br><br>
+  <!-- Emoji picker pro feature -->
+  <div class="emoji-picker">
+    <span onclick="insertEmoji('😊')">😊</span>
+    <span onclick="insertEmoji('😂')">😂</span>
+    <span onclick="insertEmoji('❤️')">❤️</span>
+    <span onclick="insertEmoji('👍')">👍</span>
+    <span onclick="insertEmoji('🎉')">🎉</span>
+  </div>
+  <input id="msg-input" placeholder="Message" style="width: 70%;">
+  <button onclick="sendMsg()">Send</button><br>
+  <input type="file" id="chat-image" accept="image/*" style="width: auto;"> 📷
+  <input type="file" id="chat-audio" accept="audio/*" style="width: auto;"> 🎵
+  <button onclick="clearChats()">Delete All Chats</button>
+  <div id="chat-log"></div>
+  <!-- Typing indicator pro feature (simulated) -->
+  <div id="typingIndicator" class="typing-indicator"></div>
+  <button class="small-btn" onclick="simulateTyping()">✏️ Simulate typing</button>
 </div>
 
+<!-- STATUS SCREEN -->
 <div id="status-screen" class="screen">
-<h2>Status 🌟</h2>
-<input id="status-input" placeholder="What's up?">
-<input type="file" id="status-image">
-<input type="file" id="status-music" accept="audio/*">
-<button onclick="postStatus()">Post</button>
-<div id="status-log"></div>
+  <h2>Status 🌟</h2>
+  <input id="status-input" placeholder="What's up?">
+  <input type="file" id="status-image">
+  <input type="file" id="status-music" accept="audio/*">
+  <button onclick="postStatus()">Post</button>
+  <div id="status-log"></div>
 </div>
 
+<!-- POSTS SCREEN -->
 <div id="posts-screen" class="screen">
-<h2>Posts 📝</h2>
-<input id="post-input" placeholder="What's on your mind?">
-<input type="file" id="post-image">
-<button onclick="post()">Post</button>
-<div id="post-log"></div>
+  <h2>Posts 📝</h2>
+  <input id="post-input" placeholder="What's on your mind?">
+  <input type="file" id="post-image">
+  <button onclick="post()">Post</button>
+  <div id="post-log"></div>
 </div>
 
+<!-- PICTURES SCREEN -->
 <div id="pictures-screen" class="screen">
-<h2>Pictures 🖼️</h2>
-<div id="pics-log"></div>
+  <h2>Pictures 🖼️</h2>
+  <div id="pics-log"></div>
 </div>
 
+<!-- HAPPY SCREEN -->
 <div id="happy-screen" class="screen">
-<h2>What makes you happy? 😊</h2>
-<input id="happy-input" placeholder="Share something">
-<input type="file" id="happy-image">
-<button onclick="postHappy()">Post</button>
-<div id="happy-log"></div>
+  <h2>What makes you happy? 😊</h2>
+  <input id="happy-input" placeholder="Share something">
+  <input type="file" id="happy-image">
+  <button onclick="postHappy()">Post</button>
+  <div id="happy-log"></div>
 </div>
 
 <script>
-let name=localStorage.getItem('name')||'';
-let chats=JSON.parse(localStorage.getItem('chats'))||[];
-let statuses=JSON.parse(localStorage.getItem('statuses'))||[];
-let posts=JSON.parse(localStorage.getItem('posts'))||[];
-let happyPosts=JSON.parse(localStorage.getItem('happyPosts'))||[];
+// ---- Data ----
+let name = localStorage.getItem('name') || '';
+let chats = JSON.parse(localStorage.getItem('chats')) || [];
+let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
+let posts = JSON.parse(localStorage.getItem('posts')) || [];
+let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
 
-function showScreen(screen){
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-document.getElementById(screen+'-screen').classList.add('active');
-if(screen==='chats')loadChats();
-if(screen==='status')loadStatuses();
-if(screen==='posts')loadPosts();
-if(screen==='pictures')loadPics();
-if(screen==='happy')loadHappy();
+// Helper to generate unique ID
+function uid() { return Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+
+// ---- Splash ----
+window.onload = function() {
+  document.getElementById('name-input').value = name;
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+  }, 4000);
+};
+
+// ---- Navigation ----
+function showScreen(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screen+'-screen').classList.add('active');
+  if(screen==='chats') loadChats();
+  if(screen==='status') loadStatuses();
+  if(screen==='posts') loadPosts();
+  if(screen==='pictures') loadPics();
+  if(screen==='happy') loadHappy();
 }
 
-function setName(){
-name=document.getElementById('name-input').value;
-localStorage.setItem('name',name);
+// ---- Name ----
+function setName() {
+  name = document.getElementById('name-input').value;
+  localStorage.setItem('name', name);
 }
 
-function sendMsg(){
-if(!name){alert('Enter your name first');return;}
-let msg=document.getElementById('msg-input').value;
-if(!msg)return;
-chats.push({from:name,msg,time:new Date().toLocaleTimeString()});
-localStorage.setItem('chats',JSON.stringify(chats));
-document.getElementById('msg-input').value='';
-loadChats();
+// ---- CHATS: send, load, delete, edit, react, reply ----
+function sendMsg() {
+  if(!name) { alert('Enter your name first'); return; }
+  let text = document.getElementById('msg-input').value;
+  let imgFile = document.getElementById('chat-image').files[0];
+  let audioFile = document.getElementById('chat-audio').files[0];
+  if(!text && !imgFile && !audioFile) return;
+
+  let imgUrl = imgFile ? URL.createObjectURL(imgFile) : null;
+  let audioUrl = audioFile ? URL.createObjectURL(audioFile) : null;
+
+  let newMsg = {
+    id: uid(),
+    from: name,
+    text: text,
+    img: imgUrl,
+    audio: audioUrl,
+    time: new Date().toLocaleTimeString(),
+    reactions: [],      // pro: reactions
+    replyTo: null,      // pro: reply
+    seen: false         // pro: seen status
+  };
+  chats.push(newMsg);
+  localStorage.setItem('chats', JSON.stringify(chats));
+  // Clear inputs
+  document.getElementById('msg-input').value = '';
+  document.getElementById('chat-image').value = '';
+  document.getElementById('chat-audio').value = '';
+  loadChats();
 }
 
-function loadChats(){
-let log=document.getElementById('chat-log');
-log.innerHTML='';
-chats.forEach(c=>{
-log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
-<b>${c.from}</b><br>${c.msg}<br><small>${c.time}</small></div>`;
-});
+function loadChats() {
+  let log = document.getElementById('chat-log');
+  log.innerHTML = '';
+  chats.forEach((c, index) => {
+    let replyHtml = '';
+    if (c.replyTo) {
+      let repliedMsg = chats.find(m => m.id === c.replyTo);
+      if (repliedMsg) {
+        replyHtml = `<div class="reply-indicator">↪️ ${repliedMsg.from}: ${repliedMsg.text.substring(0,30)}</div>`;
+      }
+    }
+    let reactionsHtml = '<div class="reaction-bar">';
+    // count reactions
+    let counts = {};
+    c.reactions.forEach(r => counts[r] = (counts[r]||0)+1);
+    for (let emoji in counts) {
+      reactionsHtml += `<span class="reaction-btn" onclick="reactToMessage('${c.id}', '${emoji}')">${emoji} ${counts[emoji]}</span>`;
+    }
+    reactionsHtml += '</div>';
+
+    let mediaHtml = '';
+    if(c.img) mediaHtml += `<img src="${c.img}" class="msg-media">`;
+    if(c.audio) mediaHtml += `<audio src="${c.audio}" controls class="audio-player"></audio>`;
+
+    log.innerHTML += `
+      <div class="chat-msg ${c.from === name ? 'sent' : 'received'}" id="msg-${c.id}">
+        ${replyHtml}
+        <b>${c.from}</b><br>${c.text}<br>
+        ${mediaHtml}
+        <small>${c.time}</small> ${c.seen ? '👁️' : ''}
+        <div style="margin-top:5px">
+          <button class="delete-btn" onclick="deleteChatMessage('${c.id}')">🗑️</button>
+          <button class="edit-btn" onclick="editChatMessage('${c.id}')">✏️</button>
+          <button class="edit-btn" onclick="reactToMessage('${c.id}', '👍')">👍</button>
+          <button class="edit-btn" onclick="reactToMessage('${c.id}', '❤️')">❤️</button>
+          <button class="edit-btn" onclick="setReplyTo('${c.id}')">↩️ reply</button>
+        </div>
+        ${reactionsHtml}
+      </div>`;
+  });
+  // mark as seen (pro feature)
+  chats.forEach(c => { if(c.from !== name) c.seen = true; });
+  localStorage.setItem('chats', JSON.stringify(chats));
 }
 
-function clearChats(){
-chats=[];
-localStorage.removeItem('chats');
-loadChats();
+function deleteChatMessage(id) {
+  chats = chats.filter(c => c.id !== id);
+  localStorage.setItem('chats', JSON.stringify(chats));
+  loadChats();
 }
 
-function postStatus(){
-if(!name){alert('Enter your name first');return;}
-let status=document.getElementById('status-input').value;
-let img=document.getElementById('status-image').files[0];
-let music=document.getElementById('status-music').files[0];
-statuses.push({
-user:name,
-status,
-img:img?URL.createObjectURL(img):null,
-music:music?URL.createObjectURL(music):null,
-time:new Date().toLocaleTimeString()
-});
-localStorage.setItem('statuses',JSON.stringify(statuses));
-document.getElementById('status-input').value='';
-loadStatuses();
+function editChatMessage(id) {
+  let newText = prompt('Edit message:');
+  if (newText !== null) {
+    let msg = chats.find(c => c.id === id);
+    if (msg) { msg.text = newText; }
+    localStorage.setItem('chats', JSON.stringify(chats));
+    loadChats();
+  }
 }
 
-function loadStatuses(){
-let log=document.getElementById('status-log');
-log.innerHTML='';
-statuses.forEach((s,i)=>{
-log.innerHTML+=`
-<div class="status-post">
-<p>${s.user}: ${s.status}</p>
-${s.img?'<img src="'+s.img+'" width="100%">':''}
-${s.music?'<audio src="'+s.music+'" autoplay loop controls></audio>':''}
-<p><small>${s.time}</small></p>
-<button onclick="deleteStatus(${i})">Delete</button>
-</div>`;
-});
+function reactToMessage(id, emoji) {
+  let msg = chats.find(c => c.id === id);
+  if (msg) {
+    msg.reactions.push(emoji);
+    localStorage.setItem('chats', JSON.stringify(chats));
+    loadChats();
+  }
 }
 
-function deleteStatus(i){
-statuses.splice(i,1);
-localStorage.setItem('statuses',JSON.stringify(statuses));
-loadStatuses();
+let replyContext = null;
+function setReplyTo(id) {
+  replyContext = id;
+  alert('Reply set. Type your message and send.');
+  // focus input
+  document.getElementById('msg-input').focus();
+  // override send to include reply id
+  window.__pendingReply = id;
 }
 
-function post(){
-if(!name){alert('Enter your name first');return;}
-let post=document.getElementById('post-input').value;
-let img=document.getElementById('post-image').files[0];
-posts.push({user:name,post,img:img?URL.createObjectURL(img):null,likes:0,time:new Date().toLocaleTimeString()});
-localStorage.setItem('posts',JSON.stringify(posts));
-document.getElementById('post-input').value='';
-loadPosts();
+// override send to handle reply
+const originalSend = sendMsg;
+sendMsg = function() {
+  if(!name) { alert('Enter your name first'); return; }
+  let text = document.getElementById('msg-input').value;
+  let imgFile = document.getElementById('chat-image').files[0];
+  let audioFile = document.getElementById('chat-audio').files[0];
+  if(!text && !imgFile && !audioFile) return;
+
+  let imgUrl = imgFile ? URL.createObjectURL(imgFile) : null;
+  let audioUrl = audioFile ? URL.createObjectURL(audioFile) : null;
+
+  let newMsg = {
+    id: uid(),
+    from: name,
+    text: text,
+    img: imgUrl,
+    audio: audioUrl,
+    time: new Date().toLocaleTimeString(),
+    reactions: [],
+    replyTo: window.__pendingReply || null,
+    seen: false
+  };
+  chats.push(newMsg);
+  localStorage.setItem('chats', JSON.stringify(chats));
+  window.__pendingReply = null;
+  document.getElementById('msg-input').value = '';
+  document.getElementById('chat-image').value = '';
+  document.getElementById('chat-audio').value = '';
+  loadChats();
+};
+
+function insertEmoji(emoji) {
+  let input = document.getElementById('msg-input');
+  input.value += emoji;
 }
 
-function loadPosts(){
-let log=document.getElementById('post-log');
-log.innerHTML='';
-posts.forEach((p,i)=>{
-log.innerHTML+=`<div class="status-post">
-<p>${p.user}: ${p.post}</p>
-${p.img?'<img src="'+p.img+'" width="100%">':''}
-<p>Likes:${p.likes}</p>
-<p><small>${p.time}</small></p>
-<button onclick="likePost(${i})">👍</button>
-</div>`;
-});
+function simulateTyping() {
+  let ind = document.getElementById('typingIndicator');
+  ind.innerText = '✨ Someone is typing...';
+  setTimeout(() => ind.innerText = '', 2000);
 }
 
-function likePost(i){
-posts[i].likes++;
-localStorage.setItem('posts',JSON.stringify(posts));
-loadPosts();
+function clearChats() {
+  chats = [];
+  localStorage.removeItem('chats');
+  loadChats();
 }
 
-function loadPics(){
-let log=document.getElementById('pics-log');
-log.innerHTML='';
-posts.forEach(p=>{if(p.img)log.innerHTML+=`<img src="${p.img}" width="100%">`;});
+// ---- STATUS (already has delete) ----
+function postStatus() {
+  if(!name){ alert('Enter your name first'); return; }
+  let status = document.getElementById('status-input').value;
+  let img = document.getElementById('status-image').files[0];
+  let music = document.getElementById('status-music').files[0];
+  statuses.push({
+    user: name,
+    status,
+    img: img ? URL.createObjectURL(img) : null,
+    music: music ? URL.createObjectURL(music) : null,
+    time: new Date().toLocaleTimeString(),
+    id: uid()
+  });
+  localStorage.setItem('statuses', JSON.stringify(statuses));
+  document.getElementById('status-input').value = '';
+  document.getElementById('status-image').value = '';
+  document.getElementById('status-music').value = '';
+  loadStatuses();
+}
+function loadStatuses() {
+  let log = document.getElementById('status-log');
+  log.innerHTML = '';
+  statuses.forEach((s, i) => {
+    log.innerHTML += `<div class="status-post">
+      <p>${s.user}: ${s.status}</p>
+      ${s.img ? '<img src="'+s.img+'" width="100%">' : ''}
+      ${s.music ? '<audio src="'+s.music+'" autoplay loop controls></audio>' : ''}
+      <p><small>${s.time}</small></p>
+      <button onclick="deleteStatus('${s.id}')">Delete</button>
+    </div>`;
+  });
+}
+function deleteStatus(id) {
+  statuses = statuses.filter(s => s.id !== id);
+  localStorage.setItem('statuses', JSON.stringify(statuses));
+  loadStatuses();
 }
 
-function postHappy(){
-if(!name){alert('Enter your name first');return;}
-let happy=document.getElementById('happy-input').value;
-let img=document.getElementById('happy-image').files[0];
-happyPosts.push({user:name,happy,img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()});
-localStorage.setItem('happyPosts',JSON.stringify(happyPosts));
-document.getElementById('happy-input').value='';
-loadHappy();
+// ---- POSTS (add delete) ----
+function post() {
+  if(!name){ alert('Enter your name first'); return; }
+  let post = document.getElementById('post-input').value;
+  let img = document.getElementById('post-image').files[0];
+  posts.push({
+    user: name,
+    post,
+    img: img ? URL.createObjectURL(img) : null,
+    likes: 0,
+    time: new Date().toLocaleTimeString(),
+    id: uid()
+  });
+  localStorage.setItem('posts', JSON.stringify(posts));
+  document.getElementById('post-input').value = '';
+  document.getElementById('post-image').value = '';
+  loadPosts();
+}
+function loadPosts() {
+  let log = document.getElementById('post-log');
+  log.innerHTML = '';
+  posts.forEach((p, i) => {
+    log.innerHTML += `<div class="post-item">
+      <p>${p.user}: ${p.post}</p>
+      ${p.img ? '<img src="'+p.img+'" width="100%">' : ''}
+      <p>Likes: ${p.likes}</p>
+      <p><small>${p.time}</small></p>
+      <button onclick="likePost('${p.id}')">👍</button>
+      <button onclick="deletePost('${p.id}')">🗑️ Delete</button>
+    </div>`;
+  });
+}
+function likePost(id) {
+  let p = posts.find(p => p.id === id);
+  if(p) p.likes++;
+  localStorage.setItem('posts', JSON.stringify(posts));
+  loadPosts();
+}
+function deletePost(id) {
+  posts = posts.filter(p => p.id !== id);
+  localStorage.setItem('posts', JSON.stringify(posts));
+  loadPosts();
+  if (document.getElementById('pictures-screen').classList.contains('active')) loadPics(); // refresh pics if open
 }
 
-function loadHappy(){
-let log=document.getElementById('happy-log');
-log.innerHTML='';
-happyPosts.forEach(h=>{
-log.innerHTML+=`<div class="status-post">
-<p>${h.user}: ${h.happy}</p>
-${h.img?'<img src="'+h.img+'" width="100%">':''}
-<p><small>${h.time}</small></p>
-</div>`;
-});
+// ---- PICTURES (with delete) ----
+function loadPics() {
+  let log = document.getElementById('pics-log');
+  log.innerHTML = '';
+  posts.forEach(p => {
+    if(p.img) {
+      log.innerHTML += `<div style="margin:10px 0;">
+        <img src="${p.img}" width="100%">
+        <button onclick="deletePost('${p.id}')">🗑️ Delete Post</button>
+        <hr></div>`;
+    }
+  });
 }
 
+// ---- HAPPY (add delete) ----
+function postHappy() {
+  if(!name){ alert('Enter your name first'); return; }
+  let happy = document.getElementById('happy-input').value;
+  let img = document.getElementById('happy-image').files[0];
+  happyPosts.push({
+    user: name,
+    happy,
+    img: img ? URL.createObjectURL(img) : null,
+    time: new Date().toLocaleTimeString(),
+    id: uid()
+  });
+  localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
+  document.getElementById('happy-input').value = '';
+  document.getElementById('happy-image').value = '';
+  loadHappy();
+}
+function loadHappy() {
+  let log = document.getElementById('happy-log');
+  log.innerHTML = '';
+  happyPosts.forEach(h => {
+    log.innerHTML += `<div class="happy-item">
+      <p>${h.user}: ${h.happy}</p>
+      ${h.img ? '<img src="'+h.img+'" width="100%">' : ''}
+      <p><small>${h.time}</small></p>
+      <button onclick="deleteHappy('${h.id}')">🗑️ Delete</button>
+    </div>`;
+  });
+}
+function deleteHappy(id) {
+  happyPosts = happyPosts.filter(h => h.id !== id);
+  localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
+  loadHappy();
+}
+
+// ---- initial load ----
 loadChats();
 </script>
+
 </body>
-  </html>
+                                        </html>
