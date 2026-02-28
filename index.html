@@ -44,7 +44,7 @@ audio{width:100%;margin-top:5px}
 <input type="file" id="profile-pic" accept="image/*">
 <button onclick="signup()">Sign Up</button>
 <button onclick="login()">Login</button>
-<div id="login-msg"></div>
+<div id="login-msg" style="color: #ffcc00;"></div>
 </div>
 
 <!-- Home -->
@@ -121,8 +121,20 @@ audio{width:100%;margin-top:5px}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// Firebase config (only databaseURL is provided; ensure your project has auth enabled)
-const firebaseConfig = { databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com/" };
+// ================= COMPLETE FIREBASE CONFIG =================
+// Replace the placeholder values below with your own Firebase project config
+// (from Project settings in Firebase console). The databaseURL is already provided.
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",            // <-- Replace with your API key
+  authDomain: "YOUR_AUTH_DOMAIN",    // <-- e.g., your-project-id.firebaseapp.com
+  databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com/",
+  projectId: "YOUR_PROJECT_ID",      // <-- Your project ID
+  storageBucket: "YOUR_STORAGE_BUCKET", // <-- e.g., your-project-id.appspot.com
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+// =============================================================
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
@@ -158,10 +170,14 @@ function signup(){
     .then(res=>{
       let uid=res.user.uid;
       fileToBase64(file,data=>{
-        db.ref('users/'+uid).set({username,email,profilePic:data||null});
-        document.getElementById('login-msg').innerText="Sign Up Successful!";
+        db.ref('users/'+uid).set({username,email,profilePic:data||null})
+          .then(() => {
+            document.getElementById('login-msg').innerText="Sign Up Successful!";
+          });
       });
-    }).catch(e=>document.getElementById('login-msg').innerText=e.message);
+    }).catch(e=>{
+      document.getElementById('login-msg').innerText='Error: '+e.message;
+    });
 }
 
 function login(){
@@ -169,7 +185,9 @@ function login(){
   let password=document.getElementById('password').value;
   auth.signInWithEmailAndPassword(email,password)
     .then(()=>document.getElementById('login-msg').innerText="")
-    .catch(e=>document.getElementById('login-msg').innerText=e.message);
+    .catch(e=>{
+      document.getElementById('login-msg').innerText='Login failed: '+e.message;
+    });
 }
 
 function logout(){ auth.signOut(); }
@@ -178,7 +196,6 @@ function showScreen(screen){
   if(!currentUser) return;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen+'-screen').classList.add('active');
-  // Load pictures when entering the pictures screen
   if(screen === 'pictures') loadPics();
 }
 
@@ -255,7 +272,7 @@ function sendMsg(){
   if(!msg&&!imgFile&&!audioFile) return;
   let msgRef=db.ref('chats/'+currentChatId+'/messages').push();
   let msgData={from:currentUser.uid,msg:msg||'',img:null,audio:null,time:new Date().toLocaleTimeString()};
-  fileToBase64(imgFile,imgData=>{ msgData.img=imgData; fileToBase64(audioFile,audioData=>{ msgData.audio=audioData; msgRef.set(msgData); document.getElementById('msg-input').value=''; document.getElementById('chat-image').value=''; document.getElementById('chat-audio').value=''; loadChatMessages(); }); });
+  fileToBase64(imgFile,imgData=>{ msgData.img=imgData; fileToBase64(audioFile,audioData=>{ msgData.audio=audioData; msgRef.set(msgData).then(()=>{ document.getElementById('msg-input').value=''; document.getElementById('chat-image').value=''; document.getElementById('chat-audio').value=''; loadChatMessages(); }); }); });
 }
 function loadChatMessages(){
   if(!currentChatId) return;
@@ -270,11 +287,11 @@ function loadChatMessages(){
 }
 
 // --- Status / Posts / Happy / Pictures ---
-function postStatus(){ if(!currentUser) return alert('Login first'); let txt=document.getElementById('status-input').value; let img=document.getElementById('status-image').files[0]; let music=document.getElementById('status-music').files[0]; if(!txt&&!img&&!music) return; let ref=db.ref('statuses').push(); let data={user:currentUser.uid,status:txt||'',img:null,music:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; fileToBase64(music,a=>{ data.music=a; ref.set(data); loadStatuses(); }); }); document.getElementById('status-input').value=''; document.getElementById('status-image').value=''; document.getElementById('status-music').value=''; }
-function loadStatuses(){ db.ref('statuses').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('status-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; db.ref('users/'+v.user).once('value',u=>{ log.innerHTML+='<div class="status-post"><b>'+u.val().username+'</b><br>'+v.status+(v.img?'<br><img src="'+v.img+'">':'')+(v.music?'<br><audio controls src="'+v.music+'"></audio>':'')+'<br><small>'+v.time+'</small></div>'; }); }); }); }
-function post(){ let txt=document.getElementById('post-input').value; let img=document.getElementById('post-image').files[0]; if(!txt&&!img) return; let ref=db.ref('posts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data); loadPosts(); }); document.getElementById('post-input').value=''; document.getElementById('post-image').value=''; }
+function postStatus(){ if(!currentUser) return alert('Login first'); let txt=document.getElementById('status-input').value; let img=document.getElementById('status-image').files[0]; let music=document.getElementById('status-music').files[0]; if(!txt&&!img&&!music) return; let ref=db.ref('statuses').push(); let data={user:currentUser.uid,status:txt||'',img:null,music:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; fileToBase64(music,a=>{ data.music=a; ref.set(data).then(()=>{ loadStatuses(); }); }); }); document.getElementById('status-input').value=''; document.getElementById('status-image').value=''; document.getElementById('status-music').value=''; }
+function loadStatuses(){ db.ref('statuses').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('status-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; db.ref('users/'+v.user).once('value',u=>{ if(u.val()) log.innerHTML+='<div class="status-post"><b>'+u.val().username+'</b><br>'+v.status+(v.img?'<br><img src="'+v.img+'">':'')+(v.music?'<br><audio controls src="'+v.music+'"></audio>':'')+'<br><small>'+v.time+'</small></div>'; }); }); }); }
+function post(){ let txt=document.getElementById('post-input').value; let img=document.getElementById('post-image').files[0]; if(!txt&&!img) return; let ref=db.ref('posts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data).then(()=>{ loadPosts(); }); }); document.getElementById('post-input').value=''; document.getElementById('post-image').value=''; }
 function loadPosts(){ db.ref('posts').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('post-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; log.innerHTML+='<div class="status-post">'+v.txt+(v.img?'<br><img src="'+v.img+'">':'')+'<br><small>'+v.time+'</small></div>'; }); }); }
-function postHappy(){ let txt=document.getElementById('happy-input').value; let img=document.getElementById('happy-image').files[0]; if(!txt&&!img) return; let ref=db.ref('happyPosts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data); loadHappy(); }); document.getElementById('happy-input').value=''; document.getElementById('happy-image').value=''; }
+function postHappy(){ let txt=document.getElementById('happy-input').value; let img=document.getElementById('happy-image').files[0]; if(!txt&&!img) return; let ref=db.ref('happyPosts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data).then(()=>{ loadHappy(); }); }); document.getElementById('happy-input').value=''; document.getElementById('happy-image').value=''; }
 function loadHappy(){ db.ref('happyPosts').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('happy-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; log.innerHTML+='<div class="status-post">'+v.txt+(v.img?'<br><img src="'+v.img+'">':'')+'<br><small>'+v.time+'</small></div>'; }); }); }
 
 function loadPics(){
@@ -327,13 +344,13 @@ let fullImg = document.getElementById('full-img');
 let startX = 0;
 
 // Click to close
-overlay.onclick = function() {
+overlay.addEventListener('click', function() {
   overlay.style.display = 'none';
-};
+});
 
 // Swipe navigation for touch devices
 overlay.addEventListener('touchstart', function(e) {
-  e.stopPropagation(); // prevent triggering click
+  e.stopPropagation();
   startX = e.touches[0].clientX;
 });
 
