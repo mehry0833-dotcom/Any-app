@@ -17,52 +17,67 @@ button{cursor:pointer}
 .received{background:#1E90FF}
 img{max-width:100%;border-radius:6px;margin-top:5px}
 audio{width:100%;margin-top:5px}
-
-/* Pictures tab grid */
-.pics-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
-  gap:10px;
-}
-.pics-grid img {
-  width:100%;
-  height:100px;
-  object-fit:cover;
-  border-radius:8px;
-  cursor:pointer;
-  transition: transform 0.2s;
-}
+.pics-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;}
+.pics-grid img {width:100%;height:100px;object-fit:cover;border-radius:8px;cursor:pointer;transition: transform 0.2s;}
 .pics-grid img:hover { transform: scale(1.05); }
+.friend-item{padding:6px;margin:5px 0;border-radius:6px;background:#064663;cursor:pointer;}
 </style>
 </head>
 <body>
-
 <div class="nav">
 <button onclick="showScreen('home')">🏠</button>
-<button onclick="showScreen('chats')">💬</button>
-<button onclick="showScreen('status')">🎵</button>
-<button onclick="showScreen('posts')">📝</button>
-<button onclick="showScreen('pictures')">🖼️</button>
-<button onclick="showScreen('happy')">😊</button>
+<button onclick="showScreen('friends')">👥 Friends</button>
+<button onclick="showScreen('chats')">💬 Chats</button>
+<button onclick="showScreen('status')">🎵 Status</button>
+<button onclick="showScreen('posts')">📝 Posts</button>
+<button onclick="showScreen('pictures')">🖼️ Pictures</button>
+<button onclick="showScreen('happy')">😊 Happy</button>
+<button onclick="logout()" style="background:#FF4500">🚪 Logout</button>
 </div>
 
-<div id="home-screen" class="screen active">
+<!-- Login / Signup -->
+<div id="login-screen" class="screen active">
+<h2>Login / Sign Up</h2>
+<input id="email" placeholder="Email" type="email">
+<input id="password" placeholder="Password" type="password">
+<input id="username" placeholder="Username">
+<input type="file" id="profile-pic" accept="image/*">
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
+<div id="login-msg"></div>
+</div>
+
+<!-- Home -->
+<div id="home-screen" class="screen">
 <h2>Welcome to House Talks</h2>
-<p>All features working. Explore freely.</p>
+<p id="current-user"></p>
 </div>
 
+<!-- Friends -->
+<div id="friends-screen" class="screen">
+<h2>Search Friends</h2>
+<input id="friend-search" placeholder="Type username">
+<div id="search-results"></div>
+<h3>Your Friends</h3>
+<div id="friend-list"></div>
+</div>
+
+<!-- Chats -->
 <div id="chats-screen" class="screen">
 <h2>Chats</h2>
-<input id="name-input" placeholder="Enter your name">
-<button onclick="setName()">Save</button>
+<div id="chat-rooms"></div>
+<div id="chat-window" style="display:none;">
+<h3 id="chat-with"></h3>
 <input id="msg-input" placeholder="Message">
 <input type="file" id="chat-image" accept="image/*">
 <input type="file" id="chat-audio" accept="audio/*">
 <button onclick="sendMsg()">Send</button>
-<button onclick="clearChats()">Clear All</button>
+<button onclick="leaveChat()">Leave Chat</button>
 <div id="chat-log"></div>
 </div>
+</div>
 
+<!-- Status -->
 <div id="status-screen" class="screen">
 <h2>Status</h2>
 <input id="status-input" placeholder="What's up?">
@@ -72,6 +87,7 @@ audio{width:100%;margin-top:5px}
 <div id="status-log"></div>
 </div>
 
+<!-- Posts -->
 <div id="posts-screen" class="screen">
 <h2>Posts</h2>
 <input id="post-input" placeholder="Share something">
@@ -80,11 +96,13 @@ audio{width:100%;margin-top:5px}
 <div id="post-log"></div>
 </div>
 
+<!-- Pictures -->
 <div id="pictures-screen" class="screen">
 <h2>All Pictures</h2>
 <div id="pics-log" class="pics-grid"></div>
 </div>
 
+<!-- Happy -->
 <div id="happy-screen" class="screen">
 <h2>Happy Zone</h2>
 <input id="happy-input" placeholder="What makes you happy?">
@@ -98,163 +116,249 @@ audio{width:100%;margin-top:5px}
   <img id="full-img" src="" style="max-width:95%;max-height:95%;border-radius:10px;touch-action:none">
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// Local storage
-let name = localStorage.getItem('name')||'';
-let chats = JSON.parse(localStorage.getItem('chats')||'[]');
-let statuses = JSON.parse(localStorage.getItem('statuses')||'[]');
-let posts = JSON.parse(localStorage.getItem('posts')||'[]');
-let happyPosts = JSON.parse(localStorage.getItem('happyPosts')||'[]');
+// Firebase config (only databaseURL is provided; ensure your project has auth enabled)
+const firebaseConfig = { databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com/" };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const MAX_FILE_SIZE = 1*1024*1024; // 1MB
+
+let currentUser = null;
+let allImages = [], currentIndex = 0;
+let currentChatId = null;
+let currentChatWith = null;
+
+// --- Auth ---
+auth.onAuthStateChanged(user=>{
+  if(user){
+    currentUser = user;
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    showScreen('home');
+    document.getElementById('current-user').innerText = 'Logged in as: '+user.email;
+    loadFriends(); loadChats(); loadStatuses(); loadPosts(); loadHappy();
+  } else {
+    currentUser = null;
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('login-screen').classList.add('active');
+  }
+});
+
+function signup(){
+  let email=document.getElementById('email').value.trim();
+  let password=document.getElementById('password').value;
+  let username=document.getElementById('username').value.trim();
+  let file=document.getElementById('profile-pic').files[0];
+  if(!username){ alert('Enter username'); return; }
+  auth.createUserWithEmailAndPassword(email,password)
+    .then(res=>{
+      let uid=res.user.uid;
+      fileToBase64(file,data=>{
+        db.ref('users/'+uid).set({username,email,profilePic:data||null});
+        document.getElementById('login-msg').innerText="Sign Up Successful!";
+      });
+    }).catch(e=>document.getElementById('login-msg').innerText=e.message);
+}
+
+function login(){
+  let email=document.getElementById('email').value.trim();
+  let password=document.getElementById('password').value;
+  auth.signInWithEmailAndPassword(email,password)
+    .then(()=>document.getElementById('login-msg').innerText="")
+    .catch(e=>document.getElementById('login-msg').innerText=e.message);
+}
+
+function logout(){ auth.signOut(); }
 
 function showScreen(screen){
+  if(!currentUser) return;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen+'-screen').classList.add('active');
-  if(screen==='chats') loadChats();
-  if(screen==='status') loadStatuses();
-  if(screen==='posts') loadPosts();
-  if(screen==='happy') loadHappy();
-  if(screen==='pictures') loadPics();
+  // Load pictures when entering the pictures screen
+  if(screen === 'pictures') loadPics();
 }
 
-// Name
-function setName(){ 
-  name=document.getElementById('name-input').value.trim();
-  if(name) localStorage.setItem('name', name);
+// --- File to Base64 ---
+function fileToBase64(file, callback){
+  if(!file){ callback(null); return; }
+  if(file.type.startsWith('image/')){
+    let img = new Image();
+    let reader = new FileReader();
+    reader.onload = e => { img.src = e.target.result; img.onload = ()=>{
+      const MAX_DIM = 800;
+      let w=img.width, h=img.height;
+      if(w>MAX_DIM || h>MAX_DIM){ if(w>h){ h=h*(MAX_DIM/w); w=MAX_DIM; } else { w=w*(MAX_DIM/h); h=MAX_DIM; } }
+      let canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+      let ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+      callback(canvas.toDataURL('image/jpeg',0.7));
+    };};
+    reader.readAsDataURL(file);
+  } else {
+    if(file.size>MAX_FILE_SIZE){ alert('File too large!'); callback(null); return; }
+    let reader = new FileReader(); reader.onload = e=>callback(e.target.result); reader.readAsDataURL(file);
+  }
 }
 
-// --- Chats ---
+// --- Friends ---
+function loadFriends(){
+  db.ref('friends/'+currentUser.uid).once('value',snap=>{
+    let friends=snap.val()||{};
+    let list=document.getElementById('friend-list'); list.innerHTML='';
+    Object.keys(friends).forEach(uid=>{
+      db.ref('users/'+uid).once('value',s=>{ let u=s.val(); if(u) list.innerHTML+='<div class="friend-item" onclick="openChat(\''+uid+'\',\''+u.username+'\')">'+u.username+'</div>'; });
+    });
+  });
+}
+
+document.getElementById('friend-search')?.addEventListener('input', e=>{
+  let term=e.target.value.trim().toLowerCase();
+  if(!term) { document.getElementById('search-results').innerHTML=''; return; }
+  db.ref('users').once('value',snap=>{
+    let users=snap.val()||{}; let res='';
+    Object.keys(users).forEach(uid=>{
+      let u=users[uid];
+      if(u.username.toLowerCase().includes(term) && uid!==currentUser.uid){
+        res+='<div class="friend-item" onclick="addFriend(\''+uid+'\',\''+u.username+'\')">'+u.username+'</div>';
+      }
+    });
+    document.getElementById('search-results').innerHTML=res;
+  });
+});
+
+function addFriend(uid,name){
+  db.ref('friends/'+currentUser.uid+'/'+uid).set(true);
+  db.ref('friends/'+uid+'/'+currentUser.uid).set(true);
+  alert('You are now friends with '+name);
+  loadFriends();
+}
+
+// --- Chat Functions ---
+function loadChats(){ loadFriends(); }
+function openChat(friendUid,friendName){
+  currentChatWith=friendName;
+  document.getElementById('chat-with').innerText='Chat with '+friendName;
+  document.getElementById('chat-window').style.display='block';
+  let chatId = [currentUser.uid,friendUid].sort().join('_');
+  currentChatId=chatId;
+  loadChatMessages();
+}
+function leaveChat(){ document.getElementById('chat-window').style.display='none'; currentChatId=null; currentChatWith=null; document.getElementById('chat-log').innerHTML=''; }
 function sendMsg(){
-  if(!name){alert('Enter your name first');return;}
+  if(!currentChatId) return alert('Open a chat first');
   let msg=document.getElementById('msg-input').value;
-  let img=document.getElementById('chat-image').files[0];
-  let audio=document.getElementById('chat-audio').files[0];
-  if(!msg&&!img&&!audio) return;
-  chats.push({from:name,msg:msg||'',img:img?URL.createObjectURL(img):null,audio:audio?URL.createObjectURL(audio):null,time:new Date().toLocaleTimeString()});
-  localStorage.setItem('chats',JSON.stringify(chats));
-  document.getElementById('msg-input').value=''; document.getElementById('chat-image').value=''; document.getElementById('chat-audio').value='';
-  loadChats();
+  let imgFile=document.getElementById('chat-image').files[0];
+  let audioFile=document.getElementById('chat-audio').files[0];
+  if(!msg&&!imgFile&&!audioFile) return;
+  let msgRef=db.ref('chats/'+currentChatId+'/messages').push();
+  let msgData={from:currentUser.uid,msg:msg||'',img:null,audio:null,time:new Date().toLocaleTimeString()};
+  fileToBase64(imgFile,imgData=>{ msgData.img=imgData; fileToBase64(audioFile,audioData=>{ msgData.audio=audioData; msgRef.set(msgData); document.getElementById('msg-input').value=''; document.getElementById('chat-image').value=''; document.getElementById('chat-audio').value=''; loadChatMessages(); }); });
 }
-function loadChats(){
-  let log=document.getElementById('chat-log'); log.innerHTML='';
-  chats.forEach((c,i)=>{
-    log.innerHTML+=`<div class="chat-msg ${c.from===name?'sent':'received'}">
-      <b>${c.from}</b><br>${c.msg||''}
-      ${c.img?`<img src="${c.img}">`:''}
-      ${c.audio?`<audio controls src="${c.audio}"></audio>`:''}
-      <br><small>${c.time}</small><br>
-      <button onclick="deleteChat(${i})">Delete</button>
-    </div>`;
+function loadChatMessages(){
+  if(!currentChatId) return;
+  db.ref('chats/'+currentChatId+'/messages').once('value',snap=>{
+    let msgs=snap.val()||{}; let log=document.getElementById('chat-log'); log.innerHTML='';
+    Object.keys(msgs).forEach(k=>{
+      let m=msgs[k]; let cls=m.from===currentUser.uid?'sent':'received';
+      log.innerHTML+='<div class="chat-msg '+cls+'">'+m.msg+(m.img?'<br><img src="'+m.img+'">':'')+(m.audio?'<br><audio controls src="'+m.audio+'"></audio>':'')+'<br><small>'+m.time+'</small></div>';
+    });
+    log.scrollTop=log.scrollHeight;
   });
 }
-function deleteChat(i){chats.splice(i,1); localStorage.setItem('chats',JSON.stringify(chats)); loadChats();}
-function clearChats(){chats=[]; localStorage.removeItem('chats'); loadChats();}
 
-// --- Status ---
-function postStatus(){
-  if(!name){alert('Enter your name first');return;}
-  let txt=document.getElementById('status-input').value;
-  let img=document.getElementById('status-image').files[0];
-  let music=document.getElementById('status-music').files[0];
-  if(!txt&&!img&&!music) return;
-  statuses.push({user:name,status:txt||'',img:img?URL.createObjectURL(img):null,music:music?URL.createObjectURL(music):null,time:new Date().toLocaleTimeString()});
-  localStorage.setItem('statuses',JSON.stringify(statuses));
-  document.getElementById('status-input').value=''; document.getElementById('status-image').value=''; document.getElementById('status-music').value='';
-  loadStatuses();
-}
-function loadStatuses(){
-  let log=document.getElementById('status-log'); log.innerHTML='';
-  statuses.forEach((s,i)=>{
-    log.innerHTML+=`<div class="status-post">
-      <b>${s.user}</b><br>${s.status||''}
-      ${s.img?`<img src="${s.img}">`:''}
-      ${s.music?`<audio controls src="${s.music}"></audio>`:''}
-      <br><small>${s.time}</small><br>
-      <button onclick="deleteStatus(${i})">Delete</button>
-    </div>`;
-  });
-}
-function deleteStatus(i){statuses.splice(i,1); localStorage.setItem('statuses',JSON.stringify(statuses)); loadStatuses();}
+// --- Status / Posts / Happy / Pictures ---
+function postStatus(){ if(!currentUser) return alert('Login first'); let txt=document.getElementById('status-input').value; let img=document.getElementById('status-image').files[0]; let music=document.getElementById('status-music').files[0]; if(!txt&&!img&&!music) return; let ref=db.ref('statuses').push(); let data={user:currentUser.uid,status:txt||'',img:null,music:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; fileToBase64(music,a=>{ data.music=a; ref.set(data); loadStatuses(); }); }); document.getElementById('status-input').value=''; document.getElementById('status-image').value=''; document.getElementById('status-music').value=''; }
+function loadStatuses(){ db.ref('statuses').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('status-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; db.ref('users/'+v.user).once('value',u=>{ log.innerHTML+='<div class="status-post"><b>'+u.val().username+'</b><br>'+v.status+(v.img?'<br><img src="'+v.img+'">':'')+(v.music?'<br><audio controls src="'+v.music+'"></audio>':'')+'<br><small>'+v.time+'</small></div>'; }); }); }); }
+function post(){ let txt=document.getElementById('post-input').value; let img=document.getElementById('post-image').files[0]; if(!txt&&!img) return; let ref=db.ref('posts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data); loadPosts(); }); document.getElementById('post-input').value=''; document.getElementById('post-image').value=''; }
+function loadPosts(){ db.ref('posts').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('post-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; log.innerHTML+='<div class="status-post">'+v.txt+(v.img?'<br><img src="'+v.img+'">':'')+'<br><small>'+v.time+'</small></div>'; }); }); }
+function postHappy(){ let txt=document.getElementById('happy-input').value; let img=document.getElementById('happy-image').files[0]; if(!txt&&!img) return; let ref=db.ref('happyPosts').push(); let data={txt:txt||'',img:null,time:new Date().toLocaleTimeString()}; fileToBase64(img,i=>{ data.img=i; ref.set(data); loadHappy(); }); document.getElementById('happy-input').value=''; document.getElementById('happy-image').value=''; }
+function loadHappy(){ db.ref('happyPosts').once('value',snap=>{ let s=snap.val()||{}; let log=document.getElementById('happy-log'); log.innerHTML=''; Object.keys(s).forEach(k=>{ let v=s[k]; log.innerHTML+='<div class="status-post">'+v.txt+(v.img?'<br><img src="'+v.img+'">':'')+'<br><small>'+v.time+'</small></div>'; }); }); }
 
-// --- Posts ---
-function post(){
-  let txt=document.getElementById('post-input').value;
-  let img=document.getElementById('post-image').files[0];
-  if(!txt&&!img) return;
-  posts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()});
-  localStorage.setItem('posts',JSON.stringify(posts));
-  document.getElementById('post-input').value=''; document.getElementById('post-image').value='';
-  loadPosts();
-}
-function loadPosts(){
-  let log=document.getElementById('post-log'); log.innerHTML='';
-  posts.forEach((p,i)=>{
-    log.innerHTML+=`<div class="status-post">
-      ${p.txt||''}
-      ${p.img?`<img src="${p.img}">`:''}
-      <br><small>${p.time}</small><br>
-      <button onclick="deletePost(${i})">Delete</button>
-    </div>`;
-  });
-}
-function deletePost(i){posts.splice(i,1); localStorage.setItem('posts',JSON.stringify(posts)); loadPosts();}
-
-// --- Happy ---
-function postHappy(){
-  let txt=document.getElementById('happy-input').value;
-  let img=document.getElementById('happy-image').files[0];
-  if(!txt&&!img) return;
-  happyPosts.push({txt:txt||'',img:img?URL.createObjectURL(img):null,time:new Date().toLocaleTimeString()});
-  localStorage.setItem('happyPosts',JSON.stringify(happyPosts));
-  document.getElementById('happy-input').value=''; document.getElementById('happy-image').value='';
-  loadHappy();
-}
-function loadHappy(){
-  let log=document.getElementById('happy-log'); log.innerHTML='';
-  happyPosts.forEach((h,i)=>{
-    log.innerHTML+=`<div class="status-post">
-      ${h.txt||''}
-      ${h.img?`<img src="${h.img}">`:''}
-      <br><small>${h.time}</small><br>
-      <button onclick="deleteHappy(${i})">Delete</button>
-    </div>`;
-  });
-}
-function deleteHappy(i){happyPosts.splice(i,1); localStorage.setItem('happyPosts',JSON.stringify(happyPosts)); loadHappy();}
-
-// --- Pictures tab with swipe gallery ---
-let allImages=[]; let currentIndex=0;
 function loadPics(){
   allImages=[];
-  let log=document.getElementById('pics-log'); log.innerHTML='';
-  [...chats,...statuses,...posts,...happyPosts].forEach(p=>{
-    if(p.img){
-      allImages.push(p.img);
-      let imgEl=document.createElement('img');
-      imgEl.src=p.img;
-      imgEl.onclick=()=>{ openFullScreen(allImages.indexOf(p.img)); };
-      log.appendChild(imgEl);
-    }
+  let log=document.getElementById('pics-log');
+  log.innerHTML='';
+  Promise.all([
+    db.ref('chats').once('value'),
+    db.ref('statuses').once('value'),
+    db.ref('posts').once('value'),
+    db.ref('happyPosts').once('value')
+  ]).then(([cSnap,sSnap,pSnap,hSnap])=>{
+    let items = [
+      ...Object.values(cSnap.val()||{}),
+      ...Object.values(sSnap.val()||{}),
+      ...Object.values(pSnap.val()||{}),
+      ...Object.values(hSnap.val()||{})
+    ];
+    items.forEach(p=>{
+      if(p.messages){
+        Object.values(p.messages).forEach(m=>{
+          if(m.img){
+            allImages.push(m.img);
+            let imgEl=document.createElement('img');
+            imgEl.src=m.img;
+            imgEl.onclick=()=>{ openFullScreen(allImages.indexOf(m.img)); };
+            log.appendChild(imgEl);
+          }
+        });
+      } else if(p.img){
+        allImages.push(p.img);
+        let imgEl=document.createElement('img');
+        imgEl.src=p.img;
+        imgEl.onclick=()=>{ openFullScreen(allImages.indexOf(p.img)); };
+        log.appendChild(imgEl);
+      }
+    });
   });
 }
+
 function openFullScreen(index){
   currentIndex=index;
   document.getElementById('full-img').src=allImages[currentIndex];
   document.getElementById('img-overlay').style.display='flex';
 }
-document.getElementById('img-overlay').onclick=()=>{ document.getElementById('img-overlay').style.display='none'; };
 
-// Swipe
-let startX=0;
-let overlay=document.getElementById('img-overlay');
-let img=document.getElementById('full-img');
-overlay.addEventListener('touchstart', e => { startX=e.touches[0].clientX; });
-overlay.addEventListener('touchend', e => {
-  let endX=e.changedTouches[0].clientX;
-  if(endX-startX>50){ currentIndex=(currentIndex-1+allImages.length)%allImages.length; }
-  else if(startX-endX>50){ currentIndex=(currentIndex+1)%allImages.length; }
-  else return;
-  img.src=allImages[currentIndex];
+// --- Fullscreen swipe gallery ---
+let overlay = document.getElementById('img-overlay');
+let fullImg = document.getElementById('full-img');
+let startX = 0;
+
+// Click to close
+overlay.onclick = function() {
+  overlay.style.display = 'none';
+};
+
+// Swipe navigation for touch devices
+overlay.addEventListener('touchstart', function(e) {
+  e.stopPropagation(); // prevent triggering click
+  startX = e.touches[0].clientX;
 });
+
+overlay.addEventListener('touchend', function(e) {
+  if (startX === 0) return;
+  let endX = e.changedTouches[0].clientX;
+  let diff = endX - startX;
+  if (Math.abs(diff) > 50) { // threshold
+    if (diff > 0) {
+      // swipe right -> previous
+      currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+    } else {
+      // swipe left -> next
+      currentIndex = (currentIndex + 1) % allImages.length;
+    }
+    fullImg.src = allImages[currentIndex];
+  }
+  startX = 0;
+});
+
+// Prevent accidental page scroll while swiping
+overlay.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+}, { passive: false });
+
 </script>
 </body>
   </html>
