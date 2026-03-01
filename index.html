@@ -51,8 +51,31 @@ document.getElementById('chat-audio').onchange=e=>{let f=e.target.files[0]; if(f
 function sendChatMessage(){let t=document.getElementById('msg-text').value.trim(); if(!t&&!m)return alert('Type a message or attach media'); let msg={sender:u.uid,timestamp:Date.now(),text:t}; if(m){msg.media=m; m=null} d.ref('messages/'+cid).push(msg).then(()=>{document.getElementById('msg-text').value=''; document.getElementById('chat-img').value=''; document.getElementById('chat-audio').value=''}).catch(e=>alert('Send error: '+e))}
 function loadMsgs(){let md=document.getElementById('chat-messages'); d.ref('messages/'+cid).orderByChild('timestamp').on('value',s=>{md.innerHTML=''; s.forEach(c=>{let m=c.val(), div=document.createElement('div'); div.className='chat-msg '+(m.sender===u.uid?'sent':'received'); let ct=m.text?`<div>${m.text}</div>`:''; if(m.media){if(m.media.type==='image')ct+=`<img src="${m.media.data}" style="max-width:200px;border-radius:8px;cursor:pointer" onclick="showFullImage('${m.media.data}')">`; else ct+=`<audio controls src="${m.media.data}"></audio>`} div.innerHTML=ct; md.appendChild(div)}); md.scrollTop=md.scrollHeight},e=>alert('Load msgs error: '+e))}
 // STATUS
-function postStatus(){let t=document.getElementById('status-text').value.trim(), fi=document.getElementById('status-img').files[0], fa=document.getElementById('status-audio').files[0]; if(!t&&!fi&&!fa)return alert('Empty post'); let p={uid:u.uid,timestamp:Date.now(),text:t}; Promise.all([fi?new Promise(r=>toB64(fi,r)):null,fa?new Promise(r=>toB64(fa,r)):null]).then(([img,aud])=>{if(img)p.image=img; if(aud)p.audio=aud; d.ref('statuses').push(p).then(()=>{document.getElementById('status-text').value=''; document.getElementById('status-img').value=''; document.getElementById('status-audio').value=''; loadStatus()}).catch(e=>alert('Post error: '+e))})}
-function loadStatus(){d.ref('statuses').orderByChild('timestamp').limitToLast(20).once('value',async s=>{let f=document.getElementById('status-feed'), ps=[]; f.innerHTML=''; s.forEach(c=>ps.push(c.val())); ps.reverse(); for(let p of ps){let us=await d.ref('users/'+p.uid).once('value').catch(()=>null), uu=us?us.val():{name:'Unknown'}; f.innerHTML+=`<div class="status-post"><strong>${uu.name}</strong> <small>${new Date(p.timestamp).toLocaleString()}</small><div>${p.text||''}</div>${p.image?`<img src="${p.image}" onclick="showFullImage('${p.image}')">`:''}${p.audio?`<audio controls src="${p.audio}"></audio>`:''}</div>`}}).catch(e=>alert('Load status error: '+e))}
+function postStatus() {
+    const text = document.getElementById('status-text').value;
+    const imgFile = document.getElementById('status-img').files[0];
+    const audioFile = document.getElementById('status-audio').files[0];
+    if (!text && !imgFile && !audioFile) return;
+
+    const ref = db.ref('statuses').push();
+    const data = {
+        user: currentUser.uid,
+        status: text,
+        time: new Date().toISOString() // Use ISO string for consistent date formatting
+    };
+
+    fileToBase64(imgFile, img => {
+        data.img = img;
+        fileToBase64(audioFile, audio => {
+            data.audio = audio;
+            ref.set(data).then(loadStatusFeed);
+        });
+    });
+
+    document.getElementById('status-text').value = '';
+    document.getElementById('status-img').value = '';
+    document.getElementById('status-audio').value = '';
+  }
 // PICTURES
 function loadPics(){let g=document.getElementById('pictures-grid'); g.innerHTML=''; Promise.all([d.ref('statuses').once('value'), d.ref('happy').once('value')]).then(([s,h])=>{s.forEach(c=>{if(c.val().image)g.innerHTML+=`<img src="${c.val().image}" onclick="showFullImage('${c.val().image}')">`}); h.forEach(c=>{if(c.val().image)g.innerHTML+=`<img src="${c.val().image}" onclick="showFullImage('${c.val().image}')">`}); if(g.innerHTML=='')g.innerHTML='<p>No pictures yet</p>'}).catch(e=>alert('Load pics error: '+e))}
 // HAPPY
