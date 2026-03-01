@@ -10,51 +10,25 @@
 
 <body>
     <h1>Welcome to the Social App</h1>
-
-    <div id="login-screen">
+    <div id="loginForm">
         <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         <button onclick="login()">Login</button>
+        <p>Don't have an account? <a href="#" onclick="showSignupForm()">Signup</a></p>
     </div>
 
-    <div id="signup-screen">
+    <div id="signupForm" style="display: none;">
         <h2>Signup</h2>
         <input type="text" id="name" placeholder="Name">
-        <input type="file" id="profile-pic" accept="image/*">
+        <input type="file" id="profilePic" accept="image/*">
         <button onclick="signup()">Create Account</button>
-    </div>
-
-    <div id="main-app" style="display: none;">
-        <h2>Welcome to the Main App</h2>
-        <button onclick="logout()">Logout</button>
-        
-        <div id="chats-screen" style="display: none;">
-            <h3>Chats</h3>
-            <div id="message-display"></div>
-            <input type="text" id="message-input" placeholder="Type your message">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-
-        <div id="friends-screen" style="display: none;">
-            <h3>Friends</h3>
-            <input type="text" id="search-friends" placeholder="Search Friends">
-            <button onclick="searchFriends()">Search</button>
-            <div id="friends-list"></div>
-        </div>
-
-        <div id="pictures-screen" style="display: none;">
-            <h3>Pictures</h3>
-            <input type="file" id="picture-upload" accept="image/*">
-            <button onclick="uploadPicture()">Upload Picture</button>
-            <div id="pictures-display"></div>
-        </div>
+        <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
     <script>
-        // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
             authDomain: "zeeworldyhi.firebaseapp.com",
@@ -70,29 +44,29 @@
         const database = firebase.database();
 
         function login() {
-            // Implement login functionality
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Implement login functionality using Firebase authentication
         }
 
         function signup() {
-            // Implement signup functionality
+            const name = document.getElementById('name').value;
+            const profilePic = document.getElementById('profilePic').files[0];
+
+            // Implement signup functionality including uploading profile picture to Firebase Storage
         }
 
-        function logout() {
-            // Implement logout functionality
+        function showSignupForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
         }
 
-        function sendMessage() {
-            // Implement send message functionality
-        }
-
-        function searchFriends() {
-            // Implement search friends functionality
-        }
-
-        function uploadPicture() {
-            // Implement upload picture functionality
+        function showLoginForm() {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
         }
     </script>
 </body>
 
-              </html>
+</html>
