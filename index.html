@@ -30,14 +30,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-            authDomain: "zeeworldyhi.firebaseapp.com",
-            databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
-            projectId: "zeeworldyhi",
-            storageBucket: "zeeworldyhi.firebasestorage.app",
-            messagingSenderId: "154414924399",
-            appId: "1:154414924399:web:31c3767fdbea93feba439a",
-            measurementId: "G-XD5Z8T76EE"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -48,6 +48,9 @@
             const password = document.getElementById('password').value;
 
             // Implement login functionality using Firebase authentication
+            // For demonstration purposes, you can console log the email and password
+            console.log("Email: " + email);
+            console.log("Password: " + password);
         }
 
         function signup() {
@@ -55,6 +58,9 @@
             const profilePic = document.getElementById('profilePic').files[0];
 
             // Implement signup functionality including uploading profile picture to Firebase Storage
+            // For demonstration purposes, you can console log the name and profile picture
+            console.log("Name: " + name);
+            console.log("Profile Picture: " + profilePic.name);
         }
 
         function showSignupForm() {
@@ -69,4 +75,4 @@
     </script>
 </body>
 
-</html>
+    </html>
