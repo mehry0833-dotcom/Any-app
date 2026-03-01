@@ -25,9 +25,6 @@
       padding: 5px 10px;
       border-radius: 5px;
     }
-    input[type="file"] {
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
@@ -104,28 +101,47 @@
       const name = document.getElementById('name').value;
       const profilePic = document.getElementById('profilePic').files[0];
 
+      console.log("Create Account button clicked");
+
       if (name && profilePic) {
+        console.log("Name and Profile Pic are provided");
+        
         // Upload Profile Picture to Firebase Storage
         const storageRef = firebase.storage().ref();
         const profilePicRef = storageRef.child('profile_pics/' + profilePic.name);
+
         profilePicRef.put(profilePic).then(() => {
+          console.log("Profile Picture uploaded successfully");
+
           profilePicRef.getDownloadURL().then((url) => {
+            console.log("Profile Picture URL: ", url);
+
             // Create a User Account (Using Email & Password mock)
             auth.createUserWithEmailAndPassword(name + "@house.com", "defaultPassword")
               .then((userCredential) => {
+                console.log("User Created: ", userCredential.user);
                 currentUser = userCredential.user;
+                
                 db.ref('users/' + currentUser.uid).set({
                   name: name,
                   profilePic: url,
                   note: "Just joined!"
                 }).then(() => {
+                  console.log("User data saved to Firebase");
                   showMainContent();
                 });
               }).catch((error) => {
+                console.error("Error during account creation: ", error);
                 alert(error.message);
               });
+          }).catch(error => {
+            console.error("Error getting profile picture URL: ", error);
           });
+        }).catch(error => {
+          console.error("Error uploading profile picture: ", error);
         });
+      } else {
+        alert("Please enter your name and select a profile picture.");
       }
     });
 
@@ -200,18 +216,9 @@
             <p><strong>${post.user}</strong> - ${new Date(post.timestamp).toLocaleString()}</p>
             <p>${post.text}</p>
             ${post.img ? `<img src="${post.img}" style="width: 200px; height: auto;">` : ''}
-            <button onclick="visitUser('${post.user}')">Visit</button>
           `;
           postsContainer.appendChild(postElement);
         });
-      });
-    }
-
-    function visitUser(userId) {
-      db.ref('users/' + userId).once('value', (snapshot) => {
-        const userData = snapshot.val();
-        alert('Visiting ' + userData.name);
-        // Navigate to the user's profile or do something else
       });
     }
 
@@ -220,4 +227,4 @@
   </script>
 
 </body>
-          </html>
+      </html>
