@@ -1,230 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>House Talks</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-      text-align: center;
-    }
-    .header, .footer {
-      background-color: #032B44;
-      color: white;
-      padding: 15px;
-    }
-    .profile-note {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Talks – Web Demo</title>
+    <!-- Firebase SDK (modular) -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, set, push, onChildAdded, onValue, off } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+        import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+
+        // Your Firebase config (replace with yours)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+            authDomain: "zeeworldyhi.firebaseapp.com",
+            databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+            projectId: "zeeworldyhi",
+            storageBucket: "zeeworldyhi.firebasestorage.app",
+            messagingSenderId: "154414924399",
+            appId: "1:154414924399:web:31c3767fdbea93feba439a",
+            measurementId: "G-XD5Z8T76EE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        // DOM elements
+        const loginContainer = document.getElementById('loginContainer');
+        const appContainer = document.getElementById('appContainer');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const nameInput = document.getElementById('name');
+        const profilePicInput = document.getElementById('profilePic');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const visitorsList = document.getElementById('visitorsList');
+        const messagesList = document.getElementById('messagesList');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const userInfoSpan = document.getElementById('userInfo');
+
+        let currentUser = null;
+        let currentUserPhoto = '';
+
+        // ------------------- Helper: upload profile picture -------------------
+        async function uploadProfilePic(file, userId) {
+            const fileRef = storageRef(storage, `profilePics/${userId}`);
+            const snapshot = await uploadBytesResumable(fileRef, file);
+            return await getDownloadURL(snapshot.ref);
+        }
+
+        // ------------------- Sign Up -------------------
+        signupBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const name = nameInput.value.trim();
+            const file = profilePicInput.files[0];
+
+            if (!email || !password || !name) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                let photoURL = '';
+
+                if (file) {
+                    photoURL = await uploadProfilePic(file, user.uid);
+                }
+
+                // Save user data in Realtime Database
+                await set(ref(db, `users/${user.uid}`), {
+                    name,
+                    email,
+                    photoURL,
+                    mood: '😊',
+                    note: 'Just joined!',
+                    createdAt: Date.now()
+                });
+
+                // Add to visitors list
+                await set(ref(db, `visitors/${user.uid}`), {
+                    name,
+                    photoURL,
+                    lastSeen: Date.now()
+                });
+
+                alert('Account created! You are now logged in.');
+            } catch (error) {
+                alert('Sign up error: ' + error.message);
+            }
+        });
+
+        // ------------------- Login -------------------
+        loginBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert('Login error: ' + error.message);
+            }
+        });
+
+        // ------------------- Logout -------------------
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        // ------------------- Auth state observer -------------------
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // Get user details from DB (or use auth data)
+                const userRef = ref(db, `users/${user.uid}`);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        userInfoSpan.textContent = `Logged in as: ${data.name}`;
+                        currentUserPhoto = data.photoURL || '';
+                    }
+                }, { onlyOnce: true });
+
+                // Update lastSeen in visitors
+                if (currentUser) {
+                    const visitorRef = ref(db, `visitors/${currentUser.uid}`);
+                    set(visitorRef, {
+                        name: currentUser.displayName || 'User',
+                        photoURL: currentUser.photoURL || '',
+                        lastSeen: Date.now()
+                    });
+                }
+
+                loginContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+
+                // Start listening to visitors and messages
+                listenVisitors();
+                listenMessages();
+            } else {
+                currentUser = null;
+                loginContainer.style.display = 'block';
+                appContainer.style.display = 'none';
+                // Clear inputs
+                emailInput.value = '';
+                passwordInput.value = '';
+                nameInput.value = '';
+                profilePicInput.value = '';
+            }
+        });
+
+        // ------------------- Visitors listener -------------------
+        function listenVisitors() {
+            const visitorsRef = ref(db, 'visitors');
+            onValue(visitorsRef, (snapshot) => {
+                const data = snapshot.val();
+                visitorsList.innerHTML = '';
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        const v = data[key];
+                        const div = document.createElement('div');
+                        div.className = 'visitor-item';
+                        div.innerHTML = `
+                            <img src="${v.photoURL || 'https://via.placeholder.com/40'}" alt="avatar" width="40" height="40">
+                            <span>${v.name}</span>
+                        `;
+                        visitorsList.appendChild(div);
+                    });
+                } else {
+                    visitorsList.innerHTML = '<em>No visitors online</em>';
+                }
+            });
+        }
+
+        // ------------------- Messages listener -------------------
+        function listenMessages() {
+            const messagesRef = ref(db, 'sittingRoom/messages');
+            onChildAdded(messagesRef, (snapshot) => {
+                const msg = snapshot.val();
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.innerHTML = `
+                    <img src="${msg.userAvatar || 'https://via.placeholder.com/30'}" width="30" height="30">
+                    <strong>${msg.userName}:</strong> ${msg.text}
+                    <em style="font-size:0.8em; color:gray;">${new Date(msg.createdAt).toLocaleTimeString()}</em>
+                `;
+                messagesList.appendChild(msgDiv);
+                // Scroll to bottom
+                messagesList.scrollTop = messagesList.scrollHeight;
+            });
+        }
+
+        // ------------------- Send message -------------------
+        sendBtn.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (!text || !currentUser) return;
+
+            // Get current user's name and avatar from DB (or use cached)
+            const userRef = ref(db, `users/${currentUser.uid}`);
+            onValue(userRef, (snapshot) => {
+                const data = snapshot.val();
+                const messageRef = ref(db, 'sittingRoom/messages');
+                push(messageRef, {
+                    text,
+                    userId: currentUser.uid,
+                    userName: data ? data.name : 'Anonymous',
+                    userAvatar: data ? data.photoURL : '',
+                    createdAt: Date.now()
+                });
+            }, { onlyOnce: true });
+
+            messageInput.value = '';
+        });
+
+        // Allow Enter key to send
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        #loginContainer { max-width: 400px; margin: 50px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #appContainer { max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        #logoutBtn { background: #f44336; }
+        #visitorsSection { background: #e9e9e9; padding: 15px; border-bottom: 1px solid #ccc; }
+        #visitorsList { display: flex; flex-wrap: wrap; gap: 15px; }
+        .visitor-item { display: flex; flex-direction: column; align-items: center; }
+        .visitor-item img { border-radius: 50%; object-fit: cover; }
+        #chatSection { padding: 15px; }
+        #messagesList { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fafafa; }
+        .message { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .message img { border-radius: 50%; }
+        #messageInput { width: calc(100% - 80px); display: inline-block; margin-right: 5px; }
+        #sendBtn { width: 70px; display: inline-block; }
+    </style>
 </head>
 <body>
-
-  <div class="header">
-    <h1>Welcome to House Talks</h1>
-    <p>Your home for socializing and sharing!</p>
-  </div>
-
-  <!-- Login Section (for new users) -->
-  <div id="login-section">
-    <h2>Create an Account</h2>
-    <input type="text" id="name" placeholder="Enter your name" required><br><br>
-    <input type="file" id="profilePic" required><br><br>
-    <button id="create-account-btn">Create Account</button>
-  </div>
-
-  <!-- Main Content -->
-  <div id="main-content" style="display: none;">
-    <!-- Profile Section -->
-    <div id="profile-section">
-      <img id="profile-img" src="" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;">
-      <div id="profile-note" class="profile-note"></div>
-      <p id="username"></p>
+    <div id="loginContainer">
+        <h2>House Talks – Login / Sign Up</h2>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <input type="text" id="name" placeholder="Name (for sign up)" />
+        <input type="file" id="profilePic" accept="image/*" />
+        <button id="loginBtn">Login</button>
+        <button id="signupBtn">Sign Up</button>
     </div>
 
-    <!-- Sitting Room -->
-    <div id="sitting-room">
-      <h2>Sitting Room (Main Chat)</h2>
-      <div id="chat-container"></div>
-      <textarea id="message-input" placeholder="Type a message..." rows="3"></textarea><br><br>
-      <button onclick="sendMessage()">Send Message</button>
+    <div id="appContainer" style="display:none;">
+        <div style="padding:10px; background:#4CAF50; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <span id="userInfo"></span>
+            <button id="logoutBtn" style="width:auto; margin:0;">Logout</button>
+        </div>
+        <div id="visitorsSection">
+            <h3>Visitors</h3>
+            <div id="visitorsList"></div>
+        </div>
+        <div id="chatSection">
+            <h3>Sitting Room – Global Chat</h3>
+            <div id="messagesList"></div>
+            <div>
+                <input type="text" id="messageInput" placeholder="Type a message..." />
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
     </div>
-
-    <!-- Outside Feature -->
-    <div id="outside">
-      <h2>Outside (Public Post Area)</h2>
-      <textarea id="post-input" placeholder="What's on your mind?" rows="3"></textarea><br><br>
-      <input type="file" id="post-img"><br><br>
-      <button onclick="submitPost()">Post</button>
-      <div id="posts-container"></div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <p>&copy; 2026 House Talks - All Rights Reserved</p>
-  </div>
-
-  <!-- Firebase Configuration -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-      authDomain: "zeeworldyhi.firebaseapp.com",
-      databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com/",
-      projectId: "zeeworldyhi",
-      storageBucket: "zeeworldyhi.firebasestorage.app",
-      messagingSenderId: "154414924399",
-      appId: "1:154414924399:web:31c3767fdbea93feba439a",
-      measurementId: "G-XD5Z8T76EE"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    const db = firebase.database();
-    const auth = firebase.auth();
-
-    let currentUser = null;
-
-    // Create Account Function
-    document.getElementById('create-account-btn').addEventListener('click', function () {
-      const name = document.getElementById('name').value;
-      const profilePic = document.getElementById('profilePic').files[0];
-
-      console.log("Create Account button clicked");
-
-      if (name && profilePic) {
-        console.log("Name and Profile Pic are provided");
-        
-        // Upload Profile Picture to Firebase Storage
-        const storageRef = firebase.storage().ref();
-        const profilePicRef = storageRef.child('profile_pics/' + profilePic.name);
-
-        profilePicRef.put(profilePic).then(() => {
-          console.log("Profile Picture uploaded successfully");
-
-          profilePicRef.getDownloadURL().then((url) => {
-            console.log("Profile Picture URL: ", url);
-
-            // Create a User Account (Using Email & Password mock)
-            auth.createUserWithEmailAndPassword(name + "@house.com", "defaultPassword")
-              .then((userCredential) => {
-                console.log("User Created: ", userCredential.user);
-                currentUser = userCredential.user;
-                
-                db.ref('users/' + currentUser.uid).set({
-                  name: name,
-                  profilePic: url,
-                  note: "Just joined!"
-                }).then(() => {
-                  console.log("User data saved to Firebase");
-                  showMainContent();
-                });
-              }).catch((error) => {
-                console.error("Error during account creation: ", error);
-                alert(error.message);
-              });
-          }).catch(error => {
-            console.error("Error getting profile picture URL: ", error);
-          });
-        }).catch(error => {
-          console.error("Error uploading profile picture: ", error);
-        });
-      } else {
-        alert("Please enter your name and select a profile picture.");
-      }
-    });
-
-    // Show Main Content After Login
-    function showMainContent() {
-      document.getElementById('login-section').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
-
-      const userRef = db.ref('users/' + currentUser.uid);
-      userRef.on('value', (snapshot) => {
-        const userData = snapshot.val();
-        document.getElementById('username').innerText = userData.name;
-        document.getElementById('profile-img').src = userData.profilePic;
-        document.getElementById('profile-note').innerText = userData.note;
-      });
-    }
-
-    // Send Message in Sitting Room
-    function sendMessage() {
-      const message = document.getElementById('message-input').value;
-      if (message) {
-        db.ref('chats').push({
-          user: currentUser.uid,
-          message: message,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-        document.getElementById('message-input').value = ''; // Clear message input
-      }
-    }
-
-    // Submit Post in Outside Feature
-    function submitPost() {
-      const postText = document.getElementById('post-input').value;
-      const postImg = document.getElementById('post-img').files[0];
-      let postImageUrl = null;
-
-      if (postImg) {
-        const storageRef = firebase.storage().ref();
-        const postImgRef = storageRef.child('posts/' + postImg.name);
-        postImgRef.put(postImg).then(() => {
-          postImgRef.getDownloadURL().then((url) => {
-            postImageUrl = url;
-            savePost(postText, postImageUrl);
-          });
-        });
-      } else {
-        savePost(postText, postImageUrl);
-      }
-    }
-
-    function savePost(text, imgUrl) {
-      db.ref('posts').push({
-        user: currentUser.uid,
-        text: text,
-        img: imgUrl,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        document.getElementById('post-input').value = ''; // Clear post input
-        loadPosts();
-      });
-    }
-
-    // Load Posts
-    function loadPosts() {
-      db.ref('posts').on('value', (snapshot) => {
-        const postsContainer = document.getElementById('posts-container');
-        postsContainer.innerHTML = ''; // Clear existing posts
-        snapshot.forEach((childSnapshot) => {
-          const post = childSnapshot.val();
-          const postElement = document.createElement('div');
-          postElement.innerHTML = `
-            <p><strong>${post.user}</strong> - ${new Date(post.timestamp).toLocaleString()}</p>
-            <p>${post.text}</p>
-            ${post.img ? `<img src="${post.img}" style="width: 200px; height: auto;">` : ''}
-          `;
-          postsContainer.appendChild(postElement);
-        });
-      });
-    }
-
-    // Initialize posts on first load
-    loadPosts();
-  </script>
-
 </body>
-      </html>
+</html>
