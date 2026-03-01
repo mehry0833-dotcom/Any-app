@@ -1,145 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Faith Stories With Parts</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:white}
-header{padding:20px;text-align:center;background:#1e293b;font-size:22px;font-weight:bold}
-.section{padding:15px}
-.category{background:#1e293b;padding:12px;margin-bottom:10px;border-radius:8px;cursor:pointer}
-.story{background:#334155;padding:10px;margin-top:8px;border-radius:6px}
-.story-content{display:none;margin-top:8px;font-size:14px;color:#e2e8f0}
-button{background:#38bdf8;border:none;padding:6px 10px;margin-top:6px;border-radius:4px;cursor:pointer}
-.vote{margin-left:10px;font-size:13px}
-.add-btn{position:fixed;bottom:20px;right:20px;background:#22c55e;border-radius:50%;width:50px;height:50px;font-size:22px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faith Stories With Parts</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:white}
+    header{padding:20px;text-align:center;background:#1e293b;font-size:22px;font-weight:bold}
+    .section{padding:15px}
+    .category{background:#1e293b;padding:12px;margin-bottom:10px;border-radius:8px;cursor:pointer}
+    .story{background:#334155;padding:10px;margin-top:8px;border-radius:6px}
+    .story-content{display:none;margin-top:8px;font-size:14px;color:#e2e8f0}
+    button{background:#38bdf8;border:none;padding:6px 10px;margin-top:6px;border-radius:4px;cursor:pointer}
+    .vote{margin-left:10px;font-size:13px}
+    .add-btn{position:fixed;bottom:20px;right:20px;background:#22c55e;border-radius:50%;width:50px;height:50px;font-size:22px}
+    .admin-mode{background:#38bdf8;color:white;padding:10px;border-radius:5px;margin-top:10px;}
+  </style>
 </head>
 <body>
 
 <header>Faith Stories With Parts 📖✨</header>
+
 <div id="auth-section" style="text-align:center;padding:20px;">
   <button id="signup-btn">Sign Up</button>
   <button id="login-btn">Login</button>
+  <div id="admin-section" style="display:none;">
+    <input type="password" id="admin-password" placeholder="Enter admin password" />
+    <button class="admin-mode" id="admin-btn">Activate Admin Mode</button>
+  </div>
 </div>
 
 <div class="section" id="app" style="display:none;"></div>
 <button class="add-btn" id="addBtn" style="display:none;">+</button>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-  authDomain: "zeeworldyhi.firebaseapp.com",
-  databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
-  projectId: "zeeworldyhi",
-  storageBucket: "zeeworldyhi.firebasestorage.app",
-  messagingSenderId: "154414924399",
-  appId: "1:154414924399:web:31c3767fdbea93feba439a",
-  measurementId: "G-XD5Z8T76EE"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+    authDomain: "zeeworldyhi.firebaseapp.com",
+    databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+    projectId: "zeeworldyhi",
+    storageBucket: "zeeworldyhi.firebasestorage.app",
+    messagingSenderId: "154414924399",
+    appId: "1:154414924399:web:31c3767fdbea93feba439a",
+    measurementId: "G-XD5Z8T76EE"
+  };
 
-firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
 
-const authSection = document.getElementById("auth-section");
-const appDiv = document.getElementById("app");
-const addBtn = document.getElementById("addBtn");
+  const authSection = document.getElementById("auth-section");
+  const appDiv = document.getElementById("app");
+  const addBtn = document.getElementById("addBtn");
+  const adminSection = document.getElementById("admin-section");
+  const adminPassword = document.getElementById("admin-password");
 
-const categories = [
-  "Sad Stories","Funny Stories","Interesting Life Stories","Real Life Stories",
-  "Psychology Stories","Love Stories","School Stories","History Stories",
-  "Ghost Stories","Relationship Stories","Stand-Up Comedy"
-];
+  const categories = [
+    "Sad Stories","Funny Stories","Interesting Life Stories","Real Life Stories",
+    "Psychology Stories","Love Stories","School Stories","History Stories",
+    "Ghost Stories","Relationship Stories","Stand-Up Comedy"
+  ];
 
-let currentUser = null;
-const adminUID = "YOUR_ADMIN_UID_HERE"; // Replace with your UID
+  let currentUser = null;
+  let isAdmin = false; // Default admin mode is off
 
-// Sign Up
-document.getElementById("signup-btn").onclick = async ()=>{
-  const email = prompt("Enter email:");
-  const pass = prompt("Enter password:");
-  try{
-    await firebase.auth().createUserWithEmailAndPassword(email,pass);
-    alert("Signed Up! Login now.");
-  }catch(e){alert(e.message);}
-}
+  // Sign Up
+  document.getElementById("signup-btn").onclick = async ()=>{
+    const email = prompt("Enter email:");
+    const pass = prompt("Enter password:");
+    try{
+      await firebase.auth().createUserWithEmailAndPassword(email,pass);
+      alert("Signed Up! Login now.");
+    }catch(e){alert(e.message);}
+  }
 
-// Login
-document.getElementById("login-btn").onclick = async ()=>{
-  const email = prompt("Enter email:");
-  const pass = prompt("Enter password:");
-  try{
-    const userCredential = await firebase.auth().signInWithEmailAndPassword(email,pass);
-    currentUser = userCredential.user;
-    authSection.style.display="none";
-    appDiv.style.display="block";
-    if(currentUser.uid===adminUID) addBtn.style.display="block";
-    loadStories();
-  }catch(e){alert(e.message);}
-}
+  // Login
+  document.getElementById("login-btn").onclick = async ()=>{
+    const email = prompt("Enter email:");
+    const pass = prompt("Enter password:");
+    try{
+      const userCredential = await firebase.auth().signInWithEmailAndPassword(email,pass);
+      currentUser = userCredential.user;
+      authSection.style.display="none";
+      appDiv.style.display="block";
+      adminSection.style.display="block"; // Show admin controls
+      loadStories();
+    }catch(e){alert(e.message);}
+  }
 
-// Load stories from Firebase
-function loadStories(){
-  appDiv.innerHTML="";
-  categories.forEach(cat=>{
-    const catDiv = document.createElement("div");
-    catDiv.className="category";
-    catDiv.innerHTML=`<strong>${cat}</strong>`;
-    const storyList = document.createElement("div");
+  // Activate Admin Mode with password
+  document.getElementById("admin-btn").onclick = ()=>{
+    if(adminPassword.value === "Zeeboy"){
+      isAdmin = true;
+      addBtn.style.display="block"; // Show add story button
+      alert("Admin Mode Activated!");
+    } else {
+      alert("Incorrect password");
+    }
+  }
 
-    firebase.database().ref("stories/"+cat).once("value").then(snapshot=>{
-      const data = snapshot.val();
-      if(data){
-        Object.keys(data).forEach(key=>{
-          const s = data[key];
-          const storyDiv = document.createElement("div");
-          storyDiv.className="story";
-          storyDiv.innerHTML=`
-            <div onclick="toggleStory(this)"><strong>${s.title}</strong></div>
-            <div class="story-content">
-              ${s.content}
-              <br>
-              <button onclick="vote('${cat}','${key}')">Vote 👍</button>
-              <span class="vote">Votes: ${s.votes||0}</span>
-            </div>
-          `;
-          storyList.appendChild(storyDiv);
-        });
-      }
+  // Load stories from Firebase
+  function loadStories(){
+    appDiv.innerHTML="";
+    categories.forEach(cat=>{
+      const catDiv = document.createElement("div");
+      catDiv.className="category";
+      catDiv.innerHTML=`<strong>${cat}</strong>`;
+      const storyList = document.createElement("div");
+
+      firebase.database().ref("stories/"+cat).once("value").then(snapshot=>{
+        const data = snapshot.val();
+        if(data){
+          Object.keys(data).forEach(key=>{
+            const s = data[key];
+            const storyDiv = document.createElement("div");
+            storyDiv.className="story";
+            storyDiv.innerHTML=`
+              <div onclick="toggleStory(this)"><strong>${s.title}</strong></div>
+              <div class="story-content">
+                ${s.content}
+                <br>
+                <button onclick="vote('${cat}','${key}')">Vote 👍</button>
+                <span class="vote">Votes: ${s.votes||0}</span>
+              </div>
+            `;
+            storyList.appendChild(storyDiv);
+          });
+        }
+      });
+
+      catDiv.onclick = ()=>{storyList.style.display = storyList.style.display==="block"?"none":"block";}
+      appDiv.appendChild(catDiv);
+      appDiv.appendChild(storyList);
     });
+  }
 
-    catDiv.onclick = ()=>{storyList.style.display = storyList.style.display==="block"?"none":"block";}
-    appDiv.appendChild(catDiv);
-    appDiv.appendChild(storyList);
-  });
-}
+  // Toggle story
+  function toggleStory(el){
+    const content = el.parentElement.querySelector(".story-content");
+    content.style.display = content.style.display==="block"?"none":"block";
+  }
 
-// Toggle story
-function toggleStory(el){
-  const content = el.parentElement.querySelector(".story-content");
-  content.style.display = content.style.display==="block"?"none":"block";
-}
+  // Vote
+  function vote(cat,key){
+    const ref = firebase.database().ref("stories/"+cat+"/"+key+"/votes");
+    ref.transaction(v=> (v||0)+1);
+    setTimeout(loadStories,200);
+  }
 
-// Vote
-function vote(cat,key){
-  const ref = firebase.database().ref("stories/"+cat+"/"+key+"/votes");
-  ref.transaction(v=> (v||0)+1);
-  setTimeout(loadStories,200);
-}
+  // Add story (admin only)
+  addBtn.onclick = ()=>{
+    const category = prompt("Enter category name exactly:");
+    if(!categories.includes(category)){alert("Invalid category"); return;}
+    const title = prompt("Enter story title:");
+    const content = prompt("Enter story content:");
+    const ref = firebase.database().ref("stories/"+category).push();
+    ref.set({title,content,votes:0});
+    setTimeout(loadStories,200);
+  }
 
-// Add story (admin only)
-addBtn.onclick = ()=>{
-  const category = prompt("Enter category name exactly:");
-  if(!categories.includes(category)){alert("Invalid category"); return;}
-  const title = prompt("Enter story title:");
-  const content = prompt("Enter story content:");
-  const ref = firebase.database().ref("stories/"+category).push();
-  ref.set({title,content,votes:0});
-  setTimeout(loadStories,200);
-}
 </script>
 </body>
-</html>
+  </html>
