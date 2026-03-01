@@ -1,88 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Faith Stories</title>
-  <script type="module">
-    import { initializeApp } from "https:                                                    
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-    import { getDatabase, ref, set, push, child, get } from "https:                                                         
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-      authDomain: "zeeworldyhi.firebaseapp.com",
-      databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
-      projectId: "zeeworldyhi",
-      storageBucket: "zeeworldyhi.firebasestorage.app",
-      messagingSenderId: "154414924399",
-      appId: "1:154414924399:web:31c3767fdbea93feba439a",
-      measurementId: "G-XD5Z8T76EE"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    // Auth functions
-    document.getElementById('signup-btn').addEventListener('click', () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed up
-          const user = userCredential.user;
-          console.log(user);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
-
-    document.getElementById('login-btn').addEventListener('click', () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential.user;
-          console.log(user);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
-
-    // Story functions
-    document.getElementById('add-story-btn').addEventListener('click', () => {
-      const title = document.getElementById('story-title').value;
-      const content = document.getElementById('story-content').value;
-      const category = document.getElementById('story-category').value;
-      const user = auth.currentUser;
-      if (user) {
-        const storyRef = ref(db, 'stories/' + user.uid);
-        const newStoryRef = push(storyRef);
-        set(newStoryRef, {
-          title: title,
-          content: content,
-          category: category
-        });
-      }
-    });
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faith Stories - Novels & Facts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .category-card { transition: transform 0.2s; cursor: pointer; }
+        .category-card:hover { transform: translateY(-5px); }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-  <h1>Faith Stories</h1>
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button id="signup-btn">Sign Up</button>
-  <button id="login-btn">Login</button>
-  <br>
-  <input id="story-title" type="text" placeholder="Story Title">
-  <textarea id="story-content" placeholder="Story Content"></textarea>
-  <select id="story-category">
-    <option value="sad">Sad Stories</option>
-    <option value="funny">Funny Stories</option>
-    <!-- Add more categories -->
-  </select>
-  <button id="add-story-btn">Add Story</button>
+
+    <!-- Auth Section -->
+    <div id="auth-container" class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
+            <h1 class="text-2xl font-bold mb-6 text-center text-indigo-600">Faith Stories Login</h1>
+            <input type="email" id="email" placeholder="Email" class="w-full p-3 mb-4 border rounded">
+            <input type="password" id="password" placeholder="Password" class="w-full p-3 mb-4 border rounded">
+            <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white p-3 rounded font-bold hover:bg-indigo-700">Login / Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-container" class="hidden">
+        <nav class="bg-indigo-600 text-white p-4 flex justify-between items-center sticky top-0 z-10">
+            <h2 class="font-bold text-xl">Faith Stories</h2>
+            <button onclick="handleLogout()" class="text-sm bg-indigo-800 px-3 py-1 rounded">Logout</button>
+        </nav>
+
+        <div class="p-4 max-w-4xl mx-auto">
+            <!-- Navigation Tabs -->
+            <div class="flex gap-2 overflow-x-auto pb-4 mb-6">
+                <button onclick="showSection('categories')" class="bg-white px-4 py-2 rounded-full shadow-sm whitespace-nowrap border">All Categories</button>
+                <button onclick="showSection('relationship')" class="bg-white px-4 py-2 rounded-full shadow-sm whitespace-nowrap border">Relationship Tips</button>
+                <button onclick="showSection('comedy')" class="bg-white px-4 py-2 rounded-full shadow-sm whitespace-nowrap border">Stand-Up Comedy</button>
+            </div>
+
+            <!-- Categories Grid -->
+            <div id="categories-section">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="category-list">
+                    <!-- Categories will be injected here -->
+                </div>
+            </div>
+
+            <!-- Story Detail View -->
+            <div id="story-view" class="hidden">
+                <button onclick="showSection('categories')" class="text-indigo-600 mb-4">← Back to Categories</button>
+                <div id="active-category-title" class="text-2xl font-bold mb-6"></div>
+                
+                <!-- Add Story Form (Private to User) -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border-dashed border-2 border-indigo-200 mb-6">
+                    <h3 class="font-bold mb-2">Add New Part (+)</h3>
+                    <input type="text" id="new-story-title" placeholder="Story Title (e.g. Did you know...)" class="w-full p-2 mb-2 border rounded">
+                    <textarea id="new-story-content" placeholder="Write the amazing story here..." class="w-full p-2 mb-2 border rounded h-24"></textarea>
+                    <button onclick="saveStory()" class="bg-indigo-600 text-white px-4 py-2 rounded">Save Permanently</button>
+                </div>
+
+                <div id="story-list" class="space-y-4">
+                    <!-- Stories load here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+            authDomain: "zeeworldyhi.firebaseapp.com",
+            databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+            projectId: "zeeworldyhi",
+            storageBucket: "zeeworldyhi.firebasestorage.app",
+            messagingSenderId: "154414924399",
+            appId: "1:154414924399:web:31c3767fdbea93feba439a",
+            measurementId: "G-XD5Z8T76EE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentUser = null;
+        let currentCategory = '';
+
+        const categories = [
+            "Sad Stories", "Funny Stories", "Interesting Life Stories", 
+            "Real Life Stories", "Their Stories", "Psychology Stories", 
+            "Love Stories", "School Stories", "History Stories", "Ghost Stories"
+        ];
+
+        // Auth Logic
+        window.handleLogin = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, pass)
+                .catch(() => createUserWithEmailAndPassword(auth, email, pass));
+        };
+
+        window.handleLogout = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                loadCategories();
+            } else {
+                document.getElementById('auth-container').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
+            }
+        });
+
+        // UI Logic
+        function loadCategories() {
+            const list = document.getElementById('category-list');
+            list.innerHTML = categories.map(cat => `
+                <div onclick="openCategory('${cat}')" class="category-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                    <div class="text-indigo-500 mb-2 font-bold">📖</div>
+                    <div class="font-semibold text-gray-700">${cat}</div>
+                </div>
+            `).join('');
+        }
+
+        window.openCategory = (cat) => {
+            currentCategory = cat;
+            document.getElementById('categories-section').classList.add('hidden');
+            document.getElementById('story-view').classList.remove('hidden');
+            document.getElementById('active-category-title').innerText = cat;
+            loadStories(cat);
+        };
+
+        window.showSection = (section) => {
+            if(section === 'categories') {
+                document.getElementById('categories-section').classList.remove('hidden');
+                document.getElementById('story-view').classList.add('hidden');
+            } else {
+                openCategory(section === 'comedy' ? 'Stand-Up Comedy' : 'Relationship Stories');
+            }
+        };
+
+        // Database Logic
+        window.saveStory = () => {
+            const title = document.getElementById('new-story-title').value;
+            const content = document.getElementById('new-story-content').value;
+            if(!title || !content) return alert("Fill everything!");
+
+            const storyRef = ref(db, `stories/${currentUser.uid}/${currentCategory.replace(/\s/g, '')}`);
+            const newStory = push(storyRef);
+            set(newStory, {
+                title: title,
+                content: content,
+                votes: 0,
+                timestamp: Date.now()
+            }).then(() => {
+                document.getElementById('new-story-title').value = '';
+                document.getElementById('new-story-content').value = '';
+            });
+        };
+
+        function loadStories(cat) {
+            const catId = cat.replace(/\s/g, '');
+            const storyRef = ref(db, `stories/${currentUser.uid}/${catId}`);
+            onValue(storyRef, (snapshot) => {
+                const data = snapshot.val();
+                const list = document.getElementById('story-list');
+                list.innerHTML = '';
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        const s = data[key];
+                        const div = document.createElement('div');
+                        div.className = "bg-white p-4 rounded-lg shadow-sm border border-gray-100";
+                        div.innerHTML = `
+                            <div class="flex justify-between items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                <h4 class="font-bold text-indigo-600">${s.title}</h4>
+                                <span class="text-xs text-gray-400">Tap to read</span>
+                            </div>
+                            <div class="hidden mt-4 text-gray-600 leading-relaxed border-t pt-4">
+                                ${s.content}
+                                <div class="mt-4 flex gap-4 text-sm font-bold text-indigo-500">
+                                    <button>👍 Vote Story</button>
+                                </div>
+                            </div>
+                        `;
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = '<p class="text-gray-400 italic">No stories added yet. Click (+) to start.</p>';
+                }
+            });
+        }
+    </script>
 </body>
-</html>
+                  </html>
