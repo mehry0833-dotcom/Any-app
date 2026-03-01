@@ -1,233 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Zee World Social App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <style>
-    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    body{margin:0;background:#0f172a;color:#e5e7eb;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:16px}
-    .app-container{width:100%;max-width:480px;background:#020617;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.6);overflow:hidden;border:1px solid #1f2937}
-    header{padding:16px 20px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#f9fafb;display:flex;align-items:center;gap:8px}
-    header h1{margin:0;font-size:18px;font-weight:700}
-    header .subtitle{font-size:11px;opacity:.9}
-    .back-btn{border:none;background:transparent;color:#f9fafb;font-size:20px;cursor:pointer;margin-right:8px}
-    main{padding:16px;max-height:calc(100vh - 80px);overflow-y:auto}
-    .screen{display:none}
-    .screen.active{display:block}
-    .title{font-size:18px;font-weight:600;margin-bottom:8px}
-    .section-label{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:16px 0 4px}
-    .card{background:#020617;border-radius:12px;border:1px solid #1f2937;padding:12px;margin-bottom:12px}
-    .input-group{margin-bottom:10px}
-    .input-group label{display:block;font-size:13px;margin-bottom:4px;color:#d1d5db}
-    input,textarea{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#020617;color:#e5e7eb;font-size:14px}
-    textarea{resize:vertical;min-height:60px}
-    button{border-radius:999px;border:none;padding:8px 14px;font-size:14px;cursor:pointer;font-weight:500}
-    .btn-primary{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#f9fafb}
-    .btn-secondary{background:#111827;color:#e5e7eb;border:1px solid #374151}
-    .btn-danger{background:#b91c1c;color:#f9fafb}
-    .btn-full{width:100%}
-    .muted-link{font-size:13px;color:#9ca3af;cursor:pointer;text-decoration:underline}
-    .status-bar{font-size:12px;padding:6px 10px;border-radius:999px;margin-bottom:10px}
-    .status-success{background:rgba(22,163,74,.12);color:#bbf7d0;border:1px solid rgba(22,163,74,.4)}
-    .status-error{background:rgba(220,38,38,.12);color:#fecaca;border:1px solid rgba(220,38,38,.4)}
-    .status-info{background:rgba(59,130,246,.12);color:#bfdbfe;border:1px solid rgba(59,130,246,.4)}
-    .chat-container{display:flex;flex-direction:column;height:420px;border-radius:12px;border:1px solid #1f2937;overflow:hidden}
-    .chat-messages{flex:1;padding:10px;overflow-y:auto}
-    .chat-input-row{display:flex;padding:8px;gap:6px;border-top:1px solid #111827}
-    .chat-bubble{max-width:80%;padding:6px 9px;border-radius:12px;margin-bottom:6px;font-size:13px}
-    .chat-bubble.me{margin-left:auto;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff}
-    .chat-bubble.other{margin-right:auto;background:#111827}
-    .list{margin-top:6px}
-    .list-item{padding:8px 6px;border-bottom:1px solid #111827;display:flex;justify-content:space-between;align-items:center;font-size:13px}
-    .image-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
-    .image-grid img{width:100%;border-radius:8px;aspect-ratio:1/1;object-fit:cover}
-  </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social App</title>
 </head>
+
 <body>
-<div class="app-container">
-<header>
-<h1>Zee World Social</h1>
-</header>
-<main>
-<section id="loginScreen" class="screen active">
-<div class="title">Login</div>
-<div id="loginStatus"></div>
-<input type="email" id="loginEmail" placeholder="Email">
-<input type="password" id="loginPassword" placeholder="Password">
-<button id="loginBtn" class="btn-primary btn-full">Login</button>
-<div>Don’t have account? <span id="goToSignup" class="muted-link">Signup</span></div>
-</section>
+    <h1>Welcome to the Social App</h1>
 
-<section id="signupScreen" class="screen">
-<div class="title">Signup</div>
-<div id="signupStatus"></div>
-<input type="text" id="signupName" placeholder="Full name">
-<input type="email" id="signupEmail" placeholder="Email">
-<input type="password" id="signupPassword" placeholder="Password">
-<input type="file" id="signupPhoto" accept="image/*">
-<button id="signupBtn" class="btn-primary btn-full">Create</button>
-<div>Already have account? <span id="goToLogin" class="muted-link">Login</span></div>
-</section>
+    <div id="login-screen">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
 
-<section id="mainScreen" class="screen">
-<div class="title">Dashboard</div>
-<button onclick="showScreen('chatsScreen')" class="btn-secondary btn-full">Chats</button>
-<button onclick="showScreen('picturesScreen')" class="btn-secondary btn-full">Pictures</button>
-<button onclick="showScreen('happyScreen')" class="btn-secondary btn-full">Happy</button>
-<button onclick="showScreen('statusScreen')" class="btn-secondary btn-full">Status</button>
-<button onclick="logout()" class="btn-danger btn-full">Logout</button>
-</section>
+    <div id="signup-screen">
+        <h2>Signup</h2>
+        <input type="text" id="name" placeholder="Name">
+        <input type="file" id="profile-pic" accept="image/*">
+        <button onclick="signup()">Create Account</button>
+    </div>
 
-<section id="chatsScreen" class="screen">
-<div class="title">Global Chat</div>
-<div class="chat-container">
-<div id="chatMessages" class="chat-messages"></div>
-<div class="chat-input-row">
-<input type="text" id="chatInput" placeholder="Type...">
-<button onclick="sendMessage()" class="btn-primary">Send</button>
-</div>
-</div>
-</section>
+    <div id="main-app" style="display: none;">
+        <h2>Welcome to the Main App</h2>
+        <button onclick="logout()">Logout</button>
+        
+        <div id="chats-screen" style="display: none;">
+            <h3>Chats</h3>
+            <div id="message-display"></div>
+            <input type="text" id="message-input" placeholder="Type your message">
+            <button onclick="sendMessage()">Send</button>
+        </div>
 
-<section id="picturesScreen" class="screen">
-<div class="title">Pictures</div>
-<input type="file" id="pictureFile" accept="image/*">
-<button onclick="uploadPicture()" class="btn-primary btn-full">Upload</button>
-<div id="picturesGrid" class="image-grid"></div>
-</section>
+        <div id="friends-screen" style="display: none;">
+            <h3>Friends</h3>
+            <input type="text" id="search-friends" placeholder="Search Friends">
+            <button onclick="searchFriends()">Search</button>
+            <div id="friends-list"></div>
+        </div>
 
-<section id="happyScreen" class="screen">
-<div class="title">Happy Moments</div>
-<textarea id="happyInput" placeholder="Write something happy"></textarea>
-<button onclick="saveHappy()" class="btn-primary btn-full">Save</button>
-<div id="happyList" class="list"></div>
-</section>
+        <div id="pictures-screen" style="display: none;">
+            <h3>Pictures</h3>
+            <input type="file" id="picture-upload" accept="image/*">
+            <button onclick="uploadPicture()">Upload Picture</button>
+            <div id="pictures-display"></div>
+        </div>
+    </div>
 
-<section id="statusScreen" class="screen">
-<div class="title">Status</div>
-<textarea id="statusInput" placeholder="Your status"></textarea>
-<button onclick="saveStatus()" class="btn-primary btn-full">Save</button>
-<div id="statusDisplay"></div>
-</section>
-</main>
-</div>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+            authDomain: "zeeworldyhi.firebaseapp.com",
+            databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+            projectId: "zeeworldyhi",
+            storageBucket: "zeeworldyhi.firebasestorage.app",
+            messagingSenderId: "154414924399",
+            appId: "1:154414924399:web:31c3767fdbea93feba439a",
+            measurementId: "G-XD5Z8T76EE"
+        };
 
-<script>
-const firebaseConfig={
-apiKey:"AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-authDomain:"zeeworldyhi.firebaseapp.com",
-databaseURL:"https://zeeworldyhi-default-rtdb.firebaseio.com",
-projectId:"zeeworldyhi",
-storageBucket:"zeeworldyhi.firebasestorage.app",
-messagingSenderId:"154414924399",
-appId:"1:154414924399:web:31c3767fdbea93feba439a"
-};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.database();
-let currentUser=null;
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-function showScreen(id){
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-}
+        function login() {
+            // Implement login functionality
+        }
 
-document.getElementById("goToSignup").onclick=()=>showScreen("signupScreen");
-document.getElementById("goToLogin").onclick=()=>showScreen("loginScreen");
+        function signup() {
+            // Implement signup functionality
+        }
 
-document.getElementById("loginBtn").onclick=async()=>{
-const email=loginEmail.value;
-const pass=loginPassword.value;
-await auth.signInWithEmailAndPassword(email,pass);
-};
+        function logout() {
+            // Implement logout functionality
+        }
 
-document.getElementById("signupBtn").onclick=async()=>{
-const name=signupName.value;
-const email=signupEmail.value;
-const pass=signupPassword.value;
-const cred=await auth.createUserWithEmailAndPassword(email,pass);
-await db.ref("users/"+cred.user.uid).set({name,email});
-};
+        function sendMessage() {
+            // Implement send message functionality
+        }
 
-auth.onAuthStateChanged(user=>{
-currentUser=user;
-if(user){showScreen("mainScreen");loadChat();loadPictures();loadHappy();loadStatus();}
-else{showScreen("loginScreen");}
-});
+        function searchFriends() {
+            // Implement search friends functionality
+        }
 
-function logout(){auth.signOut();}
-
-function sendMessage(){
-const text=chatInput.value;
-db.ref("chats").push({uid:currentUser.uid,text});
-chatInput.value="";
-}
-
-function loadChat(){
-db.ref("chats").on("value",snap=>{
-chatMessages.innerHTML="";
-snap.forEach(s=>{
-const msg=s.val();
-const div=document.createElement("div");
-div.className="chat-bubble "+(msg.uid===currentUser.uid?"me":"other");
-div.textContent=msg.text;
-chatMessages.appendChild(div);
-});
-});
-}
-
-function uploadPicture(){
-const file=pictureFile.files[0];
-const reader=new FileReader();
-reader.onload=e=>{
-db.ref("pictures/"+currentUser.uid).push({img:e.target.result});
-};
-reader.readAsDataURL(file);
-}
-
-function loadPictures(){
-db.ref("pictures/"+currentUser.uid).on("value",snap=>{
-picturesGrid.innerHTML="";
-snap.forEach(s=>{
-const img=document.createElement("img");
-img.src=s.val().img;
-picturesGrid.appendChild(img);
-});
-});
-}
-
-function saveHappy(){
-const text=happyInput.value;
-db.ref("happy/"+currentUser.uid).push({text});
-happyInput.value="";
-}
-
-function loadHappy(){
-db.ref("happy/"+currentUser.uid).on("value",snap=>{
-happyList.innerHTML="";
-snap.forEach(s=>{
-const div=document.createElement("div");
-div.className="list-item";
-div.textContent=s.val().text;
-happyList.appendChild(div);
-});
-});
-}
-
-function saveStatus(){
-const text=statusInput.value;
-db.ref("status/"+currentUser.uid).set({text});
-}
-
-function loadStatus(){
-db.ref("status/"+currentUser.uid).on("value",snap=>{
-statusDisplay.textContent=snap.val()?snap.val().text:"No status";
-});
-}
-</script>
+        function uploadPicture() {
+            // Implement upload picture functionality
+        }
+    </script>
 </body>
-    </html>
+
+              </html>
