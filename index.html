@@ -1,54 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>House Talks</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>House Talks</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      text-align: center;
+    }
+    .header, .footer {
+      background-color: #032B44;
+      color: white;
+      padding: 15px;
+    }
+    .profile-note {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+  </style>
 </head>
-
 <body>
-    <h1>Welcome to House Talks!</h1>
-    <p>Start chatting with friends in the Sitting Room or explore other features of the app.</p>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+  <div class="header">
+    <h1>Welcome to House Talks</h1>
+    <p>Your home for socializing and sharing!</p>
+  </div>
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-            authDomain: "zeeworldyhi.firebaseapp.com",
-            databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
-            projectId: "zeeworldyhi",
-            storageBucket: "zeeworldyhi.firebasestorage.app",
-            messagingSenderId: "154414924399",
-            appId: "1:154414924399:web:31c3767fdbea93feba439a",
-            measurementId: "G-XD5Z8T76EE"
-        };
+  <!-- Login Section (for new users) -->
+  <div id="login-section">
+    <h2>Create an Account</h2>
+    <input type="text" id="name" placeholder="Enter your name" required><br><br>
+    <input type="file" id="profilePic" required><br><br>
+    <button id="create-account-btn">Create Account</button>
+  </div>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+  <!-- Main Content -->
+  <div id="main-content" style="display: none;">
+    <!-- Profile Section -->
+    <div id="profile-section">
+      <img id="profile-img" src="" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;">
+      <div id="profile-note" class="profile-note"></div>
+      <p id="username"></p>
+    </div>
 
-        // Firebase Realtime Database reference
-        const database = firebase.database();
+    <!-- Sitting Room -->
+    <div id="sitting-room">
+      <h2>Sitting Room (Main Chat)</h2>
+      <div id="chat-container"></div>
+      <textarea id="message-input" placeholder="Type a message..." rows="3"></textarea><br><br>
+      <button onclick="sendMessage()">Send Message</button>
+    </div>
 
-        // Rules for Firebase Realtime Database
-        database.ref().set({
-            rules: {
-                ".read": "auth != null",
-                ".write": "auth != null"
-            }
+    <!-- Outside Feature -->
+    <div id="outside">
+      <h2>Outside (Public Post Area)</h2>
+      <textarea id="post-input" placeholder="What's on your mind?" rows="3"></textarea><br><br>
+      <input type="file" id="post-img"><br><br>
+      <button onclick="submitPost()">Post</button>
+      <div id="posts-container"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2026 House Talks - All Rights Reserved</p>
+  </div>
+
+  <!-- Firebase Configuration -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+      authDomain: "zeeworldyhi.firebaseapp.com",
+      databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com/",
+      projectId: "zeeworldyhi",
+      storageBucket: "zeeworldyhi.firebasestorage.app",
+      messagingSenderId: "154414924399",
+      appId: "1:154414924399:web:31c3767fdbea93feba439a",
+      measurementId: "G-XD5Z8T76EE"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    let currentUser = null;
+
+    // Create Account Function
+    document.getElementById('create-account-btn').addEventListener('click', function () {
+      const name = document.getElementById('name').value;
+      const profilePic = document.getElementById('profilePic').files[0];
+
+      if (name && profilePic) {
+        // Upload Profile Picture to Firebase Storage
+        const storageRef = firebase.storage().ref();
+        const profilePicRef = storageRef.child('profile_pics/' + profilePic.name);
+        profilePicRef.put(profilePic).then(() => {
+          profilePicRef.getDownloadURL().then((url) => {
+            // Create a User Account (Using Email & Password mock)
+            auth.createUserWithEmailAndPassword(name + "@house.com", "defaultPassword")
+              .then((userCredential) => {
+                currentUser = userCredential.user;
+                db.ref('users/' + currentUser.uid).set({
+                  name: name,
+                  profilePic: url,
+                  note: "Just joined!"
+                }).then(() => {
+                  showMainContent();
+                });
+              }).catch((error) => {
+                alert(error.message);
+              });
+          });
         });
+      }
+    });
 
-        // Firebase Realtime Database link
-        const databaseURL = "https://zeeworldyhi-default-rtdb.firebaseio.com/";
+    // Show Main Content After Login
+    function showMainContent() {
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
 
-        // Functionality for House Talks app goes here
+      const userRef = db.ref('users/' + currentUser.uid);
+      userRef.on('value', (snapshot) => {
+        const userData = snapshot.val();
+        document.getElementById('username').innerText = userData.name;
+        document.getElementById('profile-img').src = userData.profilePic;
+        document.getElementById('profile-note').innerText = userData.note;
+      });
+    }
 
-    </script>
+    // Send Message in Sitting Room
+    function sendMessage() {
+      const message = document.getElementById('message-input').value;
+      if (message) {
+        db.ref('chats').push({
+          user: currentUser.uid,
+          message: message,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        document.getElementById('message-input').value = ''; // Clear message input
+      }
+    }
+
+    // Submit Post in Outside Feature
+    function submitPost() {
+      const postText = document.getElementById('post-input').value;
+      const postImg = document.getElementById('post-img').files[0];
+      let postImageUrl = null;
+
+      if (postImg) {
+        const storageRef = firebase.storage().ref();
+        const postImgRef = storageRef.child('posts/' + postImg.name);
+        postImgRef.put(postImg).then(() => {
+          postImgRef.getDownloadURL().then((url) => {
+            postImageUrl = url;
+            savePost(postText, postImageUrl);
+          });
+        });
+      } else {
+        savePost(postText, postImageUrl);
+      }
+    }
+
+    function savePost(text, imgUrl) {
+      db.ref('posts').push({
+        user: currentUser.uid,
+        text: text,
+        img: imgUrl,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        document.getElementById('post-input').value = ''; // Clear post input
+        loadPosts();
+      });
+    }
+
+    // Load Posts
+    function loadPosts() {
+      db.ref('posts').on('value', (snapshot) => {
+        const postsContainer = document.getElementById('posts-container');
+        postsContainer.innerHTML = ''; // Clear existing posts
+        snapshot.forEach((childSnapshot) => {
+          const post = childSnapshot.val();
+          const postElement = document.createElement('div');
+          postElement.innerHTML = `
+            <p><strong>${post.user}</strong> - ${new Date(post.timestamp).toLocaleString()}</p>
+            <p>${post.text}</p>
+            ${post.img ? `<img src="${post.img}" style="width: 200px; height: auto;">` : ''}
+            <button onclick="visitUser('${post.user}')">Visit</button>
+          `;
+          postsContainer.appendChild(postElement);
+        });
+      });
+    }
+
+    function visitUser(userId) {
+      db.ref('users/' + userId).once('value', (snapshot) => {
+        const userData = snapshot.val();
+        alert('Visiting ' + userData.name);
+        // Navigate to the user's profile or do something else
+      });
+    }
+
+    // Initialize posts on first load
+    loadPosts();
+  </script>
+
 </body>
-
-</html>
+          </html>
