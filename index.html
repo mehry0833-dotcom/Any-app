@@ -3,89 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faith Stories | Novels & Parts</title>
-    <!-- Tailwind for smooth UI -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase Compat Scripts (Better for single HTML files) -->
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
-
-    <style>
-        .story-card { transition: all 0.3s; border-left: 4px solid #4F46E5; }
-        .hidden { display: none; }
-        body { background-color: #f3f4f6; font-family: sans-serif; }
-    </style>
-</head>
-<body>
-
-    <!-- LOGIN SCREEN -->
-    <div id="auth-section" class="min-h-screen flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
-            <h1 class="text-2xl font-bold mb-6 text-center text-indigo-600">Faith Stories</h1>
-            <p class="text-sm text-gray-500 mb-4 text-center">Sign in to add your private stories</p>
-            <input type="email" id="email" placeholder="Email" class="w-full p-3 mb-3 border rounded">
-            <input type="password" id="pass" placeholder="Password (min 6 chars)" class="w-full p-3 mb-4 border rounded">
-            <button onclick="handleAuth()" class="w-full bg-indigo-600 text-white p-3 rounded font-bold hover:bg-indigo-700">Login / Join</button>
-        </div>
-    </div>
-
-    <!-- MAIN APP SCREEN -->
-    <div id="app-section" class="hidden">
-        <nav class="bg-indigo-600 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
-            <h2 class="font-bold text-lg" onclick="showHome()" style="cursor:pointer">Faith Stories</h2>
-            <button onclick="logout()" class="text-xs bg-indigo-800 px-3 py-1 rounded">Logout</button>
-        </nav>
-
-        <!-- Guide Features (Floating Tips) -->
-        <div class="bg-indigo-50 p-3 border-b text-xs flex justify-around overflow-x-auto text-indigo-800 font-semibold">
-            <span onclick="alert('Guide: Watch micro-expressions.')">How to read a person</span>
-            <span onclick="alert('Guide: Deep breathing works.')">How to stay calm</span>
-            <span onclick="alert('Check settings for guide.')">Find the guide feature</span>
-        </div>
-
-        <div class="p-4 max-w-2xl mx-auto">
-            <!-- Home View: Category List -->
-            <div id="home-view">
-                <h3 class="text-gray-600 font-bold mb-4">Categories</h3>
-                <div id="cat-grid" class="grid grid-cols-2 gap-3">
-                    <!-- Categories injected here -->
-                </div>
-            </div>
-
-            <!-- Detail View: Story List for a Category -->
-            <div id="detail-view" class="hidden">
-                <button onclick="showHome()" class="text-indigo-600 mb-4">← Back</button>
-                <h2 id="current-cat-title" class="text-2xl font-bold mb-4"></h2>
-                
-                <!-- Private Add Button (+) -->
-                <div class="bg-white p-4 rounded-lg border-2 border-dashed border-indigo-200 mb-6 text-center">
-                    <p class="text-sm text-gray-400 mb-2">Only you can add stories here</p>
-                    <button onclick="openAddModal()" class="bg-green-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-green-600">Add Story (+)</button>
-                </div>
-
-                <div id="stories-container" class="space-y-4">
-                    <!-- Stories show titles first, then expand -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ADD STORY MODAL -->
-    <div id="add-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 class="font-bold text-lg mb-4">New Part (Fact/Story)</h3>
-            <input type="text" id="story-title" placeholder="Title (e.g. Why people cheat)" class="w-full p-2 mb-2 border rounded">
-            <textarea id="story-content" placeholder="Type or paste your story here..." class="w-full p-2 mb-4 border rounded h-40"></textarea>
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal()" class="px-4 py-2 text-gray-500">Cancel</button>
-                <button onclick="saveToFirebase()" class="px-4 py-2 bg-indigo-600 text-white rounded">Save Permanently</button>
-            </div>
-        </div>
-    </div>
-
+    <title>Faith Stories App</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <script>
-        // --- FIREBASE CONFIG ---
+        // Your Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
             authDomain: "zeeworldyhi.firebaseapp.com",
@@ -93,127 +17,126 @@
             projectId: "zeeworldyhi",
             storageBucket: "zeeworldyhi.firebasestorage.app",
             messagingSenderId: "154414924399",
-            appId: "1:154414924399:web:31c3767fdbea93feba439a"
+            appId: "1:154414924399:web:31c3767fdbea93feba439a",
+            measurementId: "G-XD5Z8T76EE"
         };
 
-        // Initialize
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.database();
+        const database = firebase.database();
 
-        let activeCat = "";
-        const categories = ["Sad Stories", "Funny Stories", "Interesting Life Stories", "Real Life Stories", "Psychology Stories", "Love Stories", "History Stories", "Ghost Stories", "Relationship Stories", "Stand-Up Comedy"];
+        // Function to sign up a new user
+        function signUp() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
 
-        // --- AUTH FUNCTIONS ---
-        function handleAuth() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            
-            if(pass.length < 6) return alert("Password must be 6+ characters");
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("User signed up successfully!");
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
 
-            auth.signInWithEmailAndPassword(email, pass).catch(err => {
-                if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                    auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-                } else {
-                    alert(err.message);
-                }
+        // Function to log in an existing user
+        function logIn() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("User logged in successfully!");
+                    loadStories();
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        // Function to submit a new story
+        function submitStory() {
+            const storyTitle = document.getElementById("storyTitle").value;
+            const storyContent = document.getElementById("storyContent").value;
+
+            const userId = auth.currentUser.uid;
+            const storyData = {
+                title: storyTitle,
+                content: storyContent,
+                userId: userId,
+                timestamp: Date.now()
+            };
+
+            database.ref('stories/').push(storyData)
+                .then(() => {
+                    alert("Story submitted successfully!");
+                    loadStories();
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        // Function to load stories from the database
+        function loadStories() {
+            database.ref('stories/').on('value', (snapshot) => {
+                const storiesContainer = document.getElementById("storiesContainer");
+                storiesContainer.innerHTML = ""; // Clear existing stories
+                snapshot.forEach((childSnapshot) => {
+                    const story = childSnapshot.val();
+                    const storyElement = document.createElement("div");
+                    storyElement.innerHTML = `<h3>${story.title}</h3><p>${story.content}</p>`;
+                    storiesContainer.appendChild(storyElement);
+                });
             });
         }
 
-        function logout() { auth.signOut(); }
-
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('app-section').classList.remove('hidden');
-                loadCategoryGrid();
-            } else {
-                document.getElementById('auth-section').classList.remove('hidden');
-                document.getElementById('app-section').classList.add('hidden');
-            }
-        });
-
-        // --- UI FUNCTIONS ---
-        function loadCategoryGrid() {
-            const grid = document.getElementById('cat-grid');
-            grid.innerHTML = categories.map(c => `
-                <div onclick="viewCategory('${c}')" class="bg-white p-6 rounded-lg shadow-sm border text-center hover:border-indigo-500 cursor-pointer font-semibold text-indigo-700">
-                    ${c}
-                </div>
-            `).join('');
-        }
-
-        function viewCategory(cat) {
-            activeCat = cat;
-            document.getElementById('home-view').classList.add('hidden');
-            document.getElementById('detail-view').classList.remove('hidden');
-            document.getElementById('current-cat-title').innerText = cat;
-            syncStories();
-        }
-
-        function showHome() {
-            document.getElementById('home-view').classList.remove('hidden');
-            document.getElementById('detail-view').classList.add('hidden');
-        }
-
-        // --- DATABASE FUNCTIONS ---
-        function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
-
-        function saveToFirebase() {
-            const title = document.getElementById('story-title').value;
-            const body = document.getElementById('story-content').value;
-            if(!title || !body) return alert("Fill all fields");
-
-            // Save to your realtime database storage link
-            db.ref('stories/' + activeCat.replace(/\s/g, '')).push({
-                title: title,
-                content: body,
-                votes: 0,
-                author: auth.currentUser.email
-            }).then(() => {
-                closeModal();
-                document.getElementById('story-title').value = "";
-                document.getElementById('story-content').value = "";
+        // Function to sign out the user
+        function signOut() {
+            auth.signOut().then(() => {
+                alert("User signed out successfully!");
+                document.getElementById("storiesContainer").innerHTML = ""; // Clear stories on sign out
             });
-        }
-
-        function syncStories() {
-            const container = document.getElementById('stories-container');
-            const dbPath = 'stories/' + activeCat.replace(/\s/g, '');
-            
-            db.ref(dbPath).on('value', snapshot => {
-                container.innerHTML = "";
-                const data = snapshot.val();
-                if(data) {
-                    Object.keys(data).forEach(key => {
-                        const s = data[key];
-                        const div = document.createElement('div');
-                        div.className = "bg-white p-4 rounded-lg shadow-sm story-card";
-                        div.innerHTML = `
-                            <div class="flex justify-between items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                                <h4 class="font-bold text-gray-800">${s.title}</h4>
-                                <span class="text-[10px] bg-indigo-100 px-2 py-1 rounded text-indigo-600 font-bold">TOP STORY</span>
-                            </div>
-                            <div class="hidden mt-4 text-gray-600 text-sm leading-relaxed border-t pt-3">
-                                ${s.content.replace(/\n/g, '<br>')}
-                                <div class="mt-4 flex gap-4 border-t pt-2">
-                                    <button class="text-indigo-500 font-bold" onclick="vote('${key}')">👍 Vote</button>
-                                    <span class="text-gray-400">Votes: ${s.votes || 0}</span>
-                                </div>
-                            </div>
-                        `;
-                        container.appendChild(div);
-                    });
-                } else {
-                    container.innerHTML = "<p class='text-center text-gray-400 italic mt-10'>No stories yet. Press (+) to add yours.</p>";
-                }
-            });
-        }
-
-        function vote(key) {
-            db.ref('stories/' + activeCat.replace(/\s/g, '') + '/' + key + '/votes').transaction(v => (v || 0) + 1);
         }
     </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Faith Stories App</h1>
+        
+        <div id="authContainer">
+            <h2>Sign Up / Log In</h2>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button onclick="signUp()">Sign Up</button>
+            <button onclick="logIn()">Log In</button>
+            <button onclick="signOut()">Sign Out</button>
+        </div>
+
+        <div id="storySubmissionContainer" style="display:none;">
+            <h2>Submit a Story</h2>
+            <input type="text" id="storyTitle" placeholder="Story Title" required>
+            <textarea id="storyContent" placeholder="Write your story here..." required></textarea>
+            <button onclick="submitStory()">Submit Story</button>
+        </div>
+
+        <div id="storiesContainer">
+            <h2>Stories</h2>
+            <!-- Stories will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Monitor authentication state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById("storySubmissionContainer").style.display = "block";
+                loadStories();
+            } else {
+                document.getElementById("storySubmissionContainer").style.display = "none";
+            }
+        });
+    </script>
 </body>
-                </html>
+</html>
