@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,7 +96,7 @@
   <script type="module">
     import { initializeApp } from 'firebase/app';
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-    import { getDatabase, ref, push, onValue, remove, set } from 'firebase/database';
+    import { getDatabase, ref, push, onValue, remove } from 'firebase/database';
 
     const firebaseConfig = {
       apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
@@ -123,9 +125,6 @@
           document.getElementById('app-container').style.display = 'block';
           loadVisitors();
           loadChatLog();
-          loadSecrets();
-          loadPosts();
-          loadNote();
         })
         .catch((error) => {
           console.error(error);
@@ -142,9 +141,6 @@
           document.getElementById('app-container').style.display = 'block';
           loadVisitors();
           loadChatLog();
-          loadSecrets();
-          loadPosts();
-          loadNote();
         })
         .catch((error) => {
           console.error(error);
@@ -197,101 +193,9 @@
       });
       document.getElementById('message').value = '';
     });
-
-    document.getElementById('enter-bedroom-btn').addEventListener('click', () => {
-      const password = document.getElementById('password-input').value;
-      if (password === '1234') {
-        document.getElementById('bedroom-content').style.display = 'block';
-      } else {
-        alert('Incorrect password');
-      }
-    });
-
-    function loadSecrets() {
-      onValue(ref(db, 'secrets'), (snapshot) => {
-        const secrets = [];
-        snapshot.forEach((childSnapshot) => {
-          secrets.push({ key: childSnapshot.key, ...childSnapshot.val() });
-        });
-        const secretsContainer = document.getElementById('secrets');
-        secretsContainer.innerHTML = '';
-        secrets.forEach((secret) => {
-          const secretElement = document.createElement('div');
-          secretElement.innerHTML = `
-            <p>${secret.text}</p>
-          `;
-          secretsContainer.appendChild(secretElement);
-        });
-      });
-    }
-
-    document.getElementById('save-secret-btn').addEventListener('click', () => {
-      const secret = document.getElementById('secret').value;
-      push(ref(db, 'secrets'), {
-        text: secret,
-        user: currentUser.email
-      });
-      document.getElementById('secret').value = '';
-    });
-
-    function loadPosts() {
-      onValue(ref(db, 'posts'), (snapshot) => {
-        const posts = [];
-        snapshot.forEach((childSnapshot) => {
-          posts.push({ key: childSnapshot.key, ...childSnapshot.val() });
-        });
-        const postsContainer = document.getElementById('posts');
-        postsContainer.innerHTML = '';
-        posts.forEach((post) => {
-          const postElement = document.createElement('div');
-          postElement.innerHTML = `
-            <p>${post.text}</p>
-            <p>Posted by: ${post.user}</p>
-          `;
-          postsContainer.appendChild(postElement);
-        });
-      });
-    }
-
-    document.getElementById('post-btn').addEventListener('click', () => {
-      const post = document.getElementById('post').value;
-      push(ref(db, 'posts'), {
-        text: post,
-        user: currentUser.email
-      });
-      document.getElementById('post').value = '';
-    });
-
-    function loadNote() {
-      if (!currentUser) return;
-      const userNoteRef = ref(db, 'notes/' + currentUser.uid);
-      onValue(userNoteRef, (snapshot) => {
-        const note = snapshot.val() || '';
-        document.getElementById('note-display').innerText = note;
-      });
-    }
-
-    document.getElementById('save-note-btn').addEventListener('click', () => {
-      const note = document.getElementById('note').value;
-      if (!currentUser) return;
-      const userNoteRef = ref(db, 'notes/' + currentUser.uid);
-      set(userNoteRef, note);
-      document.getElementById('note').value = '';
-    });
-
-    // Navigation
-    document.querySelectorAll('.nav a').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetId = link.getAttribute('href').substring(1); // remove '#'
-        // Hide all sections
-        document.querySelectorAll('#app-container > div').forEach(div => {
-          div.style.display = 'none';
-        });
-        // Show target
-        document.getElementById(targetId).style.display = 'block';
-      });
-    });
   </script>
 </body>
-  </html>
+</html>
+
+
+        
