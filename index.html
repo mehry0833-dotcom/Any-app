@@ -1,456 +1,297 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>House Talks 🗨️</title>
-<style>
-  body { font-family: sans-serif; margin: 0; padding: 0; background: #032B44; color: #fff; }
-  .screen { display: none; padding: 20px; padding-top: 80px; }
-  .active { display: block; }
-  .chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 80%; position: relative; }
-  .sent { background: #00BFFF; margin-left: auto; color: #fff; }
-  .received { background: #1E90FF; color: #fff; }
-  .status-post, .post-item, .happy-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; background: #05386B; border-radius: 8px; position: relative; }
-  .nav { position: fixed; top: 0; left: 0; width: 100%; background: #032B44; padding: 10px 0; text-align: center; z-index: 10; border-bottom: 2px solid #1E90FF; }
-  .nav button { background: #1E90FF; color: #fff; border: none; padding: 8px 15px; border-radius: 30px; margin: 0 5px; cursor: pointer; font-size: 14px; }
-  .top-format { background: #05386B; padding: 8px; margin: 0; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px; border-bottom: 2px solid #00BFFF; color: #fff; position: fixed; top: 0; left: 0; width: 100%; z-index: 20; }
-  .splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #032B44; color: white; display: flex; justify-content: center; align-items: center; font-size: 2rem; z-index: 100; flex-direction: column; }
-  .splash small { font-size: 1rem; margin-top: 10px; color: #aaa; }
-  .msg-media { max-width: 200px; margin-top: 5px; border-radius: 5px; }
-  .audio-player { width: 100%; margin-top: 5px; }
-  .reaction-bar { display: flex; gap: 5px; margin-top: 5px; }
-  .reaction-btn { background: none; border: 1px solid #fff; color: #fff; border-radius: 12px; padding: 2px 8px; cursor: pointer; font-size: 12px; }
-  .reply-indicator { background: rgba(255,255,255,0.2); padding: 4px; border-left: 3px solid #fff; font-size: 0.85em; margin-bottom: 5px; }
-  .emoji-picker { display: flex; gap: 5px; margin: 5px 0; flex-wrap: wrap; }
-  .emoji-picker span { font-size: 24px; cursor: pointer; }
-  .typing-indicator { color: #aaa; font-style: italic; margin-top: 5px; }
-  .delete-btn, .edit-btn { margin-left: 10px; background: rgba(0,0,0,0.3); border: none; color: white; border-radius: 4px; cursor: pointer; padding: 2px 6px; font-size: 12px; }
-  .small-btn { background: #1E90FF; border: none; color: white; border-radius: 12px; padding: 4px 8px; cursor: pointer; font-size: 12px; margin: 2px; }
-  input, button, input[type="file"] { margin: 5px 0; padding: 8px; border-radius: 6px; border: none; }
-  input[type="text"], input[type="file"] { width: calc(100% - 20px); background: #fff; color: #000; }
-  button { background: #1E90FF; color: white; cursor: pointer; }
-  #chat-log, #status-log, #post-log, #happy-log, #pics-log { margin-top: 20px; }
-  /* adjust for fixed header */
-  body { padding-top: 100px; }
-  .screen { padding-top: 100px; }
-  .top-format { line-height: 2; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>House Talks</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .nav {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+    .nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .nav a:hover {
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
-
-<!-- Splash Screen -->
-<div id="splash" class="splash">
-  <div>🏠 Welcome to House Talks 🗨️</div>
-  <small>loading memories...</small>
-</div>
-
-<!-- Format header (as requested) -->
-<div class="top-format">
-  ┌───────────────────────────────┐<br>
-  | 🏠 Home   💬 Chats   🎵 Status |<br>
-  └───────────────────────────────┘
-</div>
-
-<!-- Navigation -->
-<div class="nav">
-  <button onclick="showScreen('chats')">Chats 🗨️</button>
-  <button onclick="showScreen('status')">Status 🌟</button>
-  <button onclick="showScreen('posts')">Posts 📝</button>
-  <button onclick="showScreen('pictures')">Pictures 🖼️</button>
-  <button onclick="showScreen('happy')">Happy 😊</button>
-</div>
-
-<!-- CHATS SCREEN -->
-<div id="chats-screen" class="screen active">
-  <h2>Chats 🗨️</h2>
-  <input id="name-input" placeholder="Enter your name" value="">
-  <button onclick="setName()">Save Name</button>
-  <br><br>
-  <!-- Emoji picker pro feature -->
-  <div class="emoji-picker">
-    <span onclick="insertEmoji('😊')">😊</span>
-    <span onclick="insertEmoji('😂')">😂</span>
-    <span onclick="insertEmoji('❤️')">❤️</span>
-    <span onclick="insertEmoji('👍')">👍</span>
-    <span onclick="insertEmoji('🎉')">🎉</span>
+  <div class="nav">
+    <a href="#sitting-room">Sitting Room</a>
+    <a href="#bedroom">Bedroom</a>
+    <a href="#outside">Outside</a>
+    <a href="#profile">Profile</a>
   </div>
-  <input id="msg-input" placeholder="Message" style="width: 70%;">
-  <button onclick="sendMsg()">Send</button><br>
-  <input type="file" id="chat-image" accept="image/*" style="width: auto;"> 📷
-  <input type="file" id="chat-audio" accept="audio/*" style="width: auto;"> 🎵
-  <button onclick="clearChats()">Delete All Chats</button>
-  <div id="chat-log"></div>
-  <!-- Typing indicator pro feature (simulated) -->
-  <div id="typingIndicator" class="typing-indicator"></div>
-  <button class="small-btn" onclick="simulateTyping()">✏️ Simulate typing</button>
-</div>
+  <div class="container">
+    <div id="auth-container">
+      <input id="email" type="email" placeholder="Email">
+      <input id="password" type="password" placeholder="Password">
+      <button id="login-btn">Login</button>
+      <button id="signup-btn">Sign Up</button>
+    </div>
+    <div id="app-container" style="display: none;">
+      <div id="sitting-room">
+        <h2>Sitting Room</h2>
+        <div id="visitors"></div>
+        <div id="chat-log"></div>
+        <input id="message" type="text" placeholder="Message">
+        <button id="send-btn">Send</button>
+      </div>
+      <div id="bedroom" style="display: none;">
+        <h2>Bedroom</h2>
+        <input id="password-input" type="password" placeholder="Enter password">
+        <button id="enter-bedroom-btn">Enter</button>
+        <div id="bedroom-content" style="display: none;">
+          <input id="secret" type="text" placeholder="Secret">
+          <button id="save-secret-btn">Save Secret</button>
+          <div id="secrets"></div>
+        </div>
+      </div>
+      <div id="outside" style="display: none;">
+        <h2>Outside</h2>
+        <input id="post" type="text" placeholder="Post">
+        <button id="post-btn">Post</button>
+        <div id="posts"></div>
+      </div>
+      <div id="profile" style="display: none;">
+        <h2>Profile</h2>
+        <input id="note" type="text" placeholder="Note">
+        <button id="save-note-btn">Save Note</button>
+        <div id="note-display"></div>
+      </div>
+    </div>
+  </div>
 
-<!-- STATUS SCREEN -->
-<div id="status-screen" class="screen">
-  <h2>Status 🌟</h2>
-  <input id="status-input" placeholder="What's up?">
-  <input type="file" id="status-image">
-  <input type="file" id="status-music" accept="audio/*">
-  <button onclick="postStatus()">Post</button>
-  <div id="status-log"></div>
-</div>
-
-<!-- POSTS SCREEN -->
-<div id="posts-screen" class="screen">
-  <h2>Posts 📝</h2>
-  <input id="post-input" placeholder="What's on your mind?">
-  <input type="file" id="post-image">
-  <button onclick="post()">Post</button>
-  <div id="post-log"></div>
-</div>
-
-<!-- PICTURES SCREEN -->
-<div id="pictures-screen" class="screen">
-  <h2>Pictures 🖼️</h2>
-  <div id="pics-log"></div>
-</div>
-
-<!-- HAPPY SCREEN -->
-<div id="happy-screen" class="screen">
-  <h2>What makes you happy? 😊</h2>
-  <input id="happy-input" placeholder="Share something">
-  <input type="file" id="happy-image">
-  <button onclick="postHappy()">Post</button>
-  <div id="happy-log"></div>
-</div>
-
-<script>
-// ---- Data ----
-let name = localStorage.getItem('name') || '';
-let chats = JSON.parse(localStorage.getItem('chats')) || [];
-let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
-let posts = JSON.parse(localStorage.getItem('posts')) || [];
-let happyPosts = JSON.parse(localStorage.getItem('happyPosts')) || [];
-
-// Helper to generate unique ID
-function uid() { return Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
-
-// ---- Splash ----
-window.onload = function() {
-  document.getElementById('name-input').value = name;
-  setTimeout(() => {
-    document.getElementById('splash').style.display = 'none';
-  }, 4000);
-};
-
-// ---- Navigation ----
-function showScreen(screen) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screen+'-screen').classList.add('active');
-  if(screen==='chats') loadChats();
-  if(screen==='status') loadStatuses();
-  if(screen==='posts') loadPosts();
-  if(screen==='pictures') loadPics();
-  if(screen==='happy') loadHappy();
-}
-
-// ---- Name ----
-function setName() {
-  name = document.getElementById('name-input').value;
-  localStorage.setItem('name', name);
-}
-
-// ---- CHATS: send, load, delete, edit, react, reply ----
-function sendMsg() {
-  if(!name) { alert('Enter your name first'); return; }
-  let text = document.getElementById('msg-input').value;
-  let imgFile = document.getElementById('chat-image').files[0];
-  let audioFile = document.getElementById('chat-audio').files[0];
-  if(!text && !imgFile && !audioFile) return;
-
-  let imgUrl = imgFile ? URL.createObjectURL(imgFile) : null;
-  let audioUrl = audioFile ? URL.createObjectURL(audioFile) : null;
-
-  let newMsg = {
-    id: uid(),
-    from: name,
-    text: text,
-    img: imgUrl,
-    audio: audioUrl,
-    time: new Date().toLocaleTimeString(),
-    reactions: [],      // pro: reactions
-    replyTo: null,      // pro: reply
-    seen: false         // pro: seen status
-  };
-  chats.push(newMsg);
-  localStorage.setItem('chats', JSON.stringify(chats));
-  // Clear inputs
-  document.getElementById('msg-input').value = '';
-  document.getElementById('chat-image').value = '';
-  document.getElementById('chat-audio').value = '';
-  loadChats();
-}
-
-function loadChats() {
-  let log = document.getElementById('chat-log');
-  log.innerHTML = '';
-  chats.forEach((c, index) => {
-    let replyHtml = '';
-    if (c.replyTo) {
-      let repliedMsg = chats.find(m => m.id === c.replyTo);
-      if (repliedMsg) {
-        replyHtml = `<div class="reply-indicator">↪️ ${repliedMsg.from}: ${repliedMsg.text.substring(0,30)}</div>`;
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+        "firebase/database": "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"
       }
     }
-    let reactionsHtml = '<div class="reaction-bar">';
-    // count reactions
-    let counts = {};
-    c.reactions.forEach(r => counts[r] = (counts[r]||0)+1);
-    for (let emoji in counts) {
-      reactionsHtml += `<span class="reaction-btn" onclick="reactToMessage('${c.id}', '${emoji}')">${emoji} ${counts[emoji]}</span>`;
+  </script>
+  <script type="module">
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+    import { getDatabase, ref, push, onValue, remove, set } from 'firebase/database';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+      authDomain: "zeeworldyhi.firebaseapp.com",
+      databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+      projectId: "zeeworldyhi",
+      storageBucket: "zeeworldyhi.firebasestorage.app",
+      messagingSenderId: "154414924399",
+      appId: "1:154414924399:web:31c3767fdbea93feba439a",
+      measurementId: "G-XD5Z8T76EE"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let currentUser = null;
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          currentUser = userCredential.user;
+          document.getElementById('auth-container').style.display = 'none';
+          document.getElementById('app-container').style.display = 'block';
+          loadVisitors();
+          loadChatLog();
+          loadSecrets();
+          loadPosts();
+          loadNote();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+    document.getElementById('signup-btn').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          currentUser = userCredential.user;
+          document.getElementById('auth-container').style.display = 'none';
+          document.getElementById('app-container').style.display = 'block';
+          loadVisitors();
+          loadChatLog();
+          loadSecrets();
+          loadPosts();
+          loadNote();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+    function loadVisitors() {
+      onValue(ref(db, 'visitors'), (snapshot) => {
+        const visitors = [];
+        snapshot.forEach((childSnapshot) => {
+          visitors.push({ key: childSnapshot.key, ...childSnapshot.val() });
+        });
+        const visitorsContainer = document.getElementById('visitors');
+        visitorsContainer.innerHTML = '';
+        visitors.forEach((visitor) => {
+          const visitorElement = document.createElement('div');
+          visitorElement.innerHTML = `
+            <p>${visitor.name}</p>
+            <img src="${visitor.profilePicture}" alt="Profile Picture">
+          `;
+          visitorsContainer.appendChild(visitorElement);
+        });
+      });
     }
-    reactionsHtml += '</div>';
 
-    let mediaHtml = '';
-    if(c.img) mediaHtml += `<img src="${c.img}" class="msg-media">`;
-    if(c.audio) mediaHtml += `<audio src="${c.audio}" controls class="audio-player"></audio>`;
-
-    log.innerHTML += `
-      <div class="chat-msg ${c.from === name ? 'sent' : 'received'}" id="msg-${c.id}">
-        ${replyHtml}
-        <b>${c.from}</b><br>${c.text}<br>
-        ${mediaHtml}
-        <small>${c.time}</small> ${c.seen ? '👁️' : ''}
-        <div style="margin-top:5px">
-          <button class="delete-btn" onclick="deleteChatMessage('${c.id}')">🗑️</button>
-          <button class="edit-btn" onclick="editChatMessage('${c.id}')">✏️</button>
-          <button class="edit-btn" onclick="reactToMessage('${c.id}', '👍')">👍</button>
-          <button class="edit-btn" onclick="reactToMessage('${c.id}', '❤️')">❤️</button>
-          <button class="edit-btn" onclick="setReplyTo('${c.id}')">↩️ reply</button>
-        </div>
-        ${reactionsHtml}
-      </div>`;
-  });
-  // mark as seen (pro feature)
-  chats.forEach(c => { if(c.from !== name) c.seen = true; });
-  localStorage.setItem('chats', JSON.stringify(chats));
-}
-
-function deleteChatMessage(id) {
-  chats = chats.filter(c => c.id !== id);
-  localStorage.setItem('chats', JSON.stringify(chats));
-  loadChats();
-}
-
-function editChatMessage(id) {
-  let newText = prompt('Edit message:');
-  if (newText !== null) {
-    let msg = chats.find(c => c.id === id);
-    if (msg) { msg.text = newText; }
-    localStorage.setItem('chats', JSON.stringify(chats));
-    loadChats();
-  }
-}
-
-function reactToMessage(id, emoji) {
-  let msg = chats.find(c => c.id === id);
-  if (msg) {
-    msg.reactions.push(emoji);
-    localStorage.setItem('chats', JSON.stringify(chats));
-    loadChats();
-  }
-}
-
-let replyContext = null;
-function setReplyTo(id) {
-  replyContext = id;
-  alert('Reply set. Type your message and send.');
-  // focus input
-  document.getElementById('msg-input').focus();
-  // override send to include reply id
-  window.__pendingReply = id;
-}
-
-// override send to handle reply
-const originalSend = sendMsg;
-sendMsg = function() {
-  if(!name) { alert('Enter your name first'); return; }
-  let text = document.getElementById('msg-input').value;
-  let imgFile = document.getElementById('chat-image').files[0];
-  let audioFile = document.getElementById('chat-audio').files[0];
-  if(!text && !imgFile && !audioFile) return;
-
-  let imgUrl = imgFile ? URL.createObjectURL(imgFile) : null;
-  let audioUrl = audioFile ? URL.createObjectURL(audioFile) : null;
-
-  let newMsg = {
-    id: uid(),
-    from: name,
-    text: text,
-    img: imgUrl,
-    audio: audioUrl,
-    time: new Date().toLocaleTimeString(),
-    reactions: [],
-    replyTo: window.__pendingReply || null,
-    seen: false
-  };
-  chats.push(newMsg);
-  localStorage.setItem('chats', JSON.stringify(chats));
-  window.__pendingReply = null;
-  document.getElementById('msg-input').value = '';
-  document.getElementById('chat-image').value = '';
-  document.getElementById('chat-audio').value = '';
-  loadChats();
-};
-
-function insertEmoji(emoji) {
-  let input = document.getElementById('msg-input');
-  input.value += emoji;
-}
-
-function simulateTyping() {
-  let ind = document.getElementById('typingIndicator');
-  ind.innerText = '✨ Someone is typing...';
-  setTimeout(() => ind.innerText = '', 2000);
-}
-
-function clearChats() {
-  chats = [];
-  localStorage.removeItem('chats');
-  loadChats();
-}
-
-// ---- STATUS (already has delete) ----
-function postStatus() {
-  if(!name){ alert('Enter your name first'); return; }
-  let status = document.getElementById('status-input').value;
-  let img = document.getElementById('status-image').files[0];
-  let music = document.getElementById('status-music').files[0];
-  statuses.push({
-    user: name,
-    status,
-    img: img ? URL.createObjectURL(img) : null,
-    music: music ? URL.createObjectURL(music) : null,
-    time: new Date().toLocaleTimeString(),
-    id: uid()
-  });
-  localStorage.setItem('statuses', JSON.stringify(statuses));
-  document.getElementById('status-input').value = '';
-  document.getElementById('status-image').value = '';
-  document.getElementById('status-music').value = '';
-  loadStatuses();
-}
-function loadStatuses() {
-  let log = document.getElementById('status-log');
-  log.innerHTML = '';
-  statuses.forEach((s, i) => {
-    log.innerHTML += `<div class="status-post">
-      <p>${s.user}: ${s.status}</p>
-      ${s.img ? '<img src="'+s.img+'" width="100%">' : ''}
-      ${s.music ? '<audio src="'+s.music+'" autoplay loop controls></audio>' : ''}
-      <p><small>${s.time}</small></p>
-      <button onclick="deleteStatus('${s.id}')">Delete</button>
-    </div>`;
-  });
-}
-function deleteStatus(id) {
-  statuses = statuses.filter(s => s.id !== id);
-  localStorage.setItem('statuses', JSON.stringify(statuses));
-  loadStatuses();
-}
-
-// ---- POSTS (add delete) ----
-function post() {
-  if(!name){ alert('Enter your name first'); return; }
-  let post = document.getElementById('post-input').value;
-  let img = document.getElementById('post-image').files[0];
-  posts.push({
-    user: name,
-    post,
-    img: img ? URL.createObjectURL(img) : null,
-    likes: 0,
-    time: new Date().toLocaleTimeString(),
-    id: uid()
-  });
-  localStorage.setItem('posts', JSON.stringify(posts));
-  document.getElementById('post-input').value = '';
-  document.getElementById('post-image').value = '';
-  loadPosts();
-}
-function loadPosts() {
-  let log = document.getElementById('post-log');
-  log.innerHTML = '';
-  posts.forEach((p, i) => {
-    log.innerHTML += `<div class="post-item">
-      <p>${p.user}: ${p.post}</p>
-      ${p.img ? '<img src="'+p.img+'" width="100%">' : ''}
-      <p>Likes: ${p.likes}</p>
-      <p><small>${p.time}</small></p>
-      <button onclick="likePost('${p.id}')">👍</button>
-      <button onclick="deletePost('${p.id}')">🗑️ Delete</button>
-    </div>`;
-  });
-}
-function likePost(id) {
-  let p = posts.find(p => p.id === id);
-  if(p) p.likes++;
-  localStorage.setItem('posts', JSON.stringify(posts));
-  loadPosts();
-}
-function deletePost(id) {
-  posts = posts.filter(p => p.id !== id);
-  localStorage.setItem('posts', JSON.stringify(posts));
-  loadPosts();
-  if (document.getElementById('pictures-screen').classList.contains('active')) loadPics(); // refresh pics if open
-}
-
-// ---- PICTURES (with delete) ----
-function loadPics() {
-  let log = document.getElementById('pics-log');
-  log.innerHTML = '';
-  posts.forEach(p => {
-    if(p.img) {
-      log.innerHTML += `<div style="margin:10px 0;">
-        <img src="${p.img}" width="100%">
-        <button onclick="deletePost('${p.id}')">🗑️ Delete Post</button>
-        <hr></div>`;
+    function loadChatLog() {
+      onValue(ref(db, 'chatLog'), (snapshot) => {
+        const chatLog = [];
+        snapshot.forEach((childSnapshot) => {
+          chatLog.push({ key: childSnapshot.key, ...childSnapshot.val() });
+        });
+        const chatLogContainer = document.getElementById('chat-log');
+        chatLogContainer.innerHTML = '';
+        chatLog.forEach((message) => {
+          const messageElement = document.createElement('div');
+          messageElement.innerHTML = `
+            <p>${message.text}</p>
+            <p>Sent by: ${message.sender}</p>
+          `;
+          chatLogContainer.appendChild(messageElement);
+        });
+      });
     }
-  });
-}
 
-// ---- HAPPY (add delete) ----
-function postHappy() {
-  if(!name){ alert('Enter your name first'); return; }
-  let happy = document.getElementById('happy-input').value;
-  let img = document.getElementById('happy-image').files[0];
-  happyPosts.push({
-    user: name,
-    happy,
-    img: img ? URL.createObjectURL(img) : null,
-    time: new Date().toLocaleTimeString(),
-    id: uid()
-  });
-  localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
-  document.getElementById('happy-input').value = '';
-  document.getElementById('happy-image').value = '';
-  loadHappy();
-}
-function loadHappy() {
-  let log = document.getElementById('happy-log');
-  log.innerHTML = '';
-  happyPosts.forEach(h => {
-    log.innerHTML += `<div class="happy-item">
-      <p>${h.user}: ${h.happy}</p>
-      ${h.img ? '<img src="'+h.img+'" width="100%">' : ''}
-      <p><small>${h.time}</small></p>
-      <button onclick="deleteHappy('${h.id}')">🗑️ Delete</button>
-    </div>`;
-  });
-}
-function deleteHappy(id) {
-  happyPosts = happyPosts.filter(h => h.id !== id);
-  localStorage.setItem('happyPosts', JSON.stringify(happyPosts));
-  loadHappy();
-}
+    document.getElementById('send-btn').addEventListener('click', () => {
+      const message = document.getElementById('message').value;
+      push(ref(db, 'chatLog'), {
+        text: message,
+        sender: currentUser.email
+      });
+      document.getElementById('message').value = '';
+    });
 
-// ---- initial load ----
-loadChats();
-</script>
+    document.getElementById('enter-bedroom-btn').addEventListener('click', () => {
+      const password = document.getElementById('password-input').value;
+      if (password === '1234') {
+        document.getElementById('bedroom-content').style.display = 'block';
+      } else {
+        alert('Incorrect password');
+      }
+    });
 
+    function loadSecrets() {
+      onValue(ref(db, 'secrets'), (snapshot) => {
+        const secrets = [];
+        snapshot.forEach((childSnapshot) => {
+          secrets.push({ key: childSnapshot.key, ...childSnapshot.val() });
+        });
+        const secretsContainer = document.getElementById('secrets');
+        secretsContainer.innerHTML = '';
+        secrets.forEach((secret) => {
+          const secretElement = document.createElement('div');
+          secretElement.innerHTML = `
+            <p>${secret.text}</p>
+          `;
+          secretsContainer.appendChild(secretElement);
+        });
+      });
+    }
+
+    document.getElementById('save-secret-btn').addEventListener('click', () => {
+      const secret = document.getElementById('secret').value;
+      push(ref(db, 'secrets'), {
+        text: secret,
+        user: currentUser.email
+      });
+      document.getElementById('secret').value = '';
+    });
+
+    function loadPosts() {
+      onValue(ref(db, 'posts'), (snapshot) => {
+        const posts = [];
+        snapshot.forEach((childSnapshot) => {
+          posts.push({ key: childSnapshot.key, ...childSnapshot.val() });
+        });
+        const postsContainer = document.getElementById('posts');
+        postsContainer.innerHTML = '';
+        posts.forEach((post) => {
+          const postElement = document.createElement('div');
+          postElement.innerHTML = `
+            <p>${post.text}</p>
+            <p>Posted by: ${post.user}</p>
+          `;
+          postsContainer.appendChild(postElement);
+        });
+      });
+    }
+
+    document.getElementById('post-btn').addEventListener('click', () => {
+      const post = document.getElementById('post').value;
+      push(ref(db, 'posts'), {
+        text: post,
+        user: currentUser.email
+      });
+      document.getElementById('post').value = '';
+    });
+
+    function loadNote() {
+      if (!currentUser) return;
+      const userNoteRef = ref(db, 'notes/' + currentUser.uid);
+      onValue(userNoteRef, (snapshot) => {
+        const note = snapshot.val() || '';
+        document.getElementById('note-display').innerText = note;
+      });
+    }
+
+    document.getElementById('save-note-btn').addEventListener('click', () => {
+      const note = document.getElementById('note').value;
+      if (!currentUser) return;
+      const userNoteRef = ref(db, 'notes/' + currentUser.uid);
+      set(userNoteRef, note);
+      document.getElementById('note').value = '';
+    });
+
+    // Navigation
+    document.querySelectorAll('.nav a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1); // remove '#'
+        // Hide all sections
+        document.querySelectorAll('#app-container > div').forEach(div => {
+          div.style.display = 'none';
+        });
+        // Show target
+        document.getElementById(targetId).style.display = 'block';
+      });
+    });
+  </script>
 </body>
-    </html>
+  </html>
