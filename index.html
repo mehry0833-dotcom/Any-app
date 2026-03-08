@@ -1,201 +1,2026 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
   <title>House Talks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Simple styling; replace with your own design system -->
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      height: 100vh;
     }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    #app {
+      display: flex;
+      flex: 1;
     }
-    .nav {
-      background-color: #333;
-      color: #fff;
-      padding: 10px;
+    .sidebar {
+      width: 260px;
+      background: #020617;
+      border-right: 1px solid #1e293b;
+      padding: 12px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .section-header {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .card {
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+    .btn {
+      background: #f97316;
+      color: #111827;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn.secondary {
+      background: #1f2937;
+      color: #e5e7eb;
+    }
+    .btn.small {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    input, textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      padding: 6px 8px;
+      color: #e5e7eb;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .topbar {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #020617;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #111827;
+      object-fit: cover;
+      border: 2px solid #f97316;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin-right: 4px;
+    }
+    .status-online { background: #22c55e; }
+    .status-offline { background: #6b7280; }
+    .nav-tabs {
+      display: flex;
+      border-bottom: 1px solid #1e293b;
+      background: #020617;
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 8px;
       text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
     }
-    .nav a {
-      color: #fff;
-      text-decoration: none;
-      margin: 0 10px;
+    .nav-tab.active {
+      border-bottom-color: #f97316;
+      background: #020617;
+      font-weight: 600;
     }
-    .nav a:hover {
-      color: #ccc;
+    .content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .column {
+      flex: 1;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .column:last-child {
+      border-right: none;
+    }
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+      box-sizing: border-box;
+    }
+    .message {
+      margin-bottom: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #020617;
+      border: 1px solid #111827;
+      font-size: 13px;
+    }
+    .message-meta {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .post {
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: #020617;
+      font-size: 13px;
+    }
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .post-actions {
+      margin-top: 4px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 11px;
+    }
+    .input-row {
+      display: flex;
+      gap: 6px;
+    }
+    .input-row input, .input-row textarea {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-size: 11px;
+    }
+    .pill {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+    }
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #1f2937;
+      color: #e5e7eb;
+      margin-left: 4px;
+    }
+    .hidden {
+      display: none !important;
+    }
+    img.post-image {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .story-strip {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 4px;
+    }
+    .story-item {
+      width: 54px;
+      text-align: center;
+      font-size: 10px;
+    }
+    .story-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 2px solid #f97316;
+      margin-bottom: 2px;
+      background: #020617;
+      object-fit: cover;
     }
   </style>
 </head>
 <body>
-  <div class="nav">
-    <a href="#sitting-room">Sitting Room</a>
-    <a href="#bedroom">Bedroom</a>
-    <a href="#outside">Outside</a>
-    <a href="#profile">Profile</a>
-  </div>
-  <div class="container">
-    <div id="auth-container">
-      <input id="email" type="email" placeholder="Email">
-      <input id="password" type="password" placeholder="Password">
-      <button id="login-btn">Login</button>
-      <button id="signup-btn">Sign Up</button>
-    </div>
-    <div id="app-container" style="display: none;">
-      <div id="sitting-room">
-        <h2>Sitting Room</h2>
-        <div id="visitors"></div>
-        <div id="chat-log"></div>
-        <input id="message" type="text" placeholder="Message">
-        <button id="send-btn">Send</button>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="section-header">House Talks</div>
+    <div id="auth-card" class="card">
+      <div id="auth-view-login">
+        <div class="section-header">Login</div>
+        <input id="login-email" type="email" placeholder="Email" />
+        <input id="login-password" type="password" placeholder="Password" />
+        <button class="btn" id="login-btn">Login</button>
+        <button class="btn secondary small" id="go-signup-btn">Create account</button>
       </div>
-      <div id="bedroom" style="display: none;">
-        <h2>Bedroom</h2>
-        <input id="password-input" type="password" placeholder="Enter password">
-        <button id="enter-bedroom-btn">Enter</button>
-        <div id="bedroom-content" style="display: none;">
-          <input id="secret" type="text" placeholder="Secret">
-          <button id="save-secret-btn">Save Secret</button>
-          <div id="secrets"></div>
+      <div id="auth-view-signup" class="hidden">
+        <div class="section-header">Sign Up</div>
+        <input id="signup-name" type="text" placeholder="Full name" />
+        <input id="signup-email" type="email" placeholder="Email" />
+        <input id="signup-password" type="password" placeholder="Password" />
+        <input id="signup-photo" type="text" placeholder="Profile photo URL" />
+        <button class="btn" id="signup-btn">Sign Up</button>
+        <button class="btn secondary small" id="go-login-btn">Back to login</button>
+      </div>
+    </div>
+
+    <div id="user-card" class="card hidden">
+      <div class="section-header">My Profile</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <img id="user-avatar" class="avatar" src="" alt="">
+        <div>
+          <div id="user-name" style="font-size:14px;font-weight:600;"></div>
+          <div id="user-mood-label" style="font-size:11px;color:#9ca3af;"></div>
         </div>
       </div>
-      <div id="outside" style="display: none;">
-        <h2>Outside</h2>
-        <input id="post" type="text" placeholder="Post">
-        <button id="post-btn">Post</button>
-        <div id="posts"></div>
-      </div>
-      <div id="profile" style="display: none;">
-        <h2>Profile</h2>
-        <input id="note" type="text" placeholder="Note">
-        <button id="save-note-btn">Save Note</button>
-        <div id="note-display"></div>
-      </div>
+      <textarea id="profile-note" placeholder="Profile note (e.g. Just joined!)"></textarea>
+      <label style="font-size:11px;color:#9ca3af;">Mood</label>
+      <select id="profile-mood">
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="busy">Busy</option>
+        <option value="chill">Chill</option>
+        <option value="offline">Offline</option>
+      </select>
+      <label style="font-size:11px;color:#9ca3af;">Theme</label>
+      <select id="profile-theme">
+        <option value="default">Default</option>
+        <option value="dark">Dark</option>
+        <option value="bright">Bright</option>
+        <option value="pastel">Pastel</option>
+      </select>
+      <textarea id="profile-bio" placeholder="Short bio..."></textarea>
+      <button class="btn small" id="save-profile-btn">Save profile</button>
+      <button class="btn secondary small" id="logout-btn">Logout</button>
+    </div>
+
+    <div id="visitors-card" class="card hidden">
+      <div class="section-header">Visitors</div>
+      <div id="visitors-list" style="max-height:160px;overflow-y:auto;font-size:12px;"></div>
+    </div>
+
+    <div id="notifications-card" class="card hidden">
+      <div class="section-header">Notifications</div>
+      <div id="notifications-list" style="max-height:160px;overflow-y:auto;font-size:12px;"></div>
+    </div>
+
+    <div id="search-card" class="card hidden">
+      <div class="section-header">Search & Discover</div>
+      <input id="search-query" type="text" placeholder="Name, mood, or interest" />
+      <button class="btn small" id="search-btn">Search</button>
+      <div id="search-results" style="max-height:140px;overflow-y:auto;font-size:12px;margin-top:4px;"></div>
     </div>
   </div>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
-        "firebase/database": "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"
-      }
-    }
-  </script>
-  <script type="module">
-    import { initializeApp } from 'firebase/app';
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-    import { getDatabase, ref, push, onValue, remove } from 'firebase/database';
+  <!-- MAIN AREA -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span style="font-weight:700;font-size:14px;">House Talks</span>
+        <span id="topbar-location" style="font-size:11px;color:#9ca3af;">Sitting Room</span>
+      </div>
+      <div id="topbar-right" style="font-size:11px;color:#9ca3af;"></div>
+    </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
-      authDomain: "zeeworldyhi.firebaseapp.com",
-      databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
-      projectId: "zeeworldyhi",
-      storageBucket: "zeeworldyhi.firebasestorage.app",
-      messagingSenderId: "154414924399",
-      appId: "1:154414924399:web:31c3767fdbea93feba439a",
-      measurementId: "G-XD5Z8T76EE"
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-tab="sitting">Sitting Room</div>
+      <div class="nav-tab" data-tab="bedroom">Bedroom</div>
+      <div class="nav-tab" data-tab="outside">Outside</div>
+      <div class="nav-tab" data-tab="house">Private Rooms</div>
+      <div class="nav-tab" data-tab="activity">Activity</div>
+    </div>
+
+    <div class="content">
+      <!-- SITTING ROOM COLUMN -->
+      <div class="column" data-panel="sitting">
+        <div class="scroll" id="sitting-scroll">
+          <div class="section-header">Stories</div>
+          <div id="stories-strip" class="story-strip"></div>
+
+          <div class="section-header">Sitting Room Chat</div>
+          <div id="sitting-messages"></div>
+        </div>
+        <div style="padding:8px 12px;border-top:1px solid #1e293b;">
+          <div class="input-row">
+            <input id="sitting-input" type="text" placeholder="Say something to everyone in the house..." />
+            <button class="btn small" id="sitting-send-btn">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BEDROOM COLUMN -->
+      <div class="column hidden" data-panel="bedroom">
+        <div class="scroll" id="bedroom-scroll">
+          <div id="bedroom-lock-view">
+            <div class="section-header">Bedroom 🔐</div>
+            <p style="font-size:13px;color:#9ca3af;">
+              Enter your bedroom password to access your private space.
+            </p>
+            <input id="bedroom-password" type="password" placeholder="Bedroom password" />
+            <button class="btn small" id="bedroom-enter-btn">Enter</button>
+            <p style="font-size:11px;color:#6b7280;margin-top:4px;">
+              First time? This will set your bedroom password.
+            </p>
+          </div>
+
+          <div id="bedroom-main-view" class="hidden">
+            <div class="section-header">Bedroom (Private)</div>
+            <div class="card">
+              <div class="section-header">Secrets</div>
+              <textarea id="secret-input" placeholder="Write a secret..."></textarea>
+              <button class="btn small" id="secret-add-btn">Add secret</button>
+              <div id="secrets-list" style="margin-top:6px;font-size:13px;"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-header">Private Pictures</div>
+              <input id="bedroom-image-file" type="file" accept="image/*" />
+              <button class="btn small" id="bedroom-upload-image-btn">Upload</button>
+              <div id="bedroom-images" style="margin-top:6px;font-size:13px;"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-header">Voice Messages</div>
+              <p style="font-size:11px;color:#9ca3af;">Wire up MediaRecorder here to save voice notes to Storage + Realtime DB.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTSIDE COLUMN -->
+      <div class="column hidden" data-panel="outside">
+        <div class="scroll" id="outside-scroll">
+          <div class="section-header">Create Post</div>
+          <div class="card">
+            <textarea id="outside-text" placeholder="What's happening outside the house?"></textarea>
+            <input id="outside-image-file" type="file" accept="image/*" />
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+              <label style="font-size:11px;color:#9ca3af;">
+                Privacy:
+                <select id="outside-privacy" style="width:auto;display:inline-block;">
+                  <option value="public">Public</option>
+                  <option value="friends">Friends only</option>
+                  <option value="private">Private</option>
+                </select>
+              </label>
+              <button class="btn small" id="outside-post-btn">Post</button>
+            </div>
+          </div>
+
+          <div class="section-header">Pinned Posts</div>
+          <div id="outside-pinned"></div>
+
+          <div class="section-header">Feed</div>
+          <div id="outside-feed"></div>
+        </div>
+      </div>
+
+      <!-- PRIVATE ROOMS COLUMN -->
+      <div class="column hidden" data-panel="house">
+        <div class="scroll" id="house-scroll">
+          <div class="section-header">Create Private Room</div>
+          <div class="card">
+            <input id="room-name" type="text" placeholder="Room name (e.g. Family, Friends)" />
+            <select id="room-type">
+              <option value="kitchen">Kitchen (cooking chats)</option>
+              <option value="garden">Garden (outdoor talks)</option>
+              <option value="library">Library (study & books)</option>
+            </select>
+            <textarea id="room-description" placeholder="Describe this room..."></textarea>
+            <button class="btn small" id="room-create-btn">Create room</button>
+          </div>
+
+          <div class="section-header">My Rooms</div>
+          <div id="my-rooms"></div>
+
+          <div class="section-header">Live House Parties</div>
+          <div id="house-parties"></div>
+          <p style="font-size:11px;color:#9ca3af;">
+            Attach your live chat / voice / video implementation here; store party metadata in Realtime DB.
+          </p>
+        </div>
+      </div>
+
+      <!-- ACTIVITY COLUMN -->
+      <div class="column hidden" data-panel="activity">
+        <div class="scroll" id="activity-scroll">
+          <div class="section-header">Activity Feed</div>
+          <div id="activity-list"></div>
+
+          <div class="section-header">Friend Requests</div>
+          <div id="friend-requests"></div>
+
+          <div class="section-header">Friendship Vault</div>
+          <div id="friendship-vault"></div>
+
+          <div class="section-header">Suggestions & Feedback</div>
+          <div class="card">
+            <textarea id="feedback-input" placeholder="Suggest a new House Rule or feature..."></textarea>
+            <button class="btn small" id="feedback-send-btn">Send feedback</button>
+            <div id="feedback-list" style="margin-top:6px;font-size:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  // Import Firebase SDK v9+ (modular) from CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    onChildAdded,
+    onValue,
+    update,
+    serverTimestamp,
+    query,
+    orderByChild,
+    equalTo
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import {
+    getStorage,
+    ref as storageRef,
+    uploadBytes,
+    getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+    authDomain: "zeeworldyhi.firebaseapp.com",
+    databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+    projectId: "zeeworldyhi",
+    storageBucket: "zeeworldyhi.firebasestorage.app",
+    messagingSenderId: "154414924399",
+    appId: "1:154414924399:web:31c3767fdbea93feba439a",
+    measurementId: "G-XD5Z8T76EE"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  // DOM helpers
+  const $ = (id) => document.getElementById(id);
+  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+  // State
+  let currentUser = null;
+  let bedroomUnlocked = false;
+  let bedroomPasswordCache = null;
+
+  // AUTH UI
+  const showLogin = () => {
+    $("auth-view-login").classList.remove("hidden");
+    $("auth-view-signup").classList.add("hidden");
+  };
+  const showSignup = () => {
+    $("auth-view-login").classList.add("hidden");
+    $("auth-view-signup").classList.remove("hidden");
+  };
+
+  $("go-signup-btn").onclick = showSignup;
+  $("go-login-btn").onclick = showLogin;
+
+  $("signup-btn").onclick = async () => {
+    const name = $("signup-name").value.trim();
+    const email = $("signup-email").value.trim();
+    const password = $("signup-password").value;
+    const photoURL = $("signup-photo").value.trim();
+
+    if (!name || !email || !password) {
+      alert("Fill all required sign up fields.");
+      return;
+    }
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: name, photoURL: photoURL || null });
+
+      // Create user profile in DB
+      const userRef = ref(db, `users/${cred.user.uid}`);
+      await set(userRef, {
+        uid: cred.user.uid,
+        name,
+        email,
+        photoURL: photoURL || "",
+        mood: "happy",
+        note: "Just joined!",
+        bio: "",
+        theme: "default",
+        createdAt: Date.now(),
+        lastSeen: Date.now()
+      });
+
+      // Add to Visitors list
+      const visitRef = ref(db, "visitors");
+      await push(visitRef, {
+        uid: cred.user.uid,
+        name,
+        photoURL: photoURL || "",
+        joinedAt: Date.now()
+      });
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  $("login-btn").onclick = async () => {
+    const email = $("login-email").value.trim();
+    const password = $("login-password").value;
+    if (!email || !password) {
+      alert("Enter email and password.");
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  $("logout-btn").onclick = async () => {
+    await signOut(auth);
+  };
+
+  // TAB NAV
+  $$(".nav-tab").forEach((tab) => {
+    tab.onclick = () => {
+      const tabKey = tab.dataset.tab;
+      $$(".nav-tab").forEach((t) => t.classList.toggle("active", t === tab));
+      $$(".column").forEach((col) => {
+        col.classList.toggle("hidden", col.dataset.panel !== tabKey);
+      });
+      $("topbar-location").textContent =
+        tabKey === "sitting"
+          ? "Sitting Room"
+          : tabKey === "bedroom"
+          ? "Bedroom"
+          : tabKey === "outside"
+          ? "Outside"
+          : tabKey === "house"
+          ? "Private Rooms"
+          : "Activity";
+      if (tabKey === "bedroom") {
+        logActivity("Entered Bedroom");
+      } else if (tabKey === "sitting") {
+        logActivity("Entered Sitting Room");
+      } else if (tabKey === "outside") {
+        logActivity("Viewing Outside feed");
+      }
+    };
+  });
+
+  // AUTH STATE HANDLER
+  onAuthStateChanged(auth, async (user) => {
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>House Talks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Simple styling; replace with your own design system -->
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      height: 100vh;
+    }
+    #app {
+      display: flex;
+      flex: 1;
+    }
+    .sidebar {
+      width: 260px;
+      background: #020617;
+      border-right: 1px solid #1e293b;
+      padding: 12px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .section-header {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .card {
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+    .btn {
+      background: #f97316;
+      color: #111827;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn.secondary {
+      background: #1f2937;
+      color: #e5e7eb;
+    }
+    .btn.small {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    input, textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      padding: 6px 8px;
+      color: #e5e7eb;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .topbar {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #020617;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #111827;
+      object-fit: cover;
+      border: 2px solid #f97316;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin-right: 4px;
+    }
+    .status-online { background: #22c55e; }
+    .status-offline { background: #6b7280; }
+    .nav-tabs {
+      display: flex;
+      border-bottom: 1px solid #1e293b;
+      background: #020617;
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .nav-tab.active {
+      border-bottom-color: #f97316;
+      background: #020617;
+      font-weight: 600;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .column {
+      flex: 1;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .column:last-child {
+      border-right: none;
+    }
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+      box-sizing: border-box;
+    }
+    .message {
+      margin-bottom: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #020617;
+      border: 1px solid #111827;
+      font-size: 13px;
+    }
+    .message-meta {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .post {
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: #020617;
+      font-size: 13px;
+    }
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .post-actions {
+      margin-top: 4px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 11px;
+    }
+    .input-row {
+      display: flex;
+      gap: 6px;
+    }
+    .input-row input, .input-row textarea {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-size: 11px;
+    }
+    .pill {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+    }
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #1f2937;
+      color: #e5e7eb;
+      margin-left: 4px;
+    }
+    .hidden {
+      display: none !important;
+    }
+    img.post-image {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .story-strip {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 4px;
+    }
+    .story-item {
+      width: 54px;
+      text-align: center;
+      font-size: 10px;
+    }
+    .story-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 2px solid #f97316;
+      margin-bottom: 2px;
+      background: #020617;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="section-header">House Talks</div>
+    <div id="auth-card" class="card">
+      <div id="auth-view-login">
+        <div class="section-header">Login</div>
+        <input id="login-email" type="email" placeholder="Email" />
+        <input id="login-password" type="password" placeholder="Password" />
+        <button class="btn" id="login-btn">Login</button>
+        <button class="btn secondary small" id="go-signup-btn">Create account</button>
+      </div>
+      <div id="auth-view-signup" class="hidden">
+        <div class="section-header">Sign Up</div>
+        <input id="signup-name" type="text" placeholder="Full name" />
+        <input id="signup-email" type="email" placeholder="Email" />
+        <input id="signup-password" type="password" placeholder="Password" />
+        <input id="signup-photo" type="text" placeholder="Profile photo URL" />
+        <button class="btn" id="signup-btn">Sign Up</button>
+        <button class="btn secondary small" id="go-login-btn">Back to login</button>
+      </div>
+    </div>
+
+    <div id="user-card" class="card hidden">
+      <div class="section-header">My Profile</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <img id="user-avatar" class="avatar" src="" alt="">
+        <div>
+          <div id="user-name" style="font-size:14px;font-weight:600;"></div>
+          <div id="user-mood-label" style="font-size:11px;color:#9ca3af;"></div>
+        </div>
+      </div>
+      <textarea id="profile-note" placeholder="Profile note (e.g. Just joined!)"></textarea>
+      <label style="font-size:11px;color:#9ca3af;">Mood</label>
+      <select id="profile-mood">
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="busy">Busy</option>
+        <option value="chill">Chill</option>
+        <option value="offline">Offline</option>
+      </select>
+      <label style="font-size:11px;color:#9ca3af;">Theme</label>
+      <select id="profile-theme">
+        <option value="default">Default</option>
+        <option value="dark">Dark</option>
+        <option value="bright">Bright</option>
+        <option value="pastel">Pastel</option>
+      </select>
+      <textarea id="profile-bio" placeholder="Short bio..."></textarea>
+      <button class="btn small" id="save-profile-btn">Save profile</button>
+      <button class="btn secondary small" id="logout-btn">Logout</button>
+    </div>
+
+    <div id="visitors-card" class="card hidden">
+      <div class="section-header">Visitors</div>
+      <div id="visitors-list" style="max-height:160px;overflow-y:auto;font-size:12px;"></div>
+    </div>
+
+    <div id="notifications-card" class="card hidden">
+      <div class="section-header">Notifications</div>
+      <div id="notifications-list" style="max-height:160px;overflow-y:auto;font-size:12px;"></div>
+    </div>
+
+    <div id="search-card" class="card hidden">
+      <div class="section-header">Search & Discover</div>
+      <input id="search-query" type="text" placeholder="Name, mood, or interest" />
+      <button class="btn small" id="search-btn">Search</button>
+      <div id="search-results" style="max-height:140px;overflow-y:auto;font-size:12px;margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span style="font-weight:700;font-size:14px;">House Talks</span>
+        <span id="topbar-location" style="font-size:11px;color:#9ca3af;">Sitting Room</span>
+      </div>
+      <div id="topbar-right" style="font-size:11px;color:#9ca3af;"></div>
+    </div>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-tab="sitting">Sitting Room</div>
+      <div class="nav-tab" data-tab="bedroom">Bedroom</div>
+      <div class="nav-tab" data-tab="outside">Outside</div>
+      <div class="nav-tab" data-tab="house">Private Rooms</div>
+      <div class="nav-tab" data-tab="activity">Activity</div>
+    </div>
+
+    <div class="content">
+      <!-- SITTING ROOM COLUMN -->
+      <div class="column" data-panel="sitting">
+        <div class="scroll" id="sitting-scroll">
+          <div class="section-header">Stories</div>
+          <div id="stories-strip" class="story-strip"></div>
+
+          <div class="section-header">Sitting Room Chat</div>
+          <div id="sitting-messages"></div>
+        </div>
+        <div style="padding:8px 12px;border-top:1px solid #1e293b;">
+          <div class="input-row">
+            <input id="sitting-input" type="text" placeholder="Say something to everyone in the house..." />
+            <button class="btn small" id="sitting-send-btn">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BEDROOM COLUMN -->
+      <div class="column hidden" data-panel="bedroom">
+        <div class="scroll" id="bedroom-scroll">
+          <div id="bedroom-lock-view">
+            <div class="section-header">Bedroom 🔐</div>
+            <p style="font-size:13px;color:#9ca3af;">
+              Enter your bedroom password to access your private space.
+            </p>
+            <input id="bedroom-password" type="password" placeholder="Bedroom password" />
+            <button class="btn small" id="bedroom-enter-btn">Enter</button>
+            <p style="font-size:11px;color:#6b7280;margin-top:4px;">
+              First time? This will set your bedroom password.
+            </p>
+          </div>
+
+          <div id="bedroom-main-view" class="hidden">
+            <div class="section-header">Bedroom (Private)</div>
+            <div class="card">
+              <div class="section-header">Secrets</div>
+              <textarea id="secret-input" placeholder="Write a secret..."></textarea>
+              <button class="btn small" id="secret-add-btn">Add secret</button>
+              <div id="secrets-list" style="margin-top:6px;font-size:13px;"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-header">Private Pictures</div>
+              <input id="bedroom-image-file" type="file" accept="image/*" />
+              <button class="btn small" id="bedroom-upload-image-btn">Upload</button>
+              <div id="bedroom-images" style="margin-top:6px;font-size:13px;"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-header">Voice Messages</div>
+              <p style="font-size:11px;color:#9ca3af;">Wire up MediaRecorder here to save voice notes to Storage + Realtime DB.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTSIDE COLUMN -->
+      <div class="column hidden" data-panel="outside">
+        <div class="scroll" id="outside-scroll">
+          <div class="section-header">Create Post</div>
+          <div class="card">
+            <textarea id="outside-text" placeholder="What's happening outside the house?"></textarea>
+            <input id="outside-image-file" type="file" accept="image/*" />
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+              <label style="font-size:11px;color:#9ca3af;">
+                Privacy:
+                <select id="outside-privacy" style="width:auto;display:inline-block;">
+                  <option value="public">Public</option>
+                  <option value="friends">Friends only</option>
+                  <option value="private">Private</option>
+                </select>
+              </label>
+              <button class="btn small" id="outside-post-btn">Post</button>
+            </div>
+          </div>
+
+          <div class="section-header">Pinned Posts</div>
+          <div id="outside-pinned"></div>
+
+          <div class="section-header">Feed</div>
+          <div id="outside-feed"></div>
+        </div>
+      </div>
+
+      <!-- PRIVATE ROOMS COLUMN -->
+      <div class="column hidden" data-panel="house">
+        <div class="scroll" id="house-scroll">
+          <div class="section-header">Create Private Room</div>
+          <div class="card">
+            <input id="room-name" type="text" placeholder="Room name (e.g. Family, Friends)" />
+            <select id="room-type">
+              <option value="kitchen">Kitchen (cooking chats)</option>
+              <option value="garden">Garden (outdoor talks)</option>
+              <option value="library">Library (study & books)</option>
+            </select>
+            <textarea id="room-description" placeholder="Describe this room..."></textarea>
+            <button class="btn small" id="room-create-btn">Create room</button>
+          </div>
+
+          <div class="section-header">My Rooms</div>
+          <div id="my-rooms"></div>
+
+          <div class="section-header">Live House Parties</div>
+          <div id="house-parties"></div>
+          <p style="font-size:11px;color:#9ca3af;">
+            Attach your live chat / voice / video implementation here; store party metadata in Realtime DB.
+          </p>
+        </div>
+      </div>
+
+      <!-- ACTIVITY COLUMN -->
+      <div class="column hidden" data-panel="activity">
+        <div class="scroll" id="activity-scroll">
+          <div class="section-header">Activity Feed</div>
+          <div id="activity-list"></div>
+
+          <div class="section-header">Friend Requests</div>
+          <div id="friend-requests"></div>
+
+          <div class="section-header">Friendship Vault</div>
+          <div id="friendship-vault"></div>
+
+          <div class="section-header">Suggestions & Feedback</div>
+          <div class="card">
+            <textarea id="feedback-input" placeholder="Suggest a new House Rule or feature..."></textarea>
+            <button class="btn small" id="feedback-send-btn">Send feedback</button>
+            <div id="feedback-list" style="margin-top:6px;font-size:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  // Import Firebase SDK v9+ (modular) from CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    onChildAdded,
+    onValue,
+    update,
+    serverTimestamp,
+    query,
+    orderByChild,
+    equalTo
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import {
+    getStorage,
+    ref as storageRef,
+    uploadBytes,
+    getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCO_Pmu6QYJWbnNvRUYyRLvi6SLIfUrtHI",
+    authDomain: "zeeworldyhi.firebaseapp.com",
+    databaseURL: "https://zeeworldyhi-default-rtdb.firebaseio.com",
+    projectId: "zeeworldyhi",
+    storageBucket: "zeeworldyhi.firebasestorage.app",
+    messagingSenderId: "154414924399",
+    appId: "1:154414924399:web:31c3767fdbea93feba439a",
+    measurementId: "G-XD5Z8T76EE"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  // DOM helpers
+  const $ = (id) => document.getElementById(id);
+  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+  // State
+  let currentUser = null;
+  let bedroomUnlocked = false;
+  let bedroomPasswordCache = null;
+
+  // AUTH UI
+  const showLogin = () => {
+    $("auth-view-login").classList.remove("hidden");
+    $("auth-view-signup").classList.add("hidden");
+  };
+  const showSignup = () => {
+    $("auth-view-login").classList.add("hidden");
+    $("auth-view-signup").classList.remove("hidden");
+  };
+
+  $("go-signup-btn").onclick = showSignup;
+  $("go-login-btn").onclick = showLogin;
+
+  $("signup-btn").onclick = async () => {
+    const name = $("signup-name").value.trim();
+    const email = $("signup-email").value.trim();
+    const password = $("signup-password").value;
+    const photoURL = $("signup-photo").value.trim();
+
+    if (!name || !email || !password) {
+      alert("Fill all required sign up fields.");
+      return;
+    }
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: name, photoURL: photoURL || null });
+
+      // Create user profile in DB
+      const userRef = ref(db, `users/${cred.user.uid}`);
+      await set(userRef, {
+        uid: cred.user.uid,
+        name,
+        email,
+        photoURL: photoURL || "",
+        mood: "happy",
+        note: "Just joined!",
+        bio: "",
+        theme: "default",
+        createdAt: Date.now(),
+        lastSeen: Date.now()
+      });
+
+      // Add to Visitors list
+      const visitRef = ref(db, "visitors");
+      await push(visitRef, {
+        uid: cred.user.uid,
+        name,
+        photoURL: photoURL || "",
+        joinedAt: Date.now()
+      });
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  $("login-btn").onclick = async () => {
+    const email = $("login-email").value.trim();
+    const password = $("login-password").value;
+    if (!email || !password) {
+      alert("Enter email and password.");
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  $("logout-btn").onclick = async () => {
+    await signOut(auth);
+  };
+
+  // TAB NAV
+  $$(".nav-tab").forEach((tab) => {
+    tab.onclick = () => {
+      const tabKey = tab.dataset.tab;
+      $$(".nav-tab").forEach((t) => t.classList.toggle("active", t === tab));
+      $$(".column").forEach((col) => {
+        col.classList.toggle("hidden", col.dataset.panel !== tabKey);
+      });
+      $("topbar-location").textContent =
+        tabKey === "sitting"
+          ? "Sitting Room"
+          : tabKey === "bedroom"
+          ? "Bedroom"
+          : tabKey === "outside"
+          ? "Outside"
+          : tabKey === "house"
+          ? "Private Rooms"
+          : "Activity";
+      if (tabKey === "bedroom") {
+        logActivity("Entered Bedroom");
+      } else if (tabKey === "sitting") {
+        logActivity("Entered Sitting Room");
+      } else if (tabKey === "outside") {
+        logActivity("Viewing Outside feed");
+      }
+    };
+  });
+
+  // AUTH STATE HANDLER
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      $("auth-card").classList.add("hidden");
+      $("user-card").classList.remove("hidden");
+      $("visitors-card").classList.remove("hidden");
+      $("notifications-card").classList.remove("hidden");
+      $("search-card").classList.remove("hidden");
+      $("topbar-right").textContent = user.email || "";
+      // Load profile
+      const userRef = ref(db, `users/${user.uid}`);
+      onValue(userRef, (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        $("user-avatar").src = data.photoURL || "";
+        $("user-name").textContent = data.name || "";
+        $("profile-note").value = data.note || "";
+        $("profile-mood").value = data.mood || "happy";
+        $("profile-theme").value = data.theme || "default";
+        $("profile-bio").value = data.bio || "";
+        $("user-mood-label").textContent = `Mood: ${data.mood || "happy"}`;
+      });
+
+      // Mark online
+      const presenceRef = ref(db, `presence/${user.uid}`);
+      await set(presenceRef, { online: true, lastActive: Date.now() });
+
+      setupVisitorsListener();
+      setupSittingRoom();
+      setupOutside();
+      setupNotifications();
+      setupStories();
+      setupFriendsAndVault();
+      setupRooms();
+      setupActivityFeed();
+      setupFeedback();
+
+    } else {
+      $("auth-card").classList.remove("hidden");
+      $("user-card").classList.add("hidden");
+      $("visitors-card").classList.add("hidden");
+      $("notifications-card").classList.add("hidden");
+      $("search-card").classList.add("hidden");
+      $("topbar-right").textContent = "";
+      $("sitting-messages").innerHTML = "";
+      $("outside-feed").innerHTML = "";
+      $("outside-pinned").innerHTML = "";
+      $("visitors-list").innerHTML = "";
+      $("activity-list").innerHTML = "";
+      $("friend-requests").innerHTML = "";
+      $("friendship-vault").innerHTML = "";
+      $("stories-strip").innerHTML = "";
+    }
+  });
+
+  // PROFILE SAVE
+  $("save-profile-btn").onclick = async () => {
+    if (!currentUser) return;
+    const note = $("profile-note").value.trim();
+    const mood = $("profile-mood").value;
+    const theme = $("profile-theme").value;
+    const bio = $("profile-bio").value.trim();
+    const userRef = ref(db, `users/${currentUser.uid}`);
+    await update(userRef, { note, mood, theme, bio, lastSeen: Date.now() });
+    logActivity("Updated profile");
+  };
+
+  // VISITORS
+  function setupVisitorsListener() {
+    const visitorsRef = ref(db, "visitors");
+    onChildAdded(visitorsRef, (snap) => {
+      const v = snap.val();
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.alignItems = "center";
+      div.style.gap = "4px";
+      div.style.marginBottom = "4px";
+      div.innerHTML = `
+        <img src="${v.photoURL || ""}" class="avatar" style="width:20px;height:20px;border-width:1px;">
+        <span>${v.name || "New user"}</span>
+      `;
+      $("visitors-list").prepend(div);
+    });
+  }
+
+  // SITTING ROOM CHAT
+  function setupSittingRoom() {
+    const messagesRef = ref(db, "sittingRoom/messages");
+    onChildAdded(messagesRef, (snap) => {
+      const msg = snap.val();
+      renderSittingMessage(msg);
+    });
+
+    $("sitting-send-btn").onclick = async () => {
+      if (!currentUser) return;
+      const text = $("sitting-input").value.trim();
+      if (!text) return;
+      const newMsgRef = push(messagesRef);
+      await set(newMsgRef, {
+        id: newMsgRef.key,
+        uid: currentUser.uid,
+        text,
+        createdAt: Date.now()
+      });
+      $("sitting-input").value = "";
+      logActivity("Sent message in Sitting Room");
+      notifyUsers("sitting", `${currentUser.displayName || "Someone"} said: ${text}`);
+    };
+  }
+
+  function renderSittingMessage(msg) {
+    const div = document.createElement("div");
+    div.className = "message";
+    const date = new Date(msg.createdAt || Date.now());
+    div.innerHTML = `
+      <div class="message-meta">
+        <span>${msg.uid}</span> •
+        <span>${date.toLocaleTimeString()}</span>
+      </div>
+      <div>${msg.text || ""}</div>
+    `;
+    $("sitting-messages").appendChild(div);
+    $("sitting-scroll").scrollTop = $("sitting-scroll").scrollHeight;
+  }
+
+  // BEDROOM
+  $("bedroom-enter-btn").onclick = async () => {
+    if (!currentUser) return;
+    const pass = $("bedroom-password").value;
+    if (!pass) {
+      alert("Enter a bedroom password.");
+      return;
+    }
+    const bedMetaRef = ref(db, `bedrooms/${currentUser.uid}/meta`);
+    let isFirstTime = false;
+    await onValue(
+      bedMetaRef,
+      (snap) => {
+        const data = snap.val();
+        if (!data || !data.password) {
+          isFirstTime = true;
+        } else if (data.password === pass) {
+          bedroomUnlocked = true;
+          bedroomPasswordCache = pass;
+        } else {
+          alert("Incorrect bedroom password.");
+          bedroomUnlocked = false;
+        }
+      },
+      { onlyOnce: true }
+    );
+    if (isFirstTime) {
+      await set(bedMetaRef, { password: pass, createdAt: Date.now() });
+      bedroomUnlocked = true;
+      bedroomPasswordCache = pass;
+    }
+    if (bedroomUnlocked) {
+      $("bedroom-lock-view").classList.add("hidden");
+      $("bedroom-main-view").classList.remove("hidden");
+      setupBedroomData();
+      logActivity("Unlocked Bedroom");
+    }
+  };
+
+  function setupBedroomData() {
+    if (!currentUser) return;
+    const secretsRef = ref(db, `bedrooms/${currentUser.uid}/secrets`);
+    const imagesRef = ref(db, `bedrooms/${currentUser.uid}/images`);
+
+    $("secrets-list").innerHTML = "";
+    onChildAdded(secretsRef, (snap) => {
+      const sec = snap.val();
+      renderSecret(snap.key, sec);
+    });
+
+    $("secret-add-btn").onclick = async () => {
+      const text = $("secret-input").value.trim();
+      if (!text) return;
+      const newSecRef = push(secretsRef);
+      await set(newSecRef, {
+        id: newSecRef.key,
+        text,
+        createdAt: Date.now()
+      });
+      $("secret-input").value = "";
+      logActivity("Added bedroom secret");
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    let currentUser = null;
-
-    document.getElementById('login-btn').addEventListener('click', () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          currentUser = userCredential.user;
-          document.getElementById('auth-container').style.display = 'none';
-          document.getElementById('app-container').style.display = 'block';
-          loadVisitors();
-          loadChatLog();
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    $("bedroom-images").innerHTML = "";
+    onChildAdded(imagesRef, (snap) => {
+      const img = snap.val();
+      renderBedroomImage(snap.key, img);
     });
 
-    document.getElementById('signup-btn').addEventListener('click', () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          currentUser = userCredential.user;
-          document.getElementById('auth-container').style.display = 'none';
-          document.getElementById('app-container').style.display = 'block';
-          loadVisitors();
-          loadChatLog();
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
-
-    function loadVisitors() {
-      onValue(ref(db, 'visitors'), (snapshot) => {
-        const visitors = [];
-        snapshot.forEach((childSnapshot) => {
-          visitors.push({ key: childSnapshot.key, ...childSnapshot.val() });
-        });
-        const visitorsContainer = document.getElementById('visitors');
-        visitorsContainer.innerHTML = '';
-        visitors.forEach((visitor) => {
-          const visitorElement = document.createElement('div');
-          visitorElement.innerHTML = `
-            <p>${visitor.name}</p>
-            <img src="${visitor.profilePicture}" alt="Profile Picture">
-          `;
-          visitorsContainer.appendChild(visitorElement);
-        });
+    $("bedroom-upload-image-btn").onclick = async () => {
+      const fileInput = $("bedroom-image-file");
+      if (!fileInput.files.length) return;
+      const file = fileInput.files[0];
+      const path = `bedrooms/${currentUser.uid}/images/${Date.now()}_${file.name}`;
+      const sRef = storageRef(storage, path);
+      await uploadBytes(sRef, file);
+      const url = await getDownloadURL(sRef);
+      const newImgRef = push(imagesRef);
+      await set(newImgRef, {
+        id: newImgRef.key,
+        url,
+        createdAt: Date.now()
       });
+      fileInput.value = "";
+      logActivity("Uploaded private bedroom image");
+    };
+  }
+
+  function renderSecret(id, sec) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "message";
+    const date = new Date(sec.createdAt || Date.now());
+    wrapper.innerHTML = `
+      <div class="message-meta">${date.toLocaleString()}</div>
+      <div>${sec.text}</div>
+      <button class="btn secondary small" data-id="${id}">Delete</button>
+    `;
+    const btn = wrapper.querySelector("button");
+    btn.onclick = async () => {
+      const secRef = ref(db, `bedrooms/${currentUser.uid}/secrets/${id}`);
+      await set(secRef, null);
+      wrapper.remove();
+      logActivity("Deleted bedroom secret");
+    };
+    $("secrets-list").prepend(wrapper);
+  }
+
+  function renderBedroomImage(id, img) {
+    const wrapper = document.createElement("div");
+    wrapper.style.marginBottom = "6px";
+    wrapper.innerHTML = `
+      <img src="${img.url}" style="max-width:100%;border-radius:6px;display:block;margin-bottom:4px;">
+      <button class="btn secondary small" data-id="${id}">Delete</button>
+    `;
+    const btn = wrapper.querySelector("button");
+    btn.onclick = async () => {
+      const imgRef = ref(db, `bedrooms/${currentUser.uid}/images/${id}`);
+      await set(imgRef, null);
+      wrapper.remove();
+      logActivity("Deleted bedroom image");
+    };
+    $("bedroom-images").prepend(wrapper);
+  }
+
+  // OUTSIDE POSTS
+  function setupOutside() {
+    const postsRef = ref(db, "outside/posts");
+    onChildAdded(postsRef, (snap) => {
+      const post = snap.val();
+      renderPost(post);
+    });
+  }
+
+  $("outside-post-btn").onclick = async () => {
+    if (!currentUser) return;
+    const text = $("outside-text").value.trim();
+    const privacy = $("outside-privacy").value;
+    const fileInput = $("outside-image-file");
+    let imageUrl = "";
+
+    if (!text && !fileInput.files.length) {
+      alert("Write something or add an image.");
+      return;
     }
 
-    function loadChatLog() {
-      onValue(ref(db, 'chatLog'), (snapshot) => {
-        const chatLog = [];
-        snapshot.forEach((childSnapshot) => {
-          chatLog.push({ key: childSnapshot.key, ...childSnapshot.val() });
-        });
-        const chatLogContainer = document.getElementById('chat-log');
-        chatLogContainer.innerHTML = '';
-        chatLog.forEach((message) => {
-          const messageElement = document.createElement('div');
-          messageElement.innerHTML = `
-            <p>${message.text}</p>
-            <p>Sent by: ${message.sender}</p>
-          `;
-          chatLogContainer.appendChild(messageElement);
-        });
-      });
+    if (fileInput.files.length) {
+      const file = fileInput.files[0];
+      const path = `outside/${currentUser.uid}/${Date.now()}_${file.name}`;
+      const sRef = storageRef(storage, path);
+      await uploadBytes(sRef, file);
+      imageUrl = await getDownloadURL(sRef);
     }
 
-    document.getElementById('send-btn').addEventListener('click', () => {
-      const message = document.getElementById('message').value;
-      push(ref(db, 'chatLog'), {
-        text: message,
-        sender: currentUser.email
+    const postsRef = ref(db, "outside/posts");
+    const newPostRef = push(postsRef);
+    const post = {
+      id: newPostRef.key,
+      uid: currentUser.uid,
+      authorName: currentUser.displayName || "",
+      authorPhoto: currentUser.photoURL || "",
+      text,
+      imageUrl,
+      privacy,
+      pinned: false,
+      createdAt: Date.now()
+    };
+    await set(newPostRef, post);
+    $("outside-text").value = "";
+    fileInput.value = "";
+    logActivity("Created outside post");
+    notifyUsers("outside", `${currentUser.displayName || "Someone"} posted outside.`);
+  };
+
+  function renderPost(post) {
+    const container = post.pinned ? $("outside-pinned") : $("outside-feed");
+    const div = document.createElement("div");
+    div.className = "post";
+    const date = new Date(post.createdAt || Date.now());
+
+    div.innerHTML = `
+      <div class="post-header">
+        <div>
+          <span>${post.authorName || "Unknown"}</span>
+          <span class="badge">${post.privacy}</span>
+        </div>
+        <span>${date.toLocaleString()}</span>
+      </div>
+      <div>${post.text || ""}</div>
+      ${post.imageUrl ? `<img class="post-image" src="${post.imageUrl}" />` : ""}
+      <div class="post-actions">
+        <button class="btn secondary small like-btn">Like</button>
+        <button class="btn secondary small comment-btn">Comment</button>
+        <button class="btn secondary small visit-btn">Visit</button>
+        ${
+          currentUser && currentUser.uid === post.uid
+            ? `<button class="btn secondary small pin-btn">${post.pinned ? "Unpin" : "Pin"}</button>`
+            : ""
+        }
+      </div>
+      <div class="post-comments" style="margin-top:4px;font-size:12px;"></div>
+    `;
+
+    // Like
+    div.querySelector(".like-btn").onclick = async () => {
+      if (!currentUser) return;
+      const likesRef = ref(db, `outside/likes/${post.id}/${currentUser.uid}`);
+      await set(likesRef, {
+        uid: currentUser.uid,
+        createdAt: Date.now()
       });
-      document.getElementById('message').value = '';
+      logActivity("Liked a post");
+      createNotification(post.uid, "like", `${currentUser.displayName || "Someone"} liked your post.`);
+    };
+
+    // Comment
+    div.querySelector(".comment-btn").onclick = async () => {
+      if (!currentUser) return;
+      const text = prompt("Write a comment:");
+      if (!text) return;
+      const commentsRef = ref(db, `outside/comments/${post.id}`);
+      const newCommentRef = push(commentsRef);
+      await set(newCommentRef, {
+        id: newCommentRef.key,
+        uid: currentUser.uid,
+        authorName: currentUser.displayName || "",
+        text,
+        createdAt: Date.now()
+      });
+      logActivity("Commented on a post");
+      createNotification(post.uid, "comment", `${currentUser.displayName || "Someone"} commented on your post.`);
+      renderComment(div.querySelector(".post-comments"), {
+        authorName: currentUser.displayName || "",
+        text,
+        createdAt: Date.now()
+      });
+    };
+
+    // Visit profile
+    div.querySelector(".visit-btn").onclick = () => {
+      alert(`Visit profile of: ${post.authorName}`);
+      logActivity(`Visited profile of ${post.authorName}`);
+      createNotification(post.uid, "visit", `${currentUser.displayName || "Someone"} visited your profile.`);
+    };
+
+    // Pin / unpin
+    const pinBtn = div.querySelector(".pin-btn");
+    if (pinBtn) {
+      pinBtn.onclick = async () => {
+        const postRef = ref(db, `outside/posts/${post.id}`);
+        const newPinned = !post.pinned;
+        await update(postRef, { pinned: newPinned });
+        logActivity(newPinned ? "Pinned a post" : "Unpinned a post");
+        div.remove();
+      };
+    }
+
+    // Load existing comments
+    const commentsRef = ref(db, `outside/comments/${post.id}`);
+    onChildAdded(commentsRef, (snap) => {
+      const c = snap.val();
+      renderComment(div.querySelector(".post-comments"), c);
     });
-  </script>
+
+    container.prepend(div);
+  }
+
+  function renderComment(container, c) {
+    const div = document.createElement("div");
+    const date = new Date(c.createdAt || Date.now());
+    div.innerHTML = `<strong>${c.authorName}</strong>: ${c.text} <span style="color:#6b7280;font-size:10px;">${date.toLocaleTimeString()}</span>`;
+    container.appendChild(div);
+  }
+
+  // NOTIFICATIONS
+  function createNotification(targetUid, type, text) {
+    if (!targetUid || !currentUser || targetUid === currentUser.uid) return;
+    const notifRef = ref(db, `notifications/${targetUid}`);
+    const newNotifRef = push(notifRef);
+    set(newNotifRef, {
+      id: newNotifRef.key,
+      type,
+      text,
+      fromUid: currentUser.uid,
+      createdAt: Date.now(),
+      read: false
+    });
+  }
+
+  function setupNotifications() {
+    if (!currentUser) return;
+    const notifRef = ref(db, `notifications/${currentUser.uid}`);
+    onChildAdded(notifRef, (snap) => {
+      const n = snap.val();
+      renderNotification(n);
+    });
+  }
+
+  function renderNotification(n) {
+    const div = document.createElement("div");
+    const date = new Date(n.createdAt || Date.now());
+    div.className = "message";
+    div.innerHTML = `
+      <div class="message-meta">${date.toLocaleString()}</div>
+      <div>${n.text}</div>
+    `;
+    $("notifications-list").prepend(div);
+  }
+
+  function notifyUsers(scope, text) {
+    // For now just log activity, DB notifications already handled elsewhere.
+    console.log(`[Notify:${scope}] ${text}`);
+  }
+
+  // STORIES (24h)
+  function setupStories() {
+    const storiesRef = ref(db, "stories");
+    onChildAdded(storiesRef, (snap) => {
+      const story = snap.val();
+      if (Date.now() - story.createdAt > 24 * 60 * 60 * 1000) return;
+      renderStory(story);
+    });
+  }
+
+  function renderStory(story) {
+    const div = document.createElement("div");
+    div.className = "story-item";
+    div.innerHTML = `
+      <img class="story-avatar" src="${story.photoURL || ""}">
+      <div>${story.authorName || "User"}</div>
+    `;
+    div.onclick = () => {
+      alert(`Story from ${story.authorName}: ${story.text || ""}`);
+    };
+    $("stories-strip").appendChild(div);
+  }
+
+  // Example story creation hook – connect to UI wherever you like
+  async function createStory(text, file) {
+    if (!currentUser) return;
+    let mediaUrl = "";
+    if (file) {
+      const path = `stories/${currentUser.uid}/${Date.now()}_${file.name}`;
+      const sRef = storageRef(storage, path);
+      await uploadBytes(sRef, file);
+      mediaUrl = await getDownloadURL(sRef);
+    }
+    const storiesRef = ref(db, "stories");
+    const newStoryRef = push(storiesRef);
+    await set(newStoryRef, {
+      id: newStoryRef.key,
+      uid: currentUser.uid,
+      authorName: currentUser.displayName || "",
+      photoURL: currentUser.photoURL || "",
+      text,
+      mediaUrl,
+      createdAt: Date.now()
+    });
+    logActivity("Posted a story");
+  }
+
+  // PRIVATE ROOMS / HOUSE PARTIES
+  function setupRooms() {
+    if (!currentUser) return;
+    const roomsRef = ref(db, "rooms");
+    onChildAdded(roomsRef, (snap) => {
+      const room = snap.val();
+      if (room.ownerUid === currentUser.uid || (room.members && room.members[currentUser.uid])) {
+        renderRoom(room);
+      }
+    });
+  }
+
+  $("room-create-btn").onclick = async () => {
+    if (!currentUser) return;
+    const name = $("room-name").value.trim();
+    const type = $("room-type").value;
+    const description = $("room-description").value.trim();
+    if (!name) {
+      alert("Room name required.");
+      return;
+    }
+    const roomsRef = ref(db, "rooms");
+    const newRoomRef = push(roomsRef);
+    const room = {
+      id: newRoomRef.key,
+      name,
+      type,
+      description,
+      ownerUid: currentUser.uid,
+      members: { [currentUser.uid]: true },
+      createdAt: Date.now()
+    };
+    await set(newRoomRef, room);
+    $("room-name").value = "";
+    $("room-description").value = "";
+    logActivity("Created private room");
+  };
+
+  function renderRoom(room) {
+    const container = $("my-rooms");
+    const div = document.createElement("div");
+    div.className = "post";
+    div.innerHTML = `
+      <div class="post-header">
+        <div>${room.name} <span class="badge">${room.type}</span></div>
+        <span>${new Date(room.createdAt || Date.now()).toLocaleString()}</span>
+      </div>
+      <div style="font-size:12px;color:#9ca3af;">${room.description || ""}</div>
+      <div class="post-actions">
+        <button class="btn secondary small join-btn">Enter</button>
+      </div>
+      <div class="room-messages" style="margin-top:4px;"></div>
+      <div class="input-row" style="margin-top:4px;">
+        <input type="text" class="room-input" placeholder="Message in ${room.name}..." />
+        <button class="btn secondary small room-send-btn">Send</button>
+      </div>
+    `;
+    const messagesDiv = div.querySelector(".room-messages");
+    const input = div.querySelector(".room-input");
+    const sendBtn = div.querySelector(".room-send-btn");
+    const joinBtn = div.querySelector(".join-btn");
+
+    const roomMessagesRef = ref(db, `roomMessages/${room.id}`);
+    onChildAdded(roomMessagesRef, (snap) => {
+      const m = snap.val();
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message";
+      msgDiv.innerHTML = `
+        <div class="message-meta">${m.authorName || ""} • ${new Date(m.createdAt || Date.now()).toLocaleTimeString()}</div>
+        <div>${m.text}</div>
+      `;
+      messagesDiv.appendChild(msgDiv);
+    });
+
+    sendBtn.onclick = async () => {
+      if (!currentUser) return;
+      const text = input.value.trim();
+      if (!text) return;
+      const newMsgRef = push(roomMessagesRef);
+      await set(newMsgRef, {
+        id: newMsgRef.key,
+        uid: currentUser.uid,
+        authorName: currentUser.displayName || "",
+        text,
+        createdAt: Date.now()
+      });
+      input.value = "";
+      logActivity(`Messaged in room ${room.name}`);
+    };
+
+    joinBtn.onclick = () => {
+      logActivity(`Entered room ${room.name}`);
+      notifyUsers("room", `${currentUser.displayName || "Someone"} joined ${room.name}`);
+    };
+
+    container.prepend(div);
+  }
+
+  // ACTIVITY FEED
+  function logActivity(text) {
+    if (!currentUser) return;
+    const actRef = ref(db, `activity/${currentUser.uid}`);
+    const newActRef = push(actRef);
+    set(newActRef, {
+      id: newActRef.key,
+      text,
+      createdAt: Date.now()
+    });
+  }
+
+  function setupActivityFeed() {
+    if (!currentUser) return;
+    const actRef = ref(db, `activity/${currentUser.uid}`);
+    onChildAdded(actRef, (snap) => {
+      const a = snap.val();
+      const div = document.createElement("div");
+      div.className = "message";
+      div.innerHTML = `
+        <div class="message-meta">${new Date(a.createdAt || Date.now()).toLocaleString()}</div>
+        <div>${a.text}</div>
+      `;
+      $("activity-list").prepend(div);
+    });
+  }
+
+  // FRIEND REQUESTS + FRIENDSHIP VAULT (simplified)
+  function setupFriendsAndVault() {
+    if (!currentUser) return;
+    const frRef = ref(db, `friendRequests/${currentUser.uid}`);
+    onChildAdded(frRef, (snap) => {
+      const r = snap.val();
+      renderFriendRequest(r);
+    });
+
+    const vaultRef = ref(db, `friendshipVault/${currentUser.uid}`);
+    onChildAdded(vaultRef, (snap) => {
+      const item = snap.val();
+      renderVaultItem(item);
+    });
+  }
+
+  function renderFriendRequest(r) {
+    const div = document.createElement("div");
+    div.className = "message";
+    div.innerHTML = `
+      <div>${r.fromName || "Someone"} sent you a friend request.</div>
+      <button class="btn secondary small accept-btn">Accept</button>
+    `;
+    div.querySelector(".accept-btn").onclick = async () => {
+      const myFriendsRef = ref(db, `friends/${currentUser.uid}/${r.fromUid}`);
+      const theirFriendsRef = ref(db, `friends/${r.fromUid}/${currentUser.uid}`);
+      await set(myFriendsRef, true);
+      await set(theirFriendsRef, true);
+      div.remove();
+      logActivity("Accepted a friend request");
+    };
+    $("friend-requests").prepend(div);
+  }
+
+  function renderVaultItem(item) {
+    const div = document.createElement("div");
+    div.className = "message";
+    div.innerHTML = `
+      <div class="message-meta">${new Date(item.createdAt || Date.now()).toLocaleString()}</div>
+      <div>${item.text || ""}</div>
+    `;
+    $("friendship-vault").prepend(div);
+  }
+
+  // SEARCH
+  $("search-btn").onclick = async () => {
+    const qValue = $("search-query").value.trim().toLowerCase();
+    if (!qValue) return;
+    $("search-results").innerHTML = "Searching...";
+    const usersRef = ref(db, "users");
+    onValue(
+      usersRef,
+      (snap) => {
+        const users = snap.val() || {};
+        $("search-results").innerHTML = "";
+        Object.values(users).forEach((u) => {
+          const match =
+            (u.name || "").toLowerCase().includes(qValue) ||
+            (u.mood || "").toLowerCase().includes(qValue) ||
+            (u.bio || "").toLowerCase().includes(qValue);
+          if (match) {
+            const div = document.createElement("div");
+            div.style.marginBottom = "4px";
+            div.innerHTML = `
+              <span>${u.name}</span> <span class="badge">${u.mood || ""}</span>
+              <button class="btn secondary small">Add friend</button>
+            `;
+            div.querySelector("button").onclick = async () => {
+              if (!currentUser) return;
+              const frRef = ref(db, `friendRequests/${u.uid}`);
+              const newReqRef = push(frRef);
+              await set(newReqRef, {
+                id: newReqRef.key,
+                fromUid: currentUser.uid,
+                fromName: currentUser.displayName || "",
+                createdAt: Date.now()
+              });
+              logActivity(`Sent friend request to ${u.name}`);
+            };
+            $("search-results").appendChild(div);
+          }
+        });
+      },
+      { onlyOnce: true }
+    );
+  };
+
+  // FEEDBACK
+  function setupFeedback() {
+    const fbRef = ref(db, "feedback");
+    onChildAdded(fbRef, (snap) => {
+      const fb = snap.val();
+      renderFeedback(fb);
+    });
+  }
+
+  $("feedback-send-btn").onclick = async () => {
+    if (!currentUser) return;
+    const text = $("feedback-input").value.trim();
+    if (!text) return;
+    const fbRef = ref(db, "feedback");
+    const newFbRef = push(fbRef);
+    await set(newFbRef, {
+      id: newFbRef.key,
+      uid: currentUser.uid,
+      authorName: currentUser.displayName || "",
+      text,
+      createdAt: Date.now()
+    });
+    $("feedback-input").value = "";
+    logActivity("Submitted feedback");
+  };
+
+  function renderFeedback(fb) {
+    const div = document.createElement("div");
+    div.className = "message";
+    div.innerHTML = `
+      <div class="message-meta">${fb.authorName || ""} • ${new Date(fb.createdAt || Date.now()).toLocaleString()}</div>
+      <div>${fb.text}</div>
+    `;
+    $("feedback-list").prepend(div);
+  }
+</script>
 </body>
-</html>
-
-
-        
+</html> 
