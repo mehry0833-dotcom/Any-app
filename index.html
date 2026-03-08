@@ -1,184 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Evade Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Fast Evade Game ⛹️</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: #222;
-      color: #fff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111;
       font-family: sans-serif;
+      color: white;
       touch-action: none;
     }
-    #game {
+
+    #gameContainer {
       position: relative;
-      width: 100vw;
-      height: 100vh;
-      border: 1px solid #444;
+      width: 360px;
+      height: 600px;
+      background: #222;
+      border: 2px solid #555;
+      overflow: hidden;
     }
+
     #player {
       position: absolute;
-      left: 50%;
-      top: 50%;
-      font-size: 3rem;
-      user-select: none;
+      bottom: 10px;
+      left: 160px;
+      font-size: 28px;
+      width: 32px;
+      height: 32px;
+      text-align: center;
+      line-height: 32px;
     }
-    .object {
+
+    .obstacle {
       position: absolute;
-      width: 40px;
-      height: 40px;
-      background-color: red;
-      border-radius: 50%;
-      user-select: none;
+      top: -40px;
+      width: 30px;
+      height: 30px;
+      font-size: 24px;
+      text-align: center;
+      line-height: 30px;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+    }
+
+    #gameOverScreen {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      display: none;
+    }
+
+    #restartBtn {
+      margin-top: 10px;
+      padding: 6px 14px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div id="game">
-    <div id="player">⛹️</div>
+
+<div id="gameContainer">
+  <div id="score">Score: 0</div>
+  <div id="player">⛹️</div>
+  <div id="gameOverScreen">
+    <div>Game Over!</div>
+    <div id="finalScore" style="margin-top:6px;font-size:18px;"></div>
+    <button id="restartBtn">Restart</button>
   </div>
+</div>
 
-  <script>
-    const game  = document.getElementById("game");
-    const player = document.getElementById("player");
-    const objects = [];
-    const speed = 4;          // object speed
-    const playerSpeed = 20;   // px per move
-    let sw = window.innerWidth;
-    let sh = window.innerHeight;
+<script>
+  const gameContainer = document.getElementById('gameContainer');
+  const player = document.getElementById('player');
+  const scoreEl = document.getElementById('score');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+  const finalScoreEl = document.getElementById('finalScore');
+  const restartBtn = document.getElementById('restartBtn');
 
-    let playerX = sw / 2 - 20;
-    let playerY = sh / 2 - 20;
-    let touchStartX = 0;
-    let touchStartY = 0;
+  const gameWidth = 360;
+  const gameHeight = 600;
+  const playerSpeed = 15;     // ← increase this if still too slow (e.g. 20)
+  const obstacleSpeedStart = 3;
+  let obstacleSpeed = obstacleSpeedStart;
 
-    // resize handler
-    function updateSize() {
-      sw = window.innerWidth;
-      sh = window.innerHeight;
+  let playerX = 160;
+  let obstacles = [];
+  let score = 0;
+  let gameOver = false;
+  let spawnTimer = 0;
+
+  // TOUCH controls (slide left/right on phone)
+  let touchStartX = 0;
+
+  gameContainer.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    e.preventDefault();
+  });
+
+  gameContainer.addEventListener('touchmove', (e) => {
+    const dx = e.touches[0].clientX - touchStartX;
+
+    if (dx > 5) {
+      // slide right
+      playerX = Math.min(playerX + playerSpeed, gameWidth - 40);
+      touchStartX = e.touches[0].clientX;
+    } else if (dx < -5) {
+      // slide left
+      playerX = Math.max(playerX - playerSpeed, 0);
+      touchStartX = e.touches[0].clientX;
     }
-    window.addEventListener("resize", updateSize);
-    updateSize();
+  });
 
-    // place player
-    function renderPlayer() {
-      player.style.left = playerX + "px";
-      player.style.top  = playerY + "px";
-    }
-    renderPlayer();
+  // --- obstacle emojis ---
+  const enemyEmojis = ["😡", "👿", "😈", "💩", "👾", "👺", "👹", "🤡", "💥", "🎃", "🤖", "👽", "🦴"];
 
-    // move player by left/right/up/down swipe
-    function movePlayer(dx, dy) {
-      playerX = Math.max(0, Math.min(sw - 40, playerX + dx));
-      playerY = Math.max(0, Math.min(sh - 40, playerY + dy));
-      renderPlayer();
-    }
+  function resetGame() {
+    obstacles.forEach(o => o.elem.remove());
+    obstacles = [];
+    score = 0;
+    obstacleSpeed = obstacleSpeedStart;
+    gameOver = false;
+    spawnTimer = 0;
+    scoreEl.textContent = 'Score: 0';
+    playerX = 160;
+    player.style.left = playerX + 'px';
+    gameOverScreen.style.display = 'none';
+  }
 
-    // touch start
-    game.addEventListener("touchstart", (e) => {
-      const t = e.touches[0];
-      touchStartX = t.clientX;
-      touchStartY = t.clientY;
-      e.preventDefault();
+  function spawnObstacle() {
+    const obstacle = document.createElement('div');
+    obstacle.className = 'obstacle';
+    const x = Math.random() * (gameWidth - 30);
+    obstacle.style.left = x + 'px';
+
+    // pick random emoji
+    const emoji = enemyEmojis[Math.floor(Math.random() * enemyEmojis.length)];
+    obstacle.textContent = emoji;
+
+    gameContainer.appendChild(obstacle);
+    obstacles.push({
+      elem: obstacle,
+      x: x,
+      y: -40
     });
+  }
 
-    // touch end → detect slide direction
-    game.addEventListener("touchend", (e) => {
-      if (!e.changedTouches.length) return;
-      const t = e.changedTouches[0];
-      const diffX = t.clientX - touchStartX;
-      const diffY = t.clientY - touchStartY;
-      const absX = Math.abs(diffX);
-      const absY = Math.abs(diffY);
+  function updatePlayer() {
+    player.style.left = playerX + 'px';
+  }
 
-      if (absX > 20 || absY > 20) {
-        if (absX > absY) {
-          movePlayer(diffX > 0 ? playerSpeed : -playerSpeed, 0);
-        } else {
-          movePlayer(0, diffY > 0 ? playerSpeed : -playerSpeed);
-        }
-      }
-    });
+  function updateObstacles() {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const o = obstacles[i];
+      o.y += obstacleSpeed;
+      o.elem.style.top = o.y + 'px';
 
-    // create a moving object
-    function spawnObject() {
-      const obj = document.createElement("div");
-      obj.className = "object";
-      game.appendChild(obj);
-
-      const side = Math.floor(Math.random() * 4); // 0=top,1=right,2=bottom,3=left
-      let x, y, vx = 0, vy = 0;
-
-      if (side === 0) {      // from top
-        x = Math.random() * sw;
-        y = -40;
-        vy = speed;
-      } else if (side === 1) { // from right
-        x = sw;
-        y = Math.random() * sh;
-        vx = -speed;
-      } else if (side === 2) { // from bottom
-        x = Math.random() * sw;
-        y = sh;
-        vy = -speed;
-      } else {               // from left
-        x = -40;
-        y = Math.random() * sh;
-        vx = speed;
+      if (o.y > gameHeight) {
+        o.elem.remove();
+        obstacles.splice(i, 1);
+        score += 1;
+        scoreEl.textContent = 'Score: ' + score;
+        obstacleSpeed = obstacleSpeedStart + score * 0.1;
+        continue;
       }
 
-      obj.style.left = x + "px";
-      obj.style.top  = y + "px";
-
-      const objData = { el: obj, x, y, vx, vy };
-      objects.push(objData);
-    }
-
-    // check collision with player
-    function isCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
-      return x1 < x2 + w2 &&
-             x1 + w1 > x2 &&
-             y1 < y2 + h2 &&
-             y1 + h1 > y2;
-    }
-
-    // game loop
-    function gameLoop() {
-      // move objects
-      for (let i = objects.length - 1; i >= 0; i--) {
-        const o = objects[i];
-        o.x += o.vx;
-        o.y += o.vy;
-        o.el.style.left = o.x + "px";
-        o.el.style.top  = o.y + "px";
-
-        // remove if off screen
-        if (o.x < -40 || o.x > sw || o.y < -40 || o.y > sh) {
-          game.removeChild(o.el);
-          objects.splice(i, 1);
-        }
-      }
-
-      // check collisions
-      for (const o of objects) {
-        if (isCollision(o.x, o.y, 40, 40, playerX, playerY, 40, 40)) {
-          clearInterval(interval);
-          alert("Game Over! You hit an object.");
-          break;
-        }
-      }
-
-      // occasionally spawn new object
-      if (Math.random() < 0.02) {
-        spawnObject();
+      if (checkCollision(player, o.elem)) {
+        endGame();
+        return;
       }
     }
+  }
 
-    let interval = setInterval(gameLoop, 20);
-  </script>
+  function checkCollision(a, b) {
+    const ar = a.getBoundingClientRect();
+    const br = b.getBoundingClientRect();
+    return !(
+      ar.right < br.left ||
+      ar.left > br.right ||
+      ar.bottom < br.top ||
+      ar.top > br.bottom
+    );
+  }
+
+  function endGame() {
+    gameOver = true;
+    finalScoreEl.textContent = 'Your score: ' + score;
+    gameOverScreen.style.display = 'flex';
+  }
+
+  function gameLoop() {
+    if (!gameOver) {
+      updatePlayer();
+      updateObstacles();
+
+      spawnTimer++;
+      if (spawnTimer > 40) {
+        spawnObstacle();
+        spawnTimer = 0;
+      }
+    }
+    requestAnimationFrame(gameLoop);
+  }
+
+  restartBtn.addEventListener('click', () => {
+    resetGame();
+  });
+
+  resetGame();
+  requestAnimationFrame(gameLoop);
+</script>
+
 </body>
 </html>
