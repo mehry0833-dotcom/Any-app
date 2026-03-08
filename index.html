@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Fast Evade Game ⛹️</title>
+  <title>Level Up Evade Game 🦸</title>
   <style>
     body {
       margin: 0;
@@ -30,28 +30,28 @@
       position: absolute;
       bottom: 10px;
       left: 160px;
-      font-size: 28px;
-      width: 32px;
-      height: 32px;
+      font-size: 40px; /* bigger */
+      width: 40px;
+      height: 40px;
       text-align: center;
-      line-height: 32px;
+      line-height: 40px;
     }
 
     .obstacle {
       position: absolute;
       top: -40px;
-      width: 30px;
-      height: 30px;
-      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      font-size: 30px;
       text-align: center;
-      line-height: 30px;
+      line-height: 40px;
     }
 
-    #score {
+    #ui {
       position: absolute;
       top: 10px;
       left: 10px;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     #gameOverScreen {
@@ -76,8 +76,11 @@
 <body>
 
 <div id="gameContainer">
-  <div id="score">Score: 0</div>
-  <div id="player">⛹️</div>
+  <div id="ui">
+    <div>Level: <span id="level">1</span></div>
+    <div>Score: <span id="score">0</span></div>
+  </div>
+  <div id="player">🦸</div>
   <div id="gameOverScreen">
     <div>Game Over!</div>
     <div id="finalScore" style="margin-top:6px;font-size:18px;"></div>
@@ -86,28 +89,66 @@
 </div>
 
 <script>
+  // --- Game config ---
+  const gameWidth = 360;
+  const gameHeight = 600;
+  const playerSpeed = 18;   // feel free to increase more
+  const baseObstacleSpeed = 3;
+
+  const levelDefs = [
+    { label: "Level 1", player: "🦸", enemies: ["🦍"], speedMult: 1 },
+    { label: "Level 2", player: "🦸", enemies: ["🦁"], speedMult: 1.2 },
+    { label: "Level 3", player: "🦸", enemies: ["🐅"], speedMult: 1.4 },
+    { label: "Level 4", player: "🦸", enemies: ["🐆"], speedMult: 1.6 },
+    { label: "Level 5", player: "🦸", enemies: ["🐕‍🦺", "🐕", "🐩"], speedMult: 1.8 },
+    { label: "Level 6", player: "🦸", enemies: ["🐘", "🐏", "🐑", "🐐"], speedMult: 2.0 },
+    { label: "Level 7", player: "🦸", enemies: ["🦌", "🫏", "🐎", "🐕‍🦺"], speedMult: 2.2 },
+    { label: "Level 8", player: "🦸", enemies: ["🐸", "🐍", "🐊", "🐢"], speedMult: 2.4 },
+    { label: "Level 9", player: "🦸", enemies: ["🚋", "🚎", "🚞", "🚊", "🚉"], speedMult: 2.6 },
+    { label: "Level 10", player: "🦸", enemies: ["🚍", "🚔", "🚘", "⛵", "⛴️", "🚤", "🛥️", "🛳️", "🚢", "🚆", "🚖", "🚡", "🚁", "🚠", "🛩️", "🛬", "🛫", "🎢"], speedMult: 3.0 }
+  ];
+
+  // --- DOM elements ---
   const gameContainer = document.getElementById('gameContainer');
   const player = document.getElementById('player');
+  const levelEl = document.getElementById('level');
   const scoreEl = document.getElementById('score');
   const gameOverScreen = document.getElementById('gameOverScreen');
   const finalScoreEl = document.getElementById('finalScore');
   const restartBtn = document.getElementById('restartBtn');
 
-  const gameWidth = 360;
-  const gameHeight = 600;
-  const playerSpeed = 15;     // ← increase this if still too slow (e.g. 20)
-  const obstacleSpeedStart = 3;
-  let obstacleSpeed = obstacleSpeedStart;
-
+  // --- game state ---
+  let level = 1;
+  let score = 0;
   let playerX = 160;
   let obstacles = [];
-  let score = 0;
   let gameOver = false;
   let spawnTimer = 0;
-
-  // TOUCH controls (slide left/right on phone)
+  let currentLevelIndex = 0;
   let touchStartX = 0;
 
+  // --- change level ---
+  function nextLevel() {
+    if (currentLevelIndex < levelDefs.length - 1) {
+      currentLevelIndex++;
+      level++;
+      const lvl = levelDefs[currentLevelIndex];
+      obstacleSpeedMult = lvl.speedMult;
+      levelEl.textContent = level;
+      player.textContent = lvl.player;
+      score = 0;
+      scoreEl.textContent = score;
+      obstacles.forEach(o => o.elem.remove());
+      obstacles = [];
+      spawnTimer = 0;
+    } else {
+      // max level reached
+      gameOverScreen.style.display = 'flex';
+      finalScoreEl.textContent = "Max level 10 reached!";
+    }
+  }
+
+  // --- TOUCH controls (slide left/right) ---
   gameContainer.addEventListener('touchstart', (e) => {
     touchStartX = e.touches[0].clientX;
     e.preventDefault();
@@ -117,40 +158,25 @@
     const dx = e.touches[0].clientX - touchStartX;
 
     if (dx > 5) {
-      // slide right
       playerX = Math.min(playerX + playerSpeed, gameWidth - 40);
       touchStartX = e.touches[0].clientX;
     } else if (dx < -5) {
-      // slide left
       playerX = Math.max(playerX - playerSpeed, 0);
       touchStartX = e.touches[0].clientX;
     }
   });
 
-  // --- obstacle emojis ---
-  const enemyEmojis = ["😡", "👿", "😈", "💩", "👾", "👺", "👹", "🤡", "💥", "🎃", "🤖", "👽", "🦴"];
-
-  function resetGame() {
-    obstacles.forEach(o => o.elem.remove());
-    obstacles = [];
-    score = 0;
-    obstacleSpeed = obstacleSpeedStart;
-    gameOver = false;
-    spawnTimer = 0;
-    scoreEl.textContent = 'Score: 0';
-    playerX = 160;
-    player.style.left = playerX + 'px';
-    gameOverScreen.style.display = 'none';
-  }
-
+  // --- spawn obstacle ---
   function spawnObstacle() {
+    const lvl = levelDefs[currentLevelIndex];
+    const enemyList = lvl.enemies;
+    const emoji = enemyList[Math.floor(Math.random() * enemyList.length)];
+
     const obstacle = document.createElement('div');
     obstacle.className = 'obstacle';
-    const x = Math.random() * (gameWidth - 30);
+    const x = Math.random() * (gameWidth - 40);
     obstacle.style.left = x + 'px';
-
-    // pick random emoji
-    const emoji = enemyEmojis[Math.floor(Math.random() * enemyEmojis.length)];
+    obstacle.style.top = '-40px';
     obstacle.textContent = emoji;
 
     gameContainer.appendChild(obstacle);
@@ -161,11 +187,17 @@
     });
   }
 
+  // --- update player ---
   function updatePlayer() {
     player.style.left = playerX + 'px';
   }
 
+  // --- update obstacles ---
+  let obstacleSpeedMult = 1.0;
+
   function updateObstacles() {
+    const obstacleSpeed = baseObstacleSpeed * obstacleSpeedMult;
+
     for (let i = obstacles.length - 1; i >= 0; i--) {
       const o = obstacles[i];
       o.y += obstacleSpeed;
@@ -174,9 +206,11 @@
       if (o.y > gameHeight) {
         o.elem.remove();
         obstacles.splice(i, 1);
-        score += 1;
-        scoreEl.textContent = 'Score: ' + score;
-        obstacleSpeed = obstacleSpeedStart + score * 0.1;
+        // in this version, level up by score, but you can change the logic
+        if (++score >= 10 + level * 5) {
+          nextLevel();
+        }
+        scoreEl.textContent = score;
         continue;
       }
 
@@ -187,6 +221,7 @@
     }
   }
 
+  // --- simple collision ---
   function checkCollision(a, b) {
     const ar = a.getBoundingClientRect();
     const br = b.getBoundingClientRect();
@@ -198,19 +233,21 @@
     );
   }
 
+  // --- game over ---
   function endGame() {
     gameOver = true;
-    finalScoreEl.textContent = 'Your score: ' + score;
+    finalScoreEl.textContent = `Level ${level}, Score: ${score}`;
     gameOverScreen.style.display = 'flex';
   }
 
+  // --- main game loop ---
   function gameLoop() {
     if (!gameOver) {
       updatePlayer();
       updateObstacles();
 
       spawnTimer++;
-      if (spawnTimer > 40) {
+      if (spawnTimer > 40 - level * 2) {
         spawnObstacle();
         spawnTimer = 0;
       }
@@ -218,13 +255,30 @@
     requestAnimationFrame(gameLoop);
   }
 
+  // --- reset / restart ---
+  function resetGame() {
+    gameOver = false;
+    level = 1;
+    score = 0;
+    playerX = 160;
+    currentLevelIndex = 0;
+    obstacleSpeedMult = 1.0;
+    obstacles.forEach(o => o.elem.remove());
+    obstacles = [];
+    spawnTimer = 0;
+    levelEl.textContent = level;
+    scoreEl.textContent = score;
+    player.textContent = levelDefs[0].player;
+    gameOverScreen.style.display = 'none';
+  }
+
   restartBtn.addEventListener('click', () => {
     resetGame();
   });
 
   resetGame();
-  requestAnimationFrame(gameLoop);
+  gameLoop();
 </script>
 
 </body>
-</html>
+  </html>
