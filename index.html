@@ -1,284 +1,728 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Level Up Evade Game 🦸</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #111;
-      font-family: sans-serif;
-      color: white;
-      touch-action: none;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#6450ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Remind Me"/>
+<link rel="manifest" href="/manifest.json"/>
+<title>Remind Me ⏰</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0b0b14; --card:#16162a; --border:#23233a;
+  --accent:#6450ff; --accent3:#50ffa8; --muted:#888899;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;-webkit-tap-highlight-color:transparent;}
+body{
+  background:var(--bg);color:#e8e8f4;
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding-bottom:80px;overflow-x:hidden;
+}
 
-    #gameContainer {
-      position: relative;
-      width: 360px;
-      height: 600px;
-      background: #222;
-      border: 2px solid #555;
-      overflow: hidden;
-    }
+/* ── Background orbs ── */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;}
+.orb1{top:-120px;left:-100px;width:420px;height:420px;background:radial-gradient(circle,rgba(100,80,255,.09) 0%,transparent 70%);}
+.orb2{bottom:-100px;right:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(255,106,155,.07) 0%,transparent 70%);}
 
-    #player {
-      position: absolute;
-      bottom: 10px;
-      left: 160px;
-      font-size: 40px; /* bigger */
-      width: 40px;
-      height: 40px;
-      text-align: center;
-      line-height: 40px;
-    }
+/* ── Permission Gate (shown on first launch) ── */
+#perm-gate{
+  position:fixed;inset:0;z-index:8000;
+  background:linear-gradient(160deg,#0a0a18 0%,#111130 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px;text-align:center;
+}
+#perm-gate.hidden{display:none;}
+.pg-icon{font-size:72px;margin-bottom:24px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.pg-title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;margin-bottom:12px;}
+.pg-sub{color:var(--muted);font-size:.95rem;line-height:1.6;max-width:320px;margin-bottom:32px;}
+.pg-perms{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;margin-bottom:32px;}
+.perm-row{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;text-align:left;
+}
+.perm-icon{font-size:1.6rem;flex-shrink:0;}
+.perm-info h4{color:#fff;font-size:.9rem;font-weight:700;margin-bottom:3px;}
+.perm-info p {color:var(--muted);font-size:.78rem;line-height:1.4;}
+.perm-status{margin-left:auto;font-size:.75rem;font-family:'DM Mono',monospace;flex-shrink:0;}
+.perm-status.granted{color:var(--accent3);}
+.perm-status.pending{color:#ffb432;}
+.perm-status.denied {color:#ff6060;}
+.pg-btn{
+  width:100%;max-width:340px;
+  background:linear-gradient(135deg,#6450ff,#9d50ff);
+  color:#fff;border:none;border-radius:14px;
+  padding:16px;font-size:1rem;font-family:'Syne',sans-serif;
+  font-weight:700;cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 8px 32px rgba(100,80,255,.4);
+  transition:transform .15s,box-shadow .15s;
+}
+.pg-btn:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(100,80,255,.55);}
+.pg-skip{margin-top:14px;color:#444;font-size:.8rem;cursor:pointer;text-decoration:underline;}
 
-    .obstacle {
-      position: absolute;
-      top: -40px;
-      width: 40px;
-      height: 40px;
-      font-size: 30px;
-      text-align: center;
-      line-height: 40px;
-    }
+/* ── Header ── */
+.header{width:100%;max-width:480px;padding:44px 24px 0;text-align:center;position:relative;z-index:1;animation:fadeDown .6s ease both;}
+.header-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+.header h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,7vw,3rem);font-weight:800;line-height:1.05;letter-spacing:-1.5px;color:#fff;}
+.header h1 span{color:var(--accent);}
+.header p{color:var(--muted);font-size:.85rem;margin-top:8px;}
 
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 16px;
-    }
+/* ── Status bar ── */
+.status-bar{
+  margin:14px 24px 0;max-width:432px;width:calc(100% - 48px);
+  border-radius:12px;padding:10px 16px;
+  display:flex;align-items:center;gap:10px;
+  font-size:.82rem;position:relative;z-index:1;
+}
+.sb-ok  {background:rgba(80,255,168,.07);border:1px solid rgba(80,255,168,.2);color:var(--accent3);}
+.sb-warn{background:rgba(255,180,50,.07);border:1px solid rgba(255,180,50,.22);color:#ffb432;}
+.sb-err {background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);color:#ff6060;}
+.sb-dot {width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:dotPulse 1.5s ease infinite;}
+.sb-dot.green{background:var(--accent3);box-shadow:0 0 8px var(--accent3);}
+.sb-dot.yellow{background:#ffb432;box-shadow:0 0 8px #ffb432;}
+.sb-dot.red{background:#ff6060;box-shadow:0 0 8px #ff6060;}
+@keyframes dotPulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
-    #gameOverScreen {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      display: none;
-    }
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;margin:18px 24px 0;background:rgba(255,255,255,.04);border-radius:12px;padding:4px;max-width:432px;width:calc(100% - 48px);position:relative;z-index:1;}
+.tab-btn{flex:1;padding:9px 10px;border-radius:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.84rem;transition:all .2s;background:transparent;color:#555;}
+.tab-btn.active{background:var(--accent);color:#fff;font-weight:700;}
 
-    #restartBtn {
-      margin-top: 10px;
-      padding: 6px 14px;
-      cursor: pointer;
-    }
-  </style>
+/* ── Panel ── */
+.panel{width:100%;max-width:480px;padding:18px 24px 0;position:relative;z-index:1;}
+
+/* ── Fields ── */
+.field{margin-bottom:14px;}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.field input,.field textarea,.field select{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:#fff;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;}
+.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(100,80,255,.15);}
+.field textarea{resize:none;}
+.time-row{display:flex;gap:8px;}
+.time-row select{text-align:center;cursor:pointer;}
+.time-row select:last-child{flex:0 0 82px;}
+option{background:#1a1a2e;}
+
+.preview-box{background:rgba(100,80,255,.06);border:1px solid rgba(100,80,255,.2);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.pb-label{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.pb-title{color:#fff;font-weight:700;font-size:.9rem;margin-bottom:4px;}
+.pb-body{color:#aaa;font-size:.83rem;line-height:1.55;}
+.pb-body em{color:var(--accent3);font-style:italic;}
+
+.fstatus{padding:11px 16px;border-radius:10px;font-size:.88rem;margin-bottom:14px;}
+.fstatus.error  {background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.28);color:#ff6060;}
+.fstatus.success{background:rgba(80,255,168,.07);border:1px solid rgba(80,255,168,.22);color:var(--accent3);}
+
+.set-btn{width:100%;background:linear-gradient(135deg,#6450ff,#9d50ff);color:#fff;border:none;border-radius:14px;padding:15px 24px;font-size:1rem;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.5px;cursor:pointer;box-shadow:0 8px 32px rgba(100,80,255,.35);transition:transform .15s,box-shadow .15s;margin-bottom:14px;}
+.set-btn:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(100,80,255,.5);}
+.set-btn:active{transform:translateY(1px);}
+
+/* ── Reminder cards ── */
+.sec-lbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.r-card{background:rgba(100,80,255,.06);border:1px solid rgba(100,80,255,.18);border-radius:14px;padding:15px 16px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.r-card.past{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.06);opacity:.5;}
+.ci{flex:1;min-width:0;}
+.cn{color:#fff;font-weight:700;font-size:.9rem;margin-bottom:4px;}
+.cn em{color:var(--accent3);font-style:italic;font-weight:400;}
+.cm{font-family:'DM Mono',monospace;font-size:.72rem;color:#555;}
+.countdown{color:var(--accent);margin-left:10px;}
+.fired-tag{color:var(--accent3);margin-left:8px;}
+.cactions{display:flex;gap:6px;flex-shrink:0;}
+.ib{width:30px;height:30px;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;}
+.ib-d{background:rgba(255,255,255,.08);color:#aaa;}
+.ib-x{background:rgba(255,60,60,.12);color:#ff6060;}
+.empty{text-align:center;color:#444;padding:52px 0;font-size:.9rem;}
+.empty span{font-size:2.5rem;display:block;margin-top:14px;}
+
+/* ── Install banner ── */
+#install-banner{
+  margin:14px 24px 0;max-width:432px;width:calc(100% - 48px);
+  background:rgba(100,80,255,.09);border:1px solid rgba(100,80,255,.25);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:.82rem;color:#a89fff;position:relative;z-index:1;
+}
+#install-banner button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 13px;font-size:.75rem;font-weight:bold;cursor:pointer;font-family:inherit;}
+
+/* ══════════════════════════════════════════
+   ANDROID-STYLE ALARM SCREEN
+══════════════════════════════════════════ */
+#alarm-screen{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:#000;flex-direction:column;
+  align-items:center;justify-content:space-between;overflow:hidden;
+}
+#alarm-screen.show{display:flex;}
+
+.alarm-bg{position:absolute;inset:0;animation:bgPulse 1.4s ease-in-out infinite alternate;}
+@keyframes bgPulse{
+  from{background:radial-gradient(ellipse at 50% 38%,#18083a 0%,#08000f 55%,#000 100%);}
+  to  {background:radial-gradient(ellipse at 50% 38%,#2c0a60 0%,#120018 55%,#000 100%);}
+}
+.rings{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);width:280px;height:280px;pointer-events:none;}
+.ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(170,100,255,.35);animation:ringX 2.4s ease-out infinite;}
+.ring:nth-child(2){animation-delay:.6s;}.ring:nth-child(3){animation-delay:1.2s;}.ring:nth-child(4){animation-delay:1.8s;}
+@keyframes ringX{0%{transform:scale(.5);opacity:1;}100%{transform:scale(2.5);opacity:0;}}
+
+.a-top{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding-top:clamp(36px,9vh,72px);text-align:center;}
+.a-bell{font-size:72px;display:block;margin-bottom:16px;animation:shake .38s ease infinite alternate;filter:drop-shadow(0 0 28px rgba(180,100,255,.9));}
+@keyframes shake{from{transform:rotate(-20deg)scale(1.05);}to{transform:rotate(20deg)scale(1.1);}}
+.a-time{font-family:'DM Mono',monospace;font-size:clamp(3.5rem,14vw,5.5rem);font-weight:500;color:#fff;letter-spacing:-2px;line-height:1;text-shadow:0 0 48px rgba(180,100,255,.7);}
+.a-date{font-family:'DM Mono',monospace;font-size:.82rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-top:6px;}
+
+.a-mid{position:relative;z-index:1;text-align:center;padding:0 28px;}
+.a-chip{display:inline-block;background:rgba(180,100,255,.18);border:1px solid rgba(180,100,255,.35);border-radius:20px;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(180,100,255,.9);padding:4px 14px;margin-bottom:12px;}
+.a-name{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,5vw,2.3rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(180,100,255,.5);margin-bottom:10px;}
+.a-msg{color:rgba(255,255,255,.62);font-size:clamp(.9rem,3vw,1.05rem);line-height:1.65;}
+.a-msg em{color:#50ffa8;font-style:italic;}.a-msg strong{color:#fff;}
+
+.a-bot{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding-bottom:clamp(36px,9vh,72px);gap:14px;}
+.slide-hint{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.28);}
+.slide-track{width:280px;height:64px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:32px;display:flex;align-items:center;padding:6px;position:relative;user-select:none;-webkit-user-select:none;touch-action:none;}
+.slide-thumb{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c50ff,#ff50a0);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 24px rgba(180,100,255,.6);position:absolute;left:6px;cursor:grab;animation:tPulse 1.5s ease infinite alternate;}
+@keyframes tPulse{from{box-shadow:0 0 16px rgba(180,100,255,.4);}to{box-shadow:0 0 40px rgba(180,100,255,.95);}}
+.slide-lbl{width:100%;text-align:center;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.32);padding-left:24px;pointer-events:none;}
+.snooze-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:9px 26px;border-radius:22px;cursor:pointer;transition:all .2s;}
+.snooze-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(30,30,50,.95);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:.85rem;font-family:'DM Sans',sans-serif;padding:11px 22px;border-radius:20px;z-index:9998;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .35s;opacity:0;white-space:nowrap;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px);}to{opacity:1;transform:translateY(0);}}
+</style>
 </head>
 <body>
 
-<div id="gameContainer">
-  <div id="ui">
-    <div>Level: <span id="level">1</span></div>
-    <div>Score: <span id="score">0</span></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- ════════ PERMISSION GATE (first launch) ════════ -->
+<div id="perm-gate">
+  <div class="pg-icon">⏰</div>
+  <div class="pg-title">Remind Me</div>
+  <div class="pg-sub">To send you alarms even when you're on another app, we need a couple of permissions.</div>
+
+  <div class="pg-perms">
+    <div class="perm-row">
+      <div class="perm-icon">🔔</div>
+      <div class="perm-info">
+        <h4>Notifications</h4>
+        <p>Shows your alarm even when the app is in the background or you're on Facebook, YouTube, etc.</p>
+      </div>
+      <div class="perm-status pending" id="ps-notif">Needed</div>
+    </div>
+    <div class="perm-row">
+      <div class="perm-icon">🔊</div>
+      <div class="perm-info">
+        <h4>Alarm Sound</h4>
+        <p>Plays the alarm tone when your reminder fires. One tap to unlock.</p>
+      </div>
+      <div class="perm-status pending" id="ps-audio">Needed</div>
+    </div>
+    <div class="perm-row">
+      <div class="perm-icon">📳</div>
+      <div class="perm-info">
+        <h4>Vibration</h4>
+        <p>Vibrates your phone when the alarm fires — no extra permission needed.</p>
+      </div>
+      <div class="perm-status granted" id="ps-vib">Auto ✓</div>
+    </div>
   </div>
-  <div id="player">🦸</div>
-  <div id="gameOverScreen">
-    <div>Game Over!</div>
-    <div id="finalScore" style="margin-top:6px;font-size:18px;"></div>
-    <button id="restartBtn">Restart</button>
+
+  <button class="pg-btn" id="pg-btn" onclick="grantPermissions()">Allow Permissions & Start →</button>
+  <div class="pg-skip" onclick="skipPerms()">Skip for now</div>
+</div>
+
+<!-- ════════ ALARM SCREEN ════════ -->
+<div id="alarm-screen">
+  <div class="alarm-bg"></div>
+  <div class="rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+  <div class="a-top">
+    <span class="a-bell">🔔</span>
+    <div class="a-time" id="a-time">--:--</div>
+    <div class="a-date" id="a-date"></div>
+  </div>
+  <div class="a-mid">
+    <div class="a-chip">⏰ Reminder Alert</div>
+    <div class="a-name" id="a-name"></div>
+    <div class="a-msg"  id="a-msg"></div>
+  </div>
+  <div class="a-bot">
+    <div class="slide-hint">slide right to dismiss</div>
+    <div class="slide-track" id="slide-track">
+      <div class="slide-thumb" id="slide-thumb">→</div>
+      <div class="slide-lbl">DISMISS ALARM</div>
+    </div>
+    <button class="snooze-btn" onclick="snoozeAlarm()">😴 Snooze 5 min</button>
   </div>
 </div>
 
+<!-- ════════ TOASTS ════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════ MAIN APP ════════ -->
+<div class="header">
+  <div class="header-badge">Personal Alarm App</div>
+  <h1>Remind<span> Me</span> ⏰</h1>
+  <p>Alarms that follow you everywhere</p>
+</div>
+
+<!-- Background alarm status bar -->
+<div class="status-bar sb-ok" id="status-bar" style="display:none">
+  <div class="sb-dot green" id="sb-dot"></div>
+  <span id="sb-text">Background alarms active — you'll be notified even when on another app</span>
+</div>
+
+<!-- Install as app banner -->
+<div id="install-banner" style="display:none">
+  📲 <strong>Install as app</strong> for the best experience — alarms work even when browser is closed
+  <button onclick="installApp()">Install</button>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-set"  onclick="switchTab('set')">Set Reminder</button>
+  <button class="tab-btn"        id="tab-list" onclick="switchTab('list')">Reminders (<span id="active-count">0</span>)</button>
+</div>
+
+<div class="panel">
+
+  <!-- SET TAB -->
+  <div id="view-set">
+    <div class="field">
+      <label>👤 Your Name</label>
+      <input type="text" id="inp-name" placeholder="e.g. Zee" oninput="updatePreview()"/>
+    </div>
+    <div class="field">
+      <label>📝 What to remind you of</label>
+      <textarea id="inp-reminder" rows="3" placeholder="e.g. buy groceries, take medicine, call mum..." oninput="updatePreview()"></textarea>
+    </div>
+    <div class="field">
+      <label>🕐 Select Time</label>
+      <div class="time-row">
+        <select id="sel-hour"></select>
+        <select id="sel-min"></select>
+        <select id="sel-ampm"><option>AM</option><option>PM</option></select>
+      </div>
+    </div>
+    <div id="fstatus" class="fstatus" style="display:none"></div>
+    <button class="set-btn" onclick="setReminder()">✅ Set Reminder</button>
+    <div class="preview-box" id="preview-box" style="display:none">
+      <div class="pb-label">📱 Live Notification Preview</div>
+      <div class="pb-title" id="prev-title"></div>
+      <div class="pb-body"  id="prev-body"></div>
+    </div>
+  </div>
+
+  <!-- LIST TAB -->
+  <div id="view-list" style="display:none">
+    <div id="list-container"></div>
+  </div>
+
+</div>
+
 <script>
-  // --- Game config ---
-  const gameWidth = 360;
-  const gameHeight = 600;
-  const playerSpeed = 18;   // feel free to increase more
-  const baseObstacleSpeed = 3;
+// ══════════════════════════════════════════════════════════════
+//  REMIND ME — Main App Script
+// ══════════════════════════════════════════════════════════════
 
-  const levelDefs = [
-    { label: "Level 1", player: "🦸", enemies: ["🦍"], speedMult: 1 },
-    { label: "Level 2", player: "🦸", enemies: ["🦁"], speedMult: 1.2 },
-    { label: "Level 3", player: "🦸", enemies: ["🐅"], speedMult: 1.4 },
-    { label: "Level 4", player: "🦸", enemies: ["🐆"], speedMult: 1.6 },
-    { label: "Level 5", player: "🦸", enemies: ["🐕‍🦺", "🐕", "🐩"], speedMult: 1.8 },
-    { label: "Level 6", player: "🦸", enemies: ["🐘", "🐏", "🐑", "🐐"], speedMult: 2.0 },
-    { label: "Level 7", player: "🦸", enemies: ["🦌", "🫏", "🐎", "🐕‍🦺"], speedMult: 2.2 },
-    { label: "Level 8", player: "🦸", enemies: ["🐸", "🐍", "🐊", "🐢"], speedMult: 2.4 },
-    { label: "Level 9", player: "🦸", enemies: ["🚋", "🚎", "🚞", "🚊", "🚉"], speedMult: 2.6 },
-    { label: "Level 10", player: "🦸", enemies: ["🚍", "🚔", "🚘", "⛵", "⛴️", "🚤", "🛥️", "🛳️", "🚢", "🚆", "🚖", "🚡", "🚁", "🚠", "🛩️", "🛬", "🛫", "🎢"], speedMult: 3.0 }
-  ];
+// ── Globals ──────────────────────────────────────────────────
+let sw = null;                // ServiceWorker registration
+let audioCtx = null;
+let alarmInterval = null;
+window.alarmPlaying = false;
+let ringingId = null;
+let liveClockOn = false;
+let deferredInstall = null;  // PWA install prompt
 
-  // --- DOM elements ---
-  const gameContainer = document.getElementById('gameContainer');
-  const player = document.getElementById('player');
-  const levelEl = document.getElementById('level');
-  const scoreEl = document.getElementById('score');
-  const gameOverScreen = document.getElementById('gameOverScreen');
-  const finalScoreEl = document.getElementById('finalScore');
-  const restartBtn = document.getElementById('restartBtn');
+// ── Service Worker Registration ──────────────────────────────
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    sw = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    console.log('[SW] registered:', sw.scope);
 
-  // --- game state ---
-  let level = 1;
-  let score = 0;
-  let playerX = 160;
-  let obstacles = [];
-  let gameOver = false;
-  let spawnTimer = 0;
-  let currentLevelIndex = 0;
-  let touchStartX = 0;
-
-  // --- change level ---
-  function nextLevel() {
-    if (currentLevelIndex < levelDefs.length - 1) {
-      currentLevelIndex++;
-      level++;
-      const lvl = levelDefs[currentLevelIndex];
-      obstacleSpeedMult = lvl.speedMult;
-      levelEl.textContent = level;
-      player.textContent = lvl.player;
-      score = 0;
-      scoreEl.textContent = score;
-      obstacles.forEach(o => o.elem.remove());
-      obstacles = [];
-      spawnTimer = 0;
-    } else {
-      // max level reached
-      gameOverScreen.style.display = 'flex';
-      finalScoreEl.textContent = "Max level 10 reached!";
-    }
-  }
-
-  // --- TOUCH controls (slide left/right) ---
-  gameContainer.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-    e.preventDefault();
-  });
-
-  gameContainer.addEventListener('touchmove', (e) => {
-    const dx = e.touches[0].clientX - touchStartX;
-
-    if (dx > 5) {
-      playerX = Math.min(playerX + playerSpeed, gameWidth - 40);
-      touchStartX = e.touches[0].clientX;
-    } else if (dx < -5) {
-      playerX = Math.max(playerX - playerSpeed, 0);
-      touchStartX = e.touches[0].clientX;
-    }
-  });
-
-  // --- spawn obstacle ---
-  function spawnObstacle() {
-    const lvl = levelDefs[currentLevelIndex];
-    const enemyList = lvl.enemies;
-    const emoji = enemyList[Math.floor(Math.random() * enemyList.length)];
-
-    const obstacle = document.createElement('div');
-    obstacle.className = 'obstacle';
-    const x = Math.random() * (gameWidth - 40);
-    obstacle.style.left = x + 'px';
-    obstacle.style.top = '-40px';
-    obstacle.textContent = emoji;
-
-    gameContainer.appendChild(obstacle);
-    obstacles.push({
-      elem: obstacle,
-      x: x,
-      y: -40
+    // Listen for messages FROM the SW (alarm fired in background)
+    navigator.serviceWorker.addEventListener('message', e => {
+      const { type, id } = e.data || {};
+      if (type === 'ALARM_FIRED') {
+        // SW fired the notification; also show in-app alarm if tab is open
+        const r = reminders.find(x => x.id === id);
+        if (r && !r.dismissed) triggerAlarmUI(r);
+      }
+      if (type === 'SNOOZE') {
+        snoozeById(id);
+      }
     });
+  } catch(e) {
+    console.warn('[SW] registration failed:', e);
+  }
+}
+
+// Send reminders to SW every time we update them
+function syncToSW() {
+  if (!navigator.serviceWorker.controller) return;
+  navigator.serviceWorker.controller.postMessage({ type: 'SYNC_REMINDERS', reminders });
+}
+
+// Ping SW every second so it stays alive and checks alarms
+function pingSW() {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'TICK' });
+  }
+}
+
+// ── PWA Install Prompt ────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+async function installApp() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  const { outcome } = await deferredInstall.userChoice;
+  if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
+  deferredInstall = null;
+}
+
+// ── Permission Gate ───────────────────────────────────────────
+function skipPerms() {
+  document.getElementById('perm-gate').classList.add('hidden');
+  initApp();
+}
+
+async function grantPermissions() {
+  const btn = document.getElementById('pg-btn');
+  btn.textContent = 'Requesting…';
+
+  // 1. Notification permission
+  if ('Notification' in window) {
+    const r = await Notification.requestPermission();
+    document.getElementById('ps-notif').textContent = r === 'granted' ? 'Allowed ✓' : r === 'denied' ? 'Blocked ✗' : 'Skipped';
+    document.getElementById('ps-notif').className = 'perm-status ' + (r === 'granted' ? 'granted' : 'denied');
   }
 
-  // --- update player ---
-  function updatePlayer() {
-    player.style.left = playerX + 'px';
+  // 2. Audio unlock (requires user gesture — we're in one right now)
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    g.gain.value = 0.001; o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.01);
+    document.getElementById('ps-audio').textContent = 'Unlocked ✓';
+    document.getElementById('ps-audio').className = 'perm-status granted';
+  } catch(e) {
+    document.getElementById('ps-audio').textContent = 'Failed';
+    document.getElementById('ps-audio').className = 'perm-status denied';
   }
 
-  // --- update obstacles ---
-  let obstacleSpeedMult = 1.0;
+  btn.textContent = '✓ All Set — Open App';
+  btn.onclick = () => {
+    document.getElementById('perm-gate').classList.add('hidden');
+    initApp();
+  };
+}
 
-  function updateObstacles() {
-    const obstacleSpeed = baseObstacleSpeed * obstacleSpeedMult;
+// ── Init App ──────────────────────────────────────────────────
+function initApp() {
+  updateStatusBar();
+  renderList();
+  setInterval(tick, 1000);
+  setInterval(pingSW, 1000);
+  registerSW();
+}
 
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-      const o = obstacles[i];
-      o.y += obstacleSpeed;
-      o.elem.style.top = o.y + 'px';
-
-      if (o.y > gameHeight) {
-        o.elem.remove();
-        obstacles.splice(i, 1);
-        // in this version, level up by score, but you can change the logic
-        if (++score >= 10 + level * 5) {
-          nextLevel();
-        }
-        scoreEl.textContent = score;
-        continue;
-      }
-
-      if (checkCollision(player, o.elem)) {
-        endGame();
-        return;
-      }
-    }
+// ── Audio ─────────────────────────────────────────────────────
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
 
-  // --- simple collision ---
-  function checkCollision(a, b) {
-    const ar = a.getBoundingClientRect();
-    const br = b.getBoundingClientRect();
-    return !(
-      ar.right < br.left ||
-      ar.left > br.right ||
-      ar.bottom < br.top ||
-      ar.top > br.bottom
-    );
-  }
-
-  // --- game over ---
-  function endGame() {
-    gameOver = true;
-    finalScoreEl.textContent = `Level ${level}, Score: ${score}`;
-    gameOverScreen.style.display = 'flex';
-  }
-
-  // --- main game loop ---
-  function gameLoop() {
-    if (!gameOver) {
-      updatePlayer();
-      updateObstacles();
-
-      spawnTimer++;
-      if (spawnTimer > 40 - level * 2) {
-        spawnObstacle();
-        spawnTimer = 0;
-      }
-    }
-    requestAnimationFrame(gameLoop);
-  }
-
-  // --- reset / restart ---
-  function resetGame() {
-    gameOver = false;
-    level = 1;
-    score = 0;
-    playerX = 160;
-    currentLevelIndex = 0;
-    obstacleSpeedMult = 1.0;
-    obstacles.forEach(o => o.elem.remove());
-    obstacles = [];
-    spawnTimer = 0;
-    levelEl.textContent = level;
-    scoreEl.textContent = score;
-    player.textContent = levelDefs[0].player;
-    gameOverScreen.style.display = 'none';
-  }
-
-  restartBtn.addEventListener('click', () => {
-    resetGame();
+function playBeepPattern() {
+  if (!window.alarmPlaying || !audioCtx) return;
+  ensureAudio();
+  const now = audioCtx.currentTime;
+  const seq = [
+    {f:880,t:0,   d:.11},{f:988, t:.16,d:.11},{f:1108,t:.32,d:.18},
+    {f:1108,t:.60,d:.11},{f:988, t:.76,d:.11},{f:880, t:.92,d:.18},
+  ];
+  seq.forEach(p => {
+    const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.type='square'; osc.frequency.value=p.f;
+    const t=now+p.t;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.18,t+.01);
+    g.gain.setValueAtTime(0.18,t+p.d-.02);
+    g.gain.linearRampToValueAtTime(0,t+p.d);
+    osc.start(t); osc.stop(t+p.d+.01);
   });
+}
 
-  resetGame();
-  gameLoop();
+function startAlarmSound() {
+  ensureAudio();
+  stopAlarmSound();
+  window.alarmPlaying = true;
+  playBeepPattern();
+  alarmInterval = setInterval(playBeepPattern, 2000);
+}
+function stopAlarmSound() {
+  window.alarmPlaying = false;
+  clearInterval(alarmInterval); alarmInterval = null;
+}
+
+// ── Vibration ─────────────────────────────────────────────────
+function startVib() {
+  if (!navigator.vibrate) return;
+  function loop() { if (!window.alarmPlaying) return; navigator.vibrate([500,200,500,200,500]); setTimeout(loop,1600); }
+  loop();
+}
+function stopVib() { navigator.vibrate && navigator.vibrate(0); }
+
+// ── State ─────────────────────────────────────────────────────
+let reminders = JSON.parse(localStorage.getItem('remindme_v5') || '[]');
+function save() { localStorage.setItem('remindme_v5', JSON.stringify(reminders)); syncToSW(); }
+
+// ── Setup selects on page load ─────────────────────────────────
+(function setupSelects() {
+  const selH = document.getElementById('sel-hour');
+  for(let i=1;i<=12;i++){const o=document.createElement('option');o.value=o.textContent=String(i).padStart(2,'0');selH.appendChild(o);}
+  const selM = document.getElementById('sel-min');
+  for(let i=0;i<60;i++){const o=document.createElement('option');o.value=o.textContent=String(i).padStart(2,'0');selM.appendChild(o);}
+  const d=new Date(); d.setMinutes(d.getMinutes()+2);
+  let h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM'; h=h%12||12;
+  selH.value=String(h).padStart(2,'0'); selM.value=String(m).padStart(2,'0');
+  document.getElementById('sel-ampm').value=ap;
+})();
+
+// ── Status bar ────────────────────────────────────────────────
+function updateStatusBar() {
+  const bar  = document.getElementById('status-bar');
+  const dot  = document.getElementById('sb-dot');
+  const text = document.getElementById('sb-text');
+  bar.style.display = 'flex';
+
+  if (!('Notification' in window)) {
+    bar.className='status-bar sb-err'; dot.className='sb-dot red';
+    text.textContent='⚠️ Notifications not supported in this browser';
+    return;
+  }
+  const perm = Notification.permission;
+  if (perm === 'granted') {
+    bar.className='status-bar sb-ok'; dot.className='sb-dot green';
+    text.textContent='✓ Background alarms active — alerts fire even when you leave this app';
+  } else if (perm === 'denied') {
+    bar.className='status-bar sb-err'; dot.className='sb-dot red';
+    text.textContent='🚫 Notifications blocked — go to browser Settings → Site Settings to allow';
+  } else {
+    bar.className='status-bar sb-warn'; dot.className='sb-dot yellow';
+    text.textContent='⚠️ Notification permission needed for background alarms';
+  }
+}
+
+// ── Tick ──────────────────────────────────────────────────────
+function tick() {
+  const now = Date.now();
+  let changed = false;
+  reminders.forEach(r => {
+    if(!r.fired && !r.dismissed && now >= r.timestamp){
+      r.fired=true; changed=true; triggerAlarmUI(r);
+    }
+  });
+  if(changed){save();renderList();}
+  updateCountdowns();
+  if(liveClockOn) liveClock();
+}
+
+// ── Trigger in-app alarm UI ───────────────────────────────────
+function triggerAlarmUI(r) {
+  ringingId = r.id;
+  document.getElementById('a-name').textContent = `Hey, ${r.name}! 👋`;
+  document.getElementById('a-msg').innerHTML =
+    `You said you want to <em>"${esc(r.reminder)}"</em><br>— the time is <strong>NOW!</strong> 🔔`;
+  document.getElementById('alarm-screen').classList.add('show');
+  liveClockOn=true; liveClock();
+  startAlarmSound(); startVib(); initSlide();
+
+  // Also fire OS notification (appears over other apps if permission granted)
+  if('Notification' in window && Notification.permission==='granted'){
+    try{
+      const n = new Notification(`⏰ ALARM — ${r.name}!`,{
+        body: `You said you want to "${r.reminder}" — the time is NOW! 🔔`,
+        requireInteraction: true,
+        tag: 'alarm-'+r.id,
+        renotify: true,
+        vibrate: [500,200,500,200,500],
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%236450ff"/><text y="75" font-size="60" text-anchor="middle" x="50">⏰</text></svg>',
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    }catch(e){}
+  }
+}
+
+// ── Live clock on alarm screen ────────────────────────────────
+function liveClock() {
+  const n=new Date(); let h=n.getHours(),m=n.getMinutes(),ap=h>=12?'PM':'AM'; h=h%12||12;
+  document.getElementById('a-time').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  document.getElementById('a-date').textContent=
+    n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase()+' · '+ap;
+}
+
+// ── Dismiss ───────────────────────────────────────────────────
+function dismissAlarm() {
+  stopAlarmSound(); stopVib();
+  document.getElementById('alarm-screen').classList.remove('show');
+  liveClockOn=false;
+  if(ringingId!==null){
+    reminders=reminders.map(r=>r.id===ringingId?{...r,dismissed:true}:r);
+    save();renderList();ringingId=null;
+  }
+}
+
+// ── Snooze ────────────────────────────────────────────────────
+function snoozeAlarm() { snoozeById(ringingId); }
+
+function snoozeById(id) {
+  stopAlarmSound(); stopVib();
+  document.getElementById('alarm-screen').classList.remove('show');
+  liveClockOn=false;
+  if(id!==null){
+    const ts=Date.now()+5*60*1000;
+    reminders=reminders.map(r=>r.id===id?{...r,fired:false,dismissed:false,timestamp:ts,displayTime:fmtTs(ts)}:r);
+    save();renderList();ringingId=null;
+  }
+  showToast('😴 Snoozed for 5 minutes');
+}
+
+function fmtTs(ts){
+  const d=new Date(ts); let h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM'; h=h%12||12;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ap}`;
+}
+
+// ── Slide to dismiss ──────────────────────────────────────────
+function initSlide() {
+  const oldT=document.getElementById('slide-track');
+  const newT=oldT.cloneNode(true);
+  oldT.parentNode.replaceChild(newT,oldT);
+  const thumb=newT.querySelector('#slide-thumb');
+  const lbl  =newT.querySelector('.slide-lbl');
+  const maxX =newT.clientWidth - thumb.clientWidth - 12;
+  let drag=false,sx=0,cx=0;
+
+  function start(e){drag=true;sx=(e.touches?e.touches[0].clientX:e.clientX);thumb.style.transition='none';thumb.style.cursor='grabbing';}
+  function move(e){if(!drag)return;e.preventDefault();const px=(e.touches?e.touches[0].clientX:e.clientX);cx=Math.max(0,Math.min(maxX,px-sx));thumb.style.transform=`translateX(${cx}px)`;lbl.style.opacity=String(1-(cx/maxX));}
+  function end(){if(!drag)return;drag=false;thumb.style.cursor='grab';if(cx>=maxX*.82){thumb.style.transform=`translateX(${maxX}px)`;setTimeout(dismissAlarm,180);}else{thumb.style.transition='transform .3s cubic-bezier(.34,1.56,.64,1)';thumb.style.transform='translateX(0)';lbl.style.opacity='1';}cx=0;}
+
+  thumb.addEventListener('mousedown',start);
+  thumb.addEventListener('touchstart',start,{passive:true});
+  window.addEventListener('mousemove',move);
+  window.addEventListener('touchmove',move,{passive:false});
+  window.addEventListener('mouseup',end);
+  window.addEventListener('touchend',end);
+  newT.addEventListener('click',dismissAlarm);
+}
+
+// ── Set Reminder ──────────────────────────────────────────────
+function setReminder() {
+  const name=document.getElementById('inp-name').value.trim();
+  const rem =document.getElementById('inp-reminder').value.trim();
+  const hour=document.getElementById('sel-hour').value;
+  const min =document.getElementById('sel-min').value;
+  const ampm=document.getElementById('sel-ampm').value;
+  if(!name){showFStatus('error','⚠️ Please enter your name!');return;}
+  if(!rem) {showFStatus('error','⚠️ What do you want to be reminded of?');return;}
+
+  let h24=parseInt(hour);
+  if(ampm==='PM'&&h24!==12)h24+=12;
+  if(ampm==='AM'&&h24===12)h24=0;
+  const target=new Date(); target.setHours(h24,parseInt(min),0,0);
+  if(target<=new Date())target.setDate(target.getDate()+1);
+
+  const entry={id:Date.now(),name,reminder:rem,timestamp:target.getTime(),displayTime:`${hour}:${min} ${ampm}`,fired:false,dismissed:false};
+  reminders.push(entry); save(); updateCount();
+  showFStatus('success',`✅ Reminder set for ${hour}:${min} ${ampm}!`);
+
+  // Confirm to user that it will work in background
+  if(Notification.permission==='granted'){
+    showToast('🔔 You\'ll get an alert even if you leave this app!');
+  } else {
+    showToast('⚠️ Enable notifications to get background alarms');
+  }
+
+  document.getElementById('inp-reminder').value='';
+  updatePreview();
+}
+
+// ── Preview ───────────────────────────────────────────────────
+function updatePreview() {
+  const name=document.getElementById('inp-name').value.trim();
+  const rem =document.getElementById('inp-reminder').value.trim();
+  const box =document.getElementById('preview-box');
+  if(!name&&!rem){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('prev-title').textContent=`⏰ Time's Up, ${name||'...'}!`;
+  document.getElementById('prev-body').innerHTML=`${name||'...'}, you said you want to <em>"${rem||'...'}"</em> — the time is now! 🔔`;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(t) {
+  document.getElementById('view-set').style.display =t==='set' ?'block':'none';
+  document.getElementById('view-list').style.display=t==='list'?'block':'none';
+  document.getElementById('tab-set').className ='tab-btn'+(t==='set' ?' active':'');
+  document.getElementById('tab-list').className='tab-btn'+(t==='list'?' active':'');
+  if(t==='list')renderList();
+}
+
+// ── Render List ───────────────────────────────────────────────
+function renderList() {
+  const act=reminders.filter(r=>!r.dismissed&&!r.fired);
+  const pst=reminders.filter(r=> r.dismissed|| r.fired);
+  updateCount();
+  let html='';
+  if(!act.length&&!pst.length)html='<div class="empty">No reminders yet.<span>⏳</span></div>';
+  if(act.length){html+='<div class="sec-lbl">Upcoming</div>';act.forEach(r=>html+=cHTML(r,false));}
+  if(pst.length){html+='<div class="sec-lbl" style="margin-top:20px;color:#444">Past</div>';pst.forEach(r=>html+=cHTML(r,true));}
+  document.getElementById('list-container').innerHTML=html;
+}
+
+function cHTML(r,isPast){
+  const meta=r.fired?`🕐 ${r.displayTime} <span class="fired-tag">✓ Fired</span>`:r.dismissed?`🕐 ${r.displayTime} <span style="color:#555;margin-left:8px">Dismissed</span>`:`🕐 ${r.displayTime} <span class="countdown" id="cd-${r.id}"></span>`;
+  const db=!isPast?`<button class="ib ib-d" onclick="dismissRem(${r.id})">✕</button>`:'';
+  return `<div class="r-card ${isPast?'past':''}"><div class="ci"><div class="cn">${esc(r.name)} — <em>"${esc(r.reminder)}"</em></div><div class="cm">${meta}</div></div><div class="cactions">${db}<button class="ib ib-x" onclick="deleteRem(${r.id})">🗑</button></div></div>`;
+}
+
+function updateCountdowns(){
+  const now=Date.now();
+  reminders.filter(r=>!r.fired&&!r.dismissed).forEach(r=>{
+    const el=document.getElementById('cd-'+r.id);if(!el)return;
+    const d=Math.max(0,r.timestamp-now);
+    const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);
+    el.textContent=h>0?`⏱ ${h}h ${m}m`:m>0?`⏱ ${m}m ${s}s`:`⏱ ${s}s`;
+  });
+}
+
+function updateCount(){document.getElementById('active-count').textContent=reminders.filter(r=>!r.dismissed&&!r.fired).length;}
+function dismissRem(id){reminders=reminders.map(r=>r.id===id?{...r,dismissed:true}:r);save();renderList();}
+function deleteRem(id){reminders=reminders.filter(r=>r.id!==id);save();renderList();}
+
+function showFStatus(type,msg){
+  const b=document.getElementById('fstatus');b.className='fstatus '+type;b.textContent=msg;b.style.display='block';
+  clearTimeout(b._t);b._t=setTimeout(()=>b.style.display='none',4000);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 </script>
-
 </body>
-  </html>
+</html>
