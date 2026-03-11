@@ -1,843 +1,720 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Tallen AI Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --num: #27ae60;
-  --eq: #e67e22;
-  --op: #2980b9;
-  --del: #c0392b;
-  --bg: #080810;
-  --card: #10101e;
-  --card2: #14142a;
-  --border: rgba(255,255,255,0.07);
-  --gold: #f1c40f;
-  --text: #e8eaf0;
-  --muted: #606880;
-  --accent: #e67e22;
-  --radius: 28px;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;}
-body{
-  background:var(--bg);
-  font-family:'DM Sans',sans-serif;
-  color:var(--text);
-  display:flex;align-items:center;justify-content:center;
-  background-image:
-    radial-gradient(ellipse 60% 40% at 15% 60%,rgba(231,126,35,.06) 0%,transparent 70%),
-    radial-gradient(ellipse 50% 60% at 85% 20%,rgba(41,128,185,.05) 0%,transparent 70%);
-}
-
-/* ====== WRAPPER ====== */
-.app{width:390px;max-width:100vw;height:100vh;max-height:820px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
-
-/* ====== SCREENS ====== */
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;backface-visibility:hidden;}
-.screen.hidden{transform:translateX(100%);opacity:0;pointer-events:none;}
-.screen.slide-left{transform:translateX(-100%);opacity:0;pointer-events:none;}
-
-/* ====== HEADER ====== */
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px;}
-.hdr-title{font-family:'Orbitron',monospace;font-size:.75rem;letter-spacing:5px;color:var(--gold);text-transform:uppercase;}
-.hdr-back{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:6px;border-radius:50%;transition:color .2s;}
-.hdr-back:hover{color:var(--text);}
-.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;}
-.icon-btn:hover{color:var(--gold);border-color:rgba(241,196,15,.3);}
-
-/* ====== MAIN CALC SCREEN ====== */
-#screenMain{background:var(--bg);}
-
-/* Display */
-.display{
-  background:linear-gradient(180deg,#0a0a18 0%,#0d0d1e 100%);
-  margin:0 12px;border-radius:20px;
-  padding:16px 20px 14px;
-  border:1px solid var(--border);
-  min-height:110px;
-  display:flex;flex-direction:column;justify-content:flex-end;
-}
-.expr-line{font-family:'Orbitron',monospace;font-size:.68rem;color:var(--muted);text-align:right;min-height:16px;letter-spacing:1px;}
-.main-num{
-  font-family:'Orbitron',monospace;font-size:2.8rem;font-weight:700;
-  text-align:right;line-height:1.1;word-break:break-all;
-  text-shadow:0 0 24px rgba(241,196,15,.2);
-  transition:all .15s;
-}
-.mode-pill{
-  display:inline-flex;align-items:center;gap:5px;
-  font-size:.58rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;
-  padding:3px 10px;border-radius:20px;margin-bottom:6px;width:fit-content;
-}
-.mode-pill.ai{background:rgba(39,174,96,.15);color:#2ecc71;border:1px solid rgba(39,174,96,.25);}
-.mode-pill.normal{background:rgba(41,128,185,.15);color:#3498db;border:1px solid rgba(41,128,185,.25);}
-.mode-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-
-/* AI Quick Result */
-.ai-result-strip{
-  margin:8px 12px 0;
-  background:rgba(241,196,15,.05);
-  border:1px solid rgba(241,196,15,.1);
-  border-radius:14px;
-  padding:10px 14px;
-  font-size:.8rem;
-  color:#bbb;
-  line-height:1.5;
-  min-height:46px;
-  display:flex;align-items:center;gap:8px;
-  transition:all .3s;
-}
-.ai-result-strip .ta{width:26px;height:26px;background:linear-gradient(135deg,#f1c40f,#e67e22);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:.65rem;font-weight:900;color:#000;flex-shrink:0;}
-.ai-result-strip .ta-text{flex:1;}
-.ai-result-strip b{color:var(--gold);}
-
-/* Mode Toggle */
-.mode-toggle{display:flex;gap:8px;margin:10px 12px 4px;padding:5px;background:var(--card2);border-radius:50px;border:1px solid var(--border);}
-.mt-btn{flex:1;padding:8px;border-radius:40px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.5px;transition:all .2s;color:var(--muted);background:transparent;}
-.mt-btn.active-ai{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;box-shadow:0 4px 14px rgba(39,174,96,.3);}
-.mt-btn.active-normal{background:linear-gradient(135deg,#2980b9,#1a6a9a);color:#fff;box-shadow:0 4px 14px rgba(41,128,185,.3);}
-
-/* Keypad */
-.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:10px 12px 14px;flex:1;align-content:center;}
-.btn{
-  border:none;cursor:pointer;
-  border-radius:50%;aspect-ratio:1;
-  font-family:'Orbitron',monospace;font-weight:700;font-size:1.05rem;
-  color:#fff;
-  transition:transform .12s,box-shadow .12s,filter .12s;
-  position:relative;overflow:hidden;
-  box-shadow:0 5px 16px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.07) inset;
-}
-.btn:hover{transform:scale(1.07) translateY(-2px);filter:brightness(1.15);}
-.btn:active{transform:scale(.93);box-shadow:0 2px 6px rgba(0,0,0,.5);}
-.btn::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:rgba(255,255,255,.09);border-radius:50% 50% 0 0;pointer-events:none;}
-.btn-num{background:var(--num);}
-.btn-op{background:var(--op);}
-.btn-eq{background:var(--eq);border-radius:60px;aspect-ratio:unset;grid-column:span 2;}
-.btn-zero{border-radius:60px;aspect-ratio:unset;grid-column:span 2;}
-.btn-del{background:var(--del);}
-.btn-clr{background:#7f8c8d;}
-
-/* ====== SETTINGS SCREEN ====== */
-#screenSettings{background:var(--bg);overflow-y:auto;}
-.settings-body{padding:0 14px 20px;display:flex;flex-direction:column;gap:10px;}
-.s-section{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
-.s-label{font-size:.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:12px 16px 4px;font-weight:600;}
-.s-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s;}
-.s-row:last-child{border-bottom:none;}
-.s-row:hover{background:rgba(255,255,255,.03);}
-.s-row-left{display:flex;align-items:center;gap:10px;}
-.s-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
-.s-name{font-size:.88rem;font-weight:500;}
-.s-sub{font-size:.72rem;color:var(--muted);margin-top:1px;}
-.s-arrow{color:var(--muted);font-size:.8rem;}
-
-/* Colors grid */
-.color-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;}
-.c-swatch{aspect-ratio:1;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.4);}
-.c-swatch:hover{transform:scale(1.15);}
-.c-swatch.sel{border-color:#fff;transform:scale(1.1);}
-.c-name{text-align:center;font-size:.6rem;color:var(--muted);margin-top:4px;letter-spacing:1px;}
-
-/* ====== CHAT HISTORY SCREEN ====== */
-#screenHistory{background:var(--bg);}
-.chat-body{flex:1;overflow-y:auto;padding:8px 14px 16px;display:flex;flex-direction:column;gap:8px;}
-.chat-body::-webkit-scrollbar{width:3px;}
-.chat-body::-webkit-scrollbar-thumb{background:rgba(241,196,15,.2);border-radius:3px;}
-.ch-msg{display:flex;gap:8px;animation:fadeUp .35s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.ch-av{width:28px;height:28px;background:linear-gradient(135deg,#f1c40f,#e67e22);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:.6rem;font-weight:900;color:#000;flex-shrink:0;}
-.ch-bubble{background:rgba(241,196,15,.06);border:1px solid rgba(241,196,15,.1);border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:.8rem;line-height:1.55;color:#bdc3c7;flex:1;}
-.ch-bubble b{color:var(--gold);}
-.ch-bubble.user-msg{background:rgba(41,128,185,.1);border-color:rgba(41,128,185,.2);border-radius:14px 14px 4px 14px;color:#cdd;}
-.empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:10px;padding:40px;}
-.empty-chat .big{font-size:2.5rem;}
-.empty-chat p{font-size:.82rem;text-align:center;line-height:1.5;}
-
-/* ====== QUIZ SCREEN ====== */
-#screenQuiz{background:var(--bg);}
-.quiz-body{flex:1;display:flex;flex-direction:column;padding:10px 14px 16px;gap:10px;overflow:hidden;}
-.quiz-progress{height:4px;background:var(--card2);border-radius:4px;overflow:hidden;}
-.quiz-bar{height:100%;background:linear-gradient(90deg,#27ae60,#f1c40f);border-radius:4px;transition:width .5s;}
-.quiz-stats{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);}
-.quiz-card{
-  background:var(--card);border:1px solid var(--border);border-radius:22px;
-  padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  animation:fadeUp .3s ease;
-}
-.quiz-difficulty{font-size:.6rem;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:20px;font-weight:600;}
-.quiz-difficulty.easy{background:rgba(39,174,96,.15);color:#2ecc71;}
-.quiz-difficulty.medium{background:rgba(243,156,18,.15);color:#f39c12;}
-.quiz-difficulty.hard{background:rgba(231,76,60,.15);color:#e74c3c;}
-.quiz-question{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;text-align:center;color:var(--text);letter-spacing:2px;}
-.quiz-sub{font-size:.78rem;color:var(--muted);text-align:center;}
-.quiz-input-row{display:flex;gap:8px;width:100%;}
-.quiz-input{
-  flex:1;background:var(--card2);border:1px solid var(--border);border-radius:14px;
-  padding:12px 16px;font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--text);
-  text-align:center;outline:none;transition:border-color .2s;
-}
-.quiz-input:focus{border-color:rgba(241,196,15,.4);}
-.quiz-submit{
-  padding:12px 18px;background:linear-gradient(135deg,#f1c40f,#e67e22);
-  border:none;border-radius:14px;font-family:'Orbitron',monospace;font-weight:700;
-  font-size:.8rem;color:#000;cursor:pointer;letter-spacing:1px;transition:all .2s;
-}
-.quiz-submit:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(241,196,15,.3);}
-.quiz-feedback{
-  width:100%;background:var(--card2);border-radius:14px;padding:12px 16px;
-  font-size:.82rem;line-height:1.5;text-align:center;min-height:50px;
-  display:flex;align-items:center;justify-content:center;
-  border:1px solid var(--border);
-  transition:all .3s;
-}
-.quiz-feedback.correct{background:rgba(39,174,96,.12);border-color:rgba(39,174,96,.3);color:#2ecc71;}
-.quiz-feedback.wrong{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.3);color:#e74c3c;}
-.quiz-feedback b{color:inherit;}
-.quiz-next{
-  width:100%;padding:13px;background:var(--card2);border:1px solid var(--border);
-  border-radius:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-weight:600;
-  font-size:.85rem;cursor:pointer;transition:all .2s;display:none;
-}
-.quiz-next:hover{background:rgba(255,255,255,.07);}
-.quiz-skip{background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif;padding:2px 8px;transition:color .2s;}
-.quiz-skip:hover{color:var(--text);}
-.quiz-score{
-  background:var(--card);border:1px solid var(--border);border-radius:22px;
-  padding:28px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;
-}
-
-/* ====== FAQ SCREEN ====== */
-#screenFaq{background:var(--bg);overflow-y:auto;}
-.faq-body{padding:8px 14px 20px;display:flex;flex-direction:column;gap:4px;}
-.faq-item{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:4px;}
-.faq-q{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:.85rem;font-weight:500;transition:background .2s;gap:10px;}
-.faq-q:hover{background:rgba(255,255,255,.03);}
-.faq-q .fq-icon{color:var(--gold);flex-shrink:0;}
-.faq-a{display:none;padding:0 16px 14px;font-size:.78rem;color:var(--muted);line-height:1.65;border-top:1px solid var(--border);}
-.faq-a.open{display:block;}
-.faq-a b{color:var(--gold);}
-
-/* ====== MODAL WELCOME ====== */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(6px);}
-.modal{background:linear-gradient(145deg,#12121f,#1c1c30);border:1px solid rgba(241,196,15,.22);border-radius:26px;padding:34px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);}
-@keyframes popIn{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
-.m-av{width:66px;height:66px;background:linear-gradient(135deg,#f1c40f,#e67e22);border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:1.2rem;color:#000;box-shadow:0 0 35px rgba(241,196,15,.4);}
-.modal h2{font-family:'Orbitron',monospace;font-size:.9rem;letter-spacing:3px;color:var(--gold);margin-bottom:10px;}
-.modal p{font-size:.88rem;color:#bdc3c7;line-height:1.65;margin-bottom:22px;}
-.m-btn{padding:12px 38px;background:linear-gradient(135deg,#f1c40f,#e67e22);border:none;border-radius:30px;font-family:'Orbitron',monospace;font-weight:700;font-size:.8rem;letter-spacing:2px;color:#000;cursor:pointer;box-shadow:0 8px 24px rgba(241,196,15,.3);transition:all .2s;}
-.m-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(241,196,15,.4);}
-
-/* Typing dots */
-.typing{display:inline-flex;gap:4px;align-items:center;}
-.typing span{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:tdot 1.2s infinite;}
-.typing span:nth-child(2){animation-delay:.2s;}
-.typing span:nth-child(3){animation-delay:.4s;}
-@keyframes tdot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
-
-/* Scrollbar */
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-thumb{background:rgba(241,196,15,.15);border-radius:3px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;width:100%;overflow:hidden;background:#000;font-family:'Rajdhani',sans-serif;}
+:root{--acc:#00e5ff;--acc2:#7c3aed;--bg:#080c14;--card:#0d1117;--tx:#e8f4ff;--sub:#6b7a99;--bdr:#1e2a3a;--btn:#0f1922;--dsp:#050a10;}
+body.light{--bg:#f0f4f8;--card:#fff;--tx:#0f172a;--sub:#64748b;--bdr:#e2e8f0;--btn:#e8eef8;--dsp:#dde6f5;}
+#shell{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;}
+#phone{width:100%;max-width:420px;height:100%;max-height:100vh;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;}
+@media(min-width:440px){#phone{max-height:900px;border-radius:36px;border:2px solid rgba(0,229,255,.25);box-shadow:0 0 80px rgba(0,229,255,.2);}}
+/* TOPBAR */
+#topbar{flex-shrink:0;background:var(--card);border-bottom:1px solid var(--bdr);padding:12px 16px 10px;display:flex;align-items:center;gap:8px;z-index:20;}
+#tb-l{display:flex;align-items:center;gap:6px;min-width:80px;}
+#tb-t{flex:1;text-align:center;font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--tx);letter-spacing:1px;}
+#tb-r{min-width:80px;text-align:right;}
+.bk{background:none;border:none;color:var(--acc);font-size:14px;font-family:'Rajdhani',sans-serif;font-weight:700;cursor:pointer;padding:4px 0;}
+/* SCREENS */
+#screens{flex:1;overflow:hidden;position:relative;}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg);}
+.scr.on{display:flex;}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{width:3px;}
+.scroll::-webkit-scrollbar-thumb{background:var(--acc);border-radius:2px;}
+/* BOTTOM NAV */
+#bnav{flex-shrink:0;background:var(--card);border-top:1px solid var(--bdr);display:flex;}
+.nb{flex:1;padding:10px 0 8px;background:transparent;border:none;border-top:3px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.nb.on{border-top-color:var(--acc);}
+.nb em{font-size:20px;font-style:normal;}
+.nb span{font-size:9px;font-family:'Orbitron',monospace;font-weight:700;color:var(--sub);letter-spacing:.5px;}
+.nb.on span{color:var(--acc);}
+/* CALC */
+.ai-tog{margin:12px 14px 0;display:flex;border-radius:30px;overflow:hidden;border:2px solid var(--acc);background:var(--btn);}
+.ai-tog button{flex:1;padding:9px 0;border:none;cursor:pointer;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:1px;background:transparent;color:var(--sub);transition:all .3s;}
+.ai-tog button.on{background:var(--acc);color:#000;}
+.c-disp{margin:10px 14px 0;background:var(--dsp);border-radius:14px;padding:14px 18px;min-height:100px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid var(--bdr);box-shadow:0 0 20px rgba(0,229,255,.08);position:relative;overflow:hidden;}
+.c-disp::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);}
+.c-expr{font-family:'Share Tech Mono',monospace;color:var(--sub);font-size:13px;min-height:18px;text-align:right;word-break:break-all;}
+.c-res{font-family:'Share Tech Mono',monospace;color:var(--tx);font-size:42px;font-weight:700;text-align:right;line-height:1.1;word-break:break-all;}
+.c-badge{font-size:10px;color:var(--acc);text-align:right;margin-top:4px;font-family:'Orbitron',monospace;font-weight:700;display:none;}
+.ai-box{margin:8px 14px 0;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.25);border-radius:14px;padding:12px 14px;display:none;}
+.ai-box.on{display:block;}
+.ai-lbl{font-size:10px;color:var(--acc);font-family:'Orbitron',monospace;font-weight:700;letter-spacing:1px;margin-bottom:6px;}
+.ai-txt{font-size:13px;color:var(--tx);line-height:1.6;}
+.btn-grid{margin:10px 14px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.cb{padding:18px 0;border:none;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;transition:transform .1s;color:var(--tx);background:var(--btn);border-radius:12px;}
+.cb:active{transform:scale(.92);}
+.cb.eq{background:var(--acc);color:#000;box-shadow:0 4px 20px rgba(0,229,255,.4);}
+.cb.w2{grid-column:span 2;}
+.fab{margin:12px 14px 0;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;border-radius:30px;padding:13px 20px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 25px rgba(0,229,255,.35);width:100%;}
+.fab:active{transform:scale(.97);}
+.fab-t{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#000;letter-spacing:1px;}
+.fab-s{color:rgba(0,0,0,.6);font-size:10px;}
+/* CHAT */
+.ch-hdr{flex-shrink:0;padding:12px 16px;background:rgba(0,229,255,.04);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;}
+.ch-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 0 20px rgba(0,229,255,.4);}
+.ch-name{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--tx);}
+.ch-st{font-size:11px;color:var(--acc);font-weight:600;}
+.nc-btn{margin-left:auto;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);border-radius:8px;padding:6px 12px;color:var(--acc);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;font-weight:700;white-space:nowrap;}
+.sg-wrap{flex-shrink:0;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);}
+.sg-lbl{font-size:10px;color:var(--acc);font-family:'Orbitron',monospace;font-weight:700;letter-spacing:.5px;margin-bottom:8px;}
+.sg-row{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+.sg-row::-webkit-scrollbar{display:none;}
+.chip{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);border-radius:20px;padding:7px 14px;color:var(--tx);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Rajdhani',sans-serif;font-weight:600;flex-shrink:0;}
+.chip:active{background:rgba(0,229,255,.2);}
+/* MESSAGES */
+#cmsg{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;}
+#cmsg::-webkit-scrollbar{width:3px;}
+#cmsg::-webkit-scrollbar-thumb{background:var(--acc);}
+.mb{width:100%;padding:14px 16px;border-bottom:1px solid var(--bdr);animation:fu .2s ease;}
+.mb.ai{background:var(--card);}
+.mb.usr{background:rgba(0,229,255,.03);}
+@keyframes fu{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.mm{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.mav.ai{background:linear-gradient(135deg,var(--acc),var(--acc2));}
+.mav.usr{background:rgba(124,58,237,.3);font-size:10px;font-weight:800;color:#a78bfa;}
+.mwho{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;}
+.mwho.ai{color:var(--acc);}
+.mwho.usr{color:#a78bfa;}
+.mtime{font-size:10px;color:var(--sub);margin-left:auto;}
+.mtxt{font-size:14px;color:var(--tx);line-height:1.65;padding-left:36px;white-space:pre-wrap;word-break:break-word;}
+.mtxt.usr{color:#c7d2fe;}
+/* THINKING */
+#thinking{padding:14px 16px;background:var(--card);border-bottom:1px solid var(--bdr);display:none;flex-direction:column;gap:8px;}
+#thinking.on{display:flex;}
+.think-m{display:flex;align-items:center;gap:8px;}
+.dots{display:flex;gap:5px;align-items:center;padding-left:36px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--acc);opacity:.3;animation:pu 1.2s ease-in-out infinite;}
+.dot:nth-child(2){animation-delay:.2s;}.dot:nth-child(3){animation-delay:.4s;}
+@keyframes pu{0%,100%{opacity:.2;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+/* CHAT INPUT */
+.ci-wrap{flex-shrink:0;padding:10px 14px;background:var(--card);border-top:1px solid var(--bdr);display:flex;align-items:flex-end;gap:10px;}
+#cinput{flex:1;background:var(--btn);border:1px solid var(--bdr);border-radius:22px;padding:11px 16px;color:var(--tx);font-size:14px;font-family:'Rajdhani',sans-serif;outline:none;resize:none;max-height:120px;line-height:1.4;transition:border-color .2s;-webkit-appearance:none;}
+#cinput:focus{border-color:var(--acc);}
+#sndbtn{width:44px;height:44px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;color:#000;font-weight:900;box-shadow:0 4px 15px rgba(0,229,255,.4);}
+#sndbtn:active{transform:scale(.9);}
+/* SETTINGS */
+.sh{margin:16px 14px 0;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:20px;padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 8px 30px rgba(0,229,255,.35);}
+.sh:active{transform:scale(.98);}
+.si{margin:10px 14px 0;background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;}
+.si:active{background:rgba(255,255,255,.05);}
+.sl{color:var(--tx);font-weight:700;font-size:15px;}
+.ss{color:var(--sub);font-size:12px;margin-top:2px;}
+.tog{width:52px;height:28px;border-radius:14px;background:#333;border:none;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;}
+.tog.on{background:var(--acc);}
+.tog-d{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .3s;}
+.tog.on .tog-d{left:27px;}
+/* THEMES */
+.tg{margin:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.tc{border-radius:16px;padding:14px;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative;overflow:hidden;}
+.tc.sel{box-shadow:0 0 0 3px var(--acc);}
+.tcb{display:flex;gap:5px;margin-bottom:8px;}
+.tbp{flex:1;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.tnm{font-size:12px;font-weight:800;}
+.tck{position:absolute;top:8px;right:8px;background:var(--acc);color:#000;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+/* HISTORY */
+.hem{text-align:center;padding:60px 20px;}
+.hi{margin:10px 14px 0;background:var(--card);border-left:4px solid var(--acc);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.hex{font-family:'Share Tech Mono',monospace;color:var(--tx);font-size:13px;word-break:break-all;}
+.clr{margin:14px;width:calc(100% - 28px);background:rgba(225,29,72,.1);border:1px solid rgba(225,29,72,.4);border-radius:14px;padding:14px;color:#f87171;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;}
+/* QUIZ */
+.qpr{height:4px;background:var(--bdr);border-radius:2px;margin:0 14px;}
+.qpf{height:100%;background:var(--acc);border-radius:2px;transition:width .5s;}
+.qcard{margin:12px 14px 0;background:rgba(0,229,255,.04);border:1px solid var(--bdr);border-radius:20px;padding:22px 18px;}
+.qdiff{display:inline-block;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:800;font-family:'Orbitron',monospace;letter-spacing:.5px;margin-bottom:12px;}
+.qq{font-size:22px;font-weight:700;color:var(--tx);line-height:1.3;}
+.qrow{margin:12px 14px 0;display:flex;gap:10px;}
+.qinp{flex:1;background:var(--btn);border:1px solid var(--bdr);border-radius:14px;padding:14px 16px;color:var(--tx);font-size:18px;font-family:'Share Tech Mono',monospace;outline:none;-webkit-appearance:none;transition:border-color .2s;}
+.qinp:focus{border-color:var(--acc);}
+.qsub{background:var(--acc);border:none;border-radius:14px;padding:0 22px;color:#000;font-size:20px;font-weight:800;cursor:pointer;}
+.qfb{margin:10px 14px 0;border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;text-align:center;display:none;}
+.qfb.on{display:block;}
+.qfb.ok{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+.qfb.no{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.3);}
+/* ABOUT */
+.alogo{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 16px;box-shadow:0 0 40px rgba(0,229,255,.5);}
+.af{margin:0 14px 10px;background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="shell"><div id="phone">
 
-  <!-- ========== WELCOME MODAL ========== -->
-  <div class="overlay" id="welcomeOverlay">
-    <div class="modal">
-      <div class="m-av">T</div>
-      <h2>Tallen AI</h2>
-      <p>Hey 👋 there 😊<br>Should we begin our calculations?<br>You can start calculating!</p>
-      <button class="m-btn" onclick="startApp()">Okay ✓</button>
-    </div>
+  <div id="topbar">
+    <div id="tb-l"><span style="font-size:20px;">💠</span><span style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--tx);margin-left:4px;">TALLEN AI</span></div>
+    <div id="tb-t">CALCULATOR</div>
+    <div id="tb-r"></div>
   </div>
 
-  <!-- ========== MAIN CALC SCREEN ========== -->
-  <div class="screen" id="screenMain">
-    <div class="hdr">
-      <div style="font-family:'Orbitron',monospace;font-size:.8rem;letter-spacing:4px;background:linear-gradient(135deg,#f1c40f,#e67e22);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;">TALLEN AI</div>
-      <div style="display:flex;gap:8px;">
-        <button class="icon-btn" onclick="showHistory()" title="Chat History">💬</button>
-        <button class="icon-btn" onclick="showScreen('screenSettings')" title="Settings">⚙️</button>
+  <div id="screens">
+
+    <!-- MAIN CALC -->
+    <div class="scr on" id="scr-main">
+      <div class="scroll" style="padding-bottom:16px;">
+        <div class="ai-tog">
+          <button id="btn-norm" class="on" onclick="setAI(false)">NORMAL</button>
+          <button id="btn-ai" onclick="setAI(true)">💠 SOLVE WITH AI</button>
+        </div>
+        <div class="c-disp" id="c-disp">
+          <div class="c-expr" id="c-expr"></div>
+          <div class="c-res" id="c-res">0</div>
+          <div class="c-badge" id="c-badge">💠 Tallen AI Mode Active</div>
+        </div>
+        <div class="ai-box" id="ai-box"><div class="ai-lbl">💠 TALLEN AI EXPLAINS</div><div class="ai-txt" id="ai-txt"></div></div>
+        <div class="btn-grid" id="btn-grid"></div>
+        <div style="margin:12px 14px 0;">
+          <button class="fab" onclick="go('chat')">
+            <span style="font-size:22px;">💠</span>
+            <div><div class="fab-t">TALLEN AI</div><div class="fab-s">Chat · Ask anything · Math help</div></div>
+          </button>
+        </div>
+        <div style="height:16px;"></div>
       </div>
     </div>
 
-    <div class="display">
-      <div id="modePill" class="mode-pill ai"><span class="mode-dot"></span><span>AI Mode</span></div>
-      <div class="expr-line" id="exprLine">&nbsp;</div>
-      <div class="main-num" id="mainNum">0</div>
-    </div>
-
-    <div class="ai-result-strip" id="aiStrip">
-      <div class="ta">T</div>
-      <div class="ta-text" id="aiStripText">Ready to calculate! Try something 😊</div>
-    </div>
-
-    <div class="mode-toggle">
-      <button class="mt-btn active-ai" id="mtAI" onclick="setMode('ai')">🤖 Tallen AI</button>
-      <button class="mt-btn" id="mtNormal" onclick="setMode('normal')">⚡ Normal</button>
-    </div>
-
-    <div class="keypad">
-      <button class="btn btn-clr" onclick="pressClear()">C</button>
-      <button class="btn btn-op"  onclick="pressOp('%')">%</button>
-      <button class="btn btn-op"  onclick="pressOp('/')">÷</button>
-      <button class="btn btn-op"  onclick="pressOp('*')">×</button>
-
-      <button class="btn btn-num" onclick="pressNum('7')">7</button>
-      <button class="btn btn-num" onclick="pressNum('8')">8</button>
-      <button class="btn btn-num" onclick="pressNum('9')">9</button>
-      <button class="btn btn-op"  onclick="pressOp('-')">−</button>
-
-      <button class="btn btn-num" onclick="pressNum('4')">4</button>
-      <button class="btn btn-num" onclick="pressNum('5')">5</button>
-      <button class="btn btn-num" onclick="pressNum('6')">6</button>
-      <button class="btn btn-op"  onclick="pressOp('+')">+</button>
-
-      <button class="btn btn-num" onclick="pressNum('1')">1</button>
-      <button class="btn btn-num" onclick="pressNum('2')">2</button>
-      <button class="btn btn-num" onclick="pressNum('3')">3</button>
-      <button class="btn btn-del" onclick="pressBack()">⌫</button>
-
-      <button class="btn btn-num btn-zero" onclick="pressNum('0')">0</button>
-      <button class="btn btn-num" onclick="pressDot()">.</button>
-      <button class="btn btn-eq"  onclick="pressEqual()">=</button>
-    </div>
-  </div>
-
-  <!-- ========== SETTINGS SCREEN ========== -->
-  <div class="screen hidden" id="screenSettings">
-    <div class="hdr">
-      <button class="icon-btn" onclick="goBack('screenMain')">← </button>
-      <div class="hdr-title">Settings</div>
-      <div style="width:36px;"></div>
-    </div>
-    <div class="settings-body">
-      <div class="s-section">
-        <div class="s-label">Features</div>
-        <div class="s-row" onclick="showScreen('screenHistory')">
-          <div class="s-row-left">
-            <div class="s-icon" style="background:rgba(241,196,15,.1);">💬</div>
-            <div><div class="s-name">AI Chat History</div><div class="s-sub">View all previous calculations</div></div>
+    <!-- CHAT -->
+    <div class="scr" id="scr-chat">
+      <div class="ch-hdr">
+        <div class="ch-av">💠</div>
+        <div><div class="ch-name">TALLEN AI</div><div class="ch-st">● Online · By Henry Tallen</div></div>
+        <button class="nc-btn" onclick="newChat()">NEW CHAT</button>
+      </div>
+      <div class="sg-wrap" id="sg-wrap">
+        <div class="sg-lbl">💡 QUICK SUGGESTIONS</div>
+        <div class="sg-row" id="sg-row"></div>
+      </div>
+      <div id="cmsg">
+        <div id="thinking">
+          <div class="think-m">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:14px;">💠</div>
+            <span style="font-size:10px;color:var(--acc);font-family:'Orbitron',monospace;font-weight:700;margin-left:8px;">TALLEN AI</span>
           </div>
-          <span class="s-arrow">›</span>
-        </div>
-        <div class="s-row" onclick="showScreen('screenQuiz')">
-          <div class="s-row-left">
-            <div class="s-icon" style="background:rgba(46,204,113,.1);">🧠</div>
-            <div><div class="s-name">Math Quiz</div><div class="s-sub">Test yourself with 500 questions</div></div>
-          </div>
-          <span class="s-arrow">›</span>
-        </div>
-        <div class="s-row" onclick="showScreen('screenFaq')">
-          <div class="s-row-left">
-            <div class="s-icon" style="background:rgba(52,152,219,.1);">❓</div>
-            <div><div class="s-name">About Calculator</div><div class="s-sub">10 Q&amp;As about Tallen AI</div></div>
-          </div>
-          <span class="s-arrow">›</span>
+          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
         </div>
       </div>
-
-      <div class="s-section">
-        <div class="s-label">Button Color Theme</div>
-        <div class="color-grid" id="colorGrid"></div>
+      <div class="ci-wrap">
+        <textarea id="cinput" rows="1" placeholder="Ask Tallen AI anything..." autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"></textarea>
+        <button id="sndbtn" type="button">&#10148;</button>
       </div>
+    </div>
 
-      <div class="s-section">
-        <div class="s-label">About</div>
-        <div class="s-row" style="cursor:default;">
-          <div class="s-row-left">
-            <div class="s-icon" style="background:rgba(241,196,15,.1);">✨</div>
-            <div><div class="s-name">Tallen AI Calculator</div><div class="s-sub">v2.0 · Made with ❤️ by Tallen</div></div>
-          </div>
+    <!-- SETTINGS -->
+    <div class="scr" id="scr-settings">
+      <div class="scroll" style="padding-bottom:20px;">
+        <div class="sh" onclick="go('chat')">
+          <span style="font-size:36px;">💠</span>
+          <div style="flex:1;"><div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#000;letter-spacing:.5px;">CHAT WITH TALLEN AI</div><div style="font-size:12px;color:rgba(0,0,0,.7);margin-top:3px;">Math help · App guide · Explanations</div></div>
+          <span style="font-size:22px;color:rgba(0,0,0,.4);">&#8250;</span>
+        </div>
+        <div class="si" onclick="go('themes')">
+          <span style="font-size:24px;">🎨</span>
+          <div style="flex:1;"><div class="sl">Calculator Style</div><div class="ss" id="theme-lbl">Classic Cyber</div></div>
+          <span style="color:var(--sub);font-size:20px;margin-left:auto;">&#8250;</span>
+        </div>
+        <div class="si" onclick="go('history')">
+          <span style="font-size:24px;">📜</span>
+          <div style="flex:1;"><div class="sl">Calculation History</div><div class="ss" id="hist-lbl">0 calculations</div></div>
+          <span style="color:var(--sub);font-size:20px;margin-left:auto;">&#8250;</span>
+        </div>
+        <div class="si" onclick="go('quiz')">
+          <span style="font-size:24px;">🎯</span>
+          <div style="flex:1;"><div class="sl">Math Quiz</div><div class="ss">50 questions · Easy to Expert</div></div>
+          <span style="color:var(--sub);font-size:20px;margin-left:auto;">&#8250;</span>
+        </div>
+        <div class="si" onclick="go('about')">
+          <span style="font-size:24px;">ℹ️</span>
+          <div style="flex:1;"><div class="sl">About App</div><div class="ss">Tallen AI Calculator v2.0 Pro</div></div>
+          <span style="color:var(--sub);font-size:20px;margin-left:auto;">&#8250;</span>
+        </div>
+        <div class="si" style="cursor:default;">
+          <span style="font-size:24px;" id="dm-ico">🌙</span>
+          <div style="flex:1;"><div class="sl">Dark Mode</div><div class="ss" id="dm-lbl">Currently dark</div></div>
+          <button class="tog on" id="dm-tog" onclick="toggleDM()"><div class="tog-d"></div></button>
+        </div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- THEMES -->
+    <div class="scr" id="scr-themes">
+      <div class="scroll" style="padding-bottom:20px;">
+        <div style="padding:12px 14px 4px;color:var(--sub);font-size:12px;">20 unique styles — tap to apply instantly</div>
+        <div class="tg" id="tg"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="scr" id="scr-history">
+      <div class="scroll" style="padding-bottom:20px;" id="hist-list"></div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="scr" id="scr-quiz">
+      <div class="scroll" style="padding-bottom:20px;" id="quiz-wrap"></div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="scr" id="scr-about">
+      <div class="scroll" style="padding-bottom:20px;">
+        <div style="text-align:center;padding:30px 20px 16px;">
+          <div class="alogo">💠</div>
+          <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--tx);">TALLEN AI</div>
+          <div style="color:var(--acc);font-size:12px;margin-top:4px;font-family:'Orbitron',monospace;">CALCULATOR · v2.0 PRO</div>
+          <div style="color:var(--sub);font-size:13px;margin-top:8px;">Created by Henry Tallen</div>
+        </div>
+        <div class="af"><span style="font-size:22px;flex-shrink:0;margin-top:2px;">💠</span><div><div style="color:var(--tx);font-weight:700;font-size:14px;">Tallen AI Engine</div><div style="color:var(--sub);font-size:12px;margin-top:2px;">Explains every calculation with real-world examples and step-by-step reasoning</div></div></div>
+        <div class="af"><span style="font-size:22px;flex-shrink:0;margin-top:2px;">🎨</span><div><div style="color:var(--tx);font-weight:700;font-size:14px;">20 Unique Themes</div><div style="color:var(--sub);font-size:12px;margin-top:2px;">From Classic Cyber to Blood Moon — 20 completely different calculator designs</div></div></div>
+        <div class="af"><span style="font-size:22px;flex-shrink:0;margin-top:2px;">🎯</span><div><div style="color:var(--tx);font-weight:700;font-size:14px;">50-Question Math Quiz</div><div style="color:var(--sub);font-size:12px;margin-top:2px;">Easy to expert difficulty with live scoring and Tallen AI feedback</div></div></div>
+        <div class="af"><span style="font-size:22px;flex-shrink:0;margin-top:2px;">📜</span><div><div style="color:var(--tx);font-weight:700;font-size:14px;">Full Calculation History</div><div style="color:var(--sub);font-size:12px;margin-top:2px;">Every calculation saved. Ask Tallen AI to recap anytime</div></div></div>
+        <div class="af"><span style="font-size:22px;flex-shrink:0;margin-top:2px;">🧠</span><div><div style="color:var(--tx);font-weight:700;font-size:14px;">Massive Math Knowledge</div><div style="color:var(--sub);font-size:12px;margin-top:2px;">Thousands of formulas, rules and explanations built into Tallen AI</div></div></div>
+        <div style="text-align:center;padding:20px;color:var(--sub);font-size:12px;line-height:1.9;">
+          © 2024 Henry Tallen. All rights reserved.<br>
+          Tallen AI Calculator — Math made meaningful.<br>
+          <span style="color:var(--acc);">💠 Built with intelligence and passion.</span>
         </div>
       </div>
     </div>
+
+  </div><!-- /screens -->
+
+  <div id="bnav">
+    <button class="nb on" id="nb-main" onclick="go('main')"><em>⌨️</em><span>CALC</span></button>
+    <button class="nb" id="nb-history" onclick="go('history')"><em>📜</em><span>HISTORY</span></button>
+    <button class="nb" id="nb-settings" onclick="go('settings')"><em>⚙️</em><span>SETTINGS</span></button>
   </div>
 
-  <!-- ========== HISTORY SCREEN ========== -->
-  <div class="screen hidden" id="screenHistory">
-    <div class="hdr">
-      <button class="icon-btn" onclick="goBack('screenSettings')">←</button>
-      <div class="hdr-title">Chat History</div>
-      <button class="icon-btn" onclick="clearHistory()" title="Clear history">🗑</button>
-    </div>
-    <div class="chat-body" id="historyBody">
-      <div class="empty-chat" id="historyEmpty">
-        <div class="big">💬</div>
-        <p>No calculations yet.<br>Start calculating and Tallen AI will record your history here.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== QUIZ SCREEN ========== -->
-  <div class="screen hidden" id="screenQuiz">
-    <div class="hdr">
-      <button class="icon-btn" onclick="goBack('screenSettings');stopQuiz()">←</button>
-      <div class="hdr-title">Math Quiz</div>
-      <div style="font-size:.72rem;color:var(--muted);padding:4px 8px;" id="quizScoreLabel">Score: 0</div>
-    </div>
-    <div class="quiz-body">
-      <div class="quiz-progress"><div class="quiz-bar" id="quizBar" style="width:0%"></div></div>
-      <div class="quiz-stats"><span id="qNum">Question 1 / 500</span><span id="qStreak">🔥 0 streak</span></div>
-      <div class="quiz-card" id="quizCard">
-        <div class="quiz-difficulty easy" id="qDiff">Easy</div>
-        <div class="quiz-question" id="qText">Loading...</div>
-        <div class="quiz-sub" id="qSub">Think carefully 🤔</div>
-      </div>
-      <div class="quiz-input-row">
-        <input class="quiz-input" id="quizInput" type="number" inputmode="numeric" placeholder="Your answer..." onkeydown="if(event.key==='Enter')checkAnswer()">
-        <button class="quiz-submit" onclick="checkAnswer()">GO</button>
-      </div>
-      <div class="quiz-feedback" id="quizFeedback">Tallen AI is watching... 👀</div>
-      <button class="quiz-next" id="quizNext" onclick="nextQuestion()">Next Question →</button>
-      <button class="quiz-skip" onclick="skipQuestion()">Skip this question</button>
-    </div>
-  </div>
-
-  <!-- ========== FAQ SCREEN ========== -->
-  <div class="screen hidden" id="screenFaq">
-    <div class="hdr">
-      <button class="icon-btn" onclick="goBack('screenSettings')">←</button>
-      <div class="hdr-title">About Calculator</div>
-      <div style="width:36px;"></div>
-    </div>
-    <div class="faq-body" id="faqBody"></div>
-  </div>
-
-</div><!-- /app -->
+</div></div>
 
 <script>
-// ============================================================
-// STATE
-// ============================================================
-let display = '0';
-let operator = '';
-let prevVal = null;
-let justEvaled = false;
-let aiMode = true;
-let calcHistory = []; // {expr, result, aiMsg}
-let currentScreen = 'screenMain';
+// ── SAFE HELPERS ──────────────────────────────
+function el(id){ return document.getElementById(id); }
+function setTxt(id,v){ var e=el(id); if(e) e.textContent=v; }
+function setCls(id,c){ var e=el(id); if(e) e.className=c; }
+function setSt(id,p,v){ var e=el(id); if(e) e.style[p]=v; }
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function nowT(){ return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 
-// ============================================================
-// WELCOME
-// ============================================================
-function startApp() {
-  document.getElementById('welcomeOverlay').style.display = 'none';
-  setTimeout(()=>setAiStrip("Great, start your maths here 😊 I'm <b>Tallen AI</b>!"), 200);
-}
+// ── STATE ─────────────────────────────────────
+var S={ screen:'main', dark:true, theme:0, disp:'0', expr:'', aiOn:false, hist:[], suggsOn:true, quickQ:null, qIdx:0, qScore:0, qDone:false };
 
-// ============================================================
-// SCREEN NAVIGATION
-// ============================================================
-function showScreen(id) {
-  const prev = document.getElementById(currentScreen);
-  const next = document.getElementById(id);
-  prev.classList.add('slide-left');
-  next.classList.remove('hidden');
-  next.classList.remove('slide-left');
-  currentScreen = id;
-  if (id === 'screenHistory') renderHistory();
-  if (id === 'screenQuiz') initQuiz();
-  if (id === 'screenFaq') renderFaq();
-}
-function goBack(id) {
-  const prev = document.getElementById(currentScreen);
-  const next = document.getElementById(id);
-  prev.classList.add('hidden');
-  prev.classList.remove('slide-left');
-  next.classList.remove('slide-left');
-  next.classList.remove('hidden');
-  currentScreen = id;
-}
-function showHistory() {
-  showScreen('screenHistory');
-}
+// ── THEMES ────────────────────────────────────
+var TH=[
+  {n:'Classic Cyber',bg:'#080c14',btn:'#0f1922',acc:'#00e5ff',dsp:'#050a10',tx:'#e8f4ff',op:'rgba(0,229,255,.1)',opc:'#00e5ff',sp:'rgba(124,58,237,.15)',spc:'#a78bfa',sh:'12px'},
+  {n:'Neon Matrix',bg:'#000300',btn:'#001200',acc:'#00ff41',dsp:'#000200',tx:'#ccffcc',op:'rgba(0,255,65,.12)',opc:'#00ff41',sp:'rgba(0,200,0,.15)',spc:'#00cc00',sh:'0px'},
+  {n:'Solar Gold',bg:'#2c1810',btn:'#4a2c1a',acc:'#ffd700',dsp:'#1a0f00',tx:'#fff8dc',op:'rgba(255,215,0,.15)',opc:'#ffd700',sp:'rgba(180,120,0,.2)',spc:'#ffb300',sh:'14px'},
+  {n:'Ocean Deep',bg:'#001433',btn:'#002455',acc:'#00b4d8',dsp:'#000d22',tx:'#caf0f8',op:'rgba(0,180,216,.15)',opc:'#00b4d8',sp:'rgba(0,100,180,.2)',spc:'#90e0ef',sh:'999px'},
+  {n:'Retro 80s',bg:'#1a0033',btn:'#2d0055',acc:'#ff00ff',dsp:'#0d0022',tx:'#ffccff',op:'rgba(255,0,255,.15)',opc:'#ff00ff',sp:'rgba(180,0,180,.2)',spc:'#dd99ff',sh:'4px'},
+  {n:'Mint Fresh',bg:'#f0fff4',btn:'#c6f6d5',acc:'#38a169',dsp:'#e6ffed',tx:'#1a3a2a',op:'rgba(56,161,105,.15)',opc:'#38a169',sp:'rgba(0,128,80,.1)',spc:'#276749',sh:'16px'},
+  {n:'Volcanic Red',bg:'#1a0000',btn:'#3d0000',acc:'#ff4500',dsp:'#0d0000',tx:'#ffa07a',op:'rgba(255,69,0,.15)',opc:'#ff4500',sp:'rgba(180,20,0,.2)',spc:'#ff6347',sh:'8px'},
+  {n:'Arctic Ice',bg:'#e8f4fd',btn:'#bee3f8',acc:'#3182ce',dsp:'#f0f8ff',tx:'#1a365d',op:'rgba(49,130,206,.15)',opc:'#3182ce',sp:'rgba(0,80,180,.1)',spc:'#2b6cb0',sh:'20px'},
+  {n:'Legendary Purple',bg:'#0d0019',btn:'#1a0033',acc:'#7c3aed',dsp:'#080010',tx:'#ddd6fe',op:'rgba(124,58,237,.15)',opc:'#a78bfa',sp:'rgba(90,20,200,.15)',spc:'#c4b5fd',sh:'12px'},
+  {n:'Rose Gold',bg:'#fff0f3',btn:'#ffe4e8',acc:'#e11d48',dsp:'#fff5f7',tx:'#881337',op:'rgba(225,29,72,.12)',opc:'#e11d48',sp:'rgba(160,0,40,.1)',spc:'#9f1239',sh:'18px'},
+  {n:'Titanium Pro',bg:'#18191a',btn:'#2d2d2d',acc:'#a8a8a8',dsp:'#111',tx:'#e0e0e0',op:'rgba(168,168,168,.12)',opc:'#d0d0d0',sp:'rgba(120,120,120,.15)',spc:'#bbb',sh:'10px'},
+  {n:'Sunset Dusk',bg:'#1a0533',btn:'#2d0d4a',acc:'#f59e0b',dsp:'#100326',tx:'#fde68a',op:'rgba(245,158,11,.15)',opc:'#f59e0b',sp:'rgba(200,100,0,.15)',spc:'#fbbf24',sh:'14px'},
+  {n:'Old School',bg:'#2b2000',btn:'#3d2d00',acc:'#c8a800',dsp:'#1a1400',tx:'#fff5b3',op:'rgba(200,168,0,.15)',opc:'#c8a800',sp:'rgba(150,110,0,.15)',spc:'#e6c200',sh:'4px'},
+  {n:'Cherry Blossom',bg:'#fff1f9',btn:'#fce7f3',acc:'#db2777',dsp:'#fff8fc',tx:'#831843',op:'rgba(219,39,119,.12)',opc:'#db2777',sp:'rgba(160,0,80,.1)',spc:'#9d174d',sh:'24px'},
+  {n:'Deep Space',bg:'#030014',btn:'#0a0028',acc:'#6366f1',dsp:'#020010',tx:'#c7d2fe',op:'rgba(99,102,241,.15)',opc:'#818cf8',sp:'rgba(60,50,200,.15)',spc:'#a5b4fc',sh:'12px'},
+  {n:'Copper Steam',bg:'#1a0f00',btn:'#2d1900',acc:'#b87333',dsp:'#110a00',tx:'#daa520',op:'rgba(184,115,51,.15)',opc:'#b87333',sp:'rgba(130,70,0,.15)',spc:'#cd853f',sh:'4px'},
+  {n:'Glacial White',bg:'#f8faff',btn:'#e8eeff',acc:'#4f46e5',dsp:'#fff',tx:'#312e81',op:'rgba(79,70,229,.12)',opc:'#4f46e5',sp:'rgba(50,40,200,.1)',spc:'#3730a3',sh:'18px'},
+  {n:'Blood Moon',bg:'#1a0000',btn:'#2d0000',acc:'#dc143c',dsp:'#0d0000',tx:'#ffb3c1',op:'rgba(220,20,60,.15)',opc:'#dc143c',sp:'rgba(150,0,20,.15)',spc:'#ff3366',sh:'999px'},
+  {n:'Emerald City',bg:'#001a0d',btn:'#003319',acc:'#10b981',dsp:'#000d07',tx:'#a7f3d0',op:'rgba(16,185,129,.12)',opc:'#10b981',sp:'rgba(0,140,80,.15)',spc:'#34d399',sh:'12px'},
+  {n:'Midnight Luxe',bg:'#0a0014',btn:'#14002a',acc:'#e040fb',dsp:'#060010',tx:'#f0e0ff',op:'rgba(224,64,251,.12)',opc:'#e040fb',sp:'rgba(150,0,200,.15)',spc:'#ce93d8',sh:'16px'},
+];
 
-// ============================================================
-// MODE
-// ============================================================
-function setMode(m) {
-  aiMode = (m==='ai');
-  const pill = document.getElementById('modePill');
-  if (aiMode) {
-    pill.className='mode-pill ai'; pill.innerHTML='<span class="mode-dot"></span><span>AI Mode</span>';
-    document.getElementById('mtAI').className='mt-btn active-ai';
-    document.getElementById('mtNormal').className='mt-btn';
-    setAiStrip("🤖 <b>AI Mode</b> on! I'll explain every answer. 😊");
-  } else {
-    pill.className='mode-pill normal'; pill.innerHTML='<span class="mode-dot"></span><span>Normal</span>';
-    document.getElementById('mtNormal').className='mt-btn active-normal';
-    document.getElementById('mtAI').className='mt-btn';
-    setAiStrip("⚡ <b>Normal Mode</b> — fast, clean results.");
+// ── NAV ───────────────────────────────────────
+var TITLES={main:'CALCULATOR',chat:'TALLEN AI',settings:'SETTINGS',themes:'STYLES',history:'HISTORY',quiz:'QUIZ',about:'ABOUT'};
+var SUBS=['themes','history','quiz','about','chat'];
+
+function go(name){
+  document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on');});
+  var e=el('scr-'+name); if(e) e.classList.add('on');
+  S.screen=name;
+  setTxt('tb-t',TITLES[name]||'');
+  var tbl=el('tb-l');
+  if(tbl){
+    if(SUBS.indexOf(name)>=0){
+      tbl.innerHTML='<button class="bk" onclick="go(\'settings\')">&#8249; Back</button>';
+    } else {
+      tbl.innerHTML='<span style="font-size:20px;">💠</span><span style="font-family:\'Orbitron\',monospace;font-size:11px;font-weight:700;color:var(--tx);margin-left:4px;">TALLEN AI</span>';
+    }
   }
+  var bn=el('bnav'); if(bn) bn.style.display=(name==='chat')?'none':'flex';
+  ['main','history','settings'].forEach(function(n){ var b=el('nb-'+n); if(b) b.className='nb'+(n===name?' on':''); });
+  if(name==='history') renderHist();
+  if(name==='themes')  renderThemes();
+  if(name==='quiz')    renderQuiz();
+  if(name==='settings'){ setTxt('hist-lbl',S.hist.length+' calculation'+(S.hist.length!==1?'s':'')); }
 }
 
-// ============================================================
-// CALCULATOR
-// ============================================================
-function updateDisplay(v) { document.getElementById('mainNum').textContent = v; }
+// ── CALC BUTTONS ──────────────────────────────
+var BTNS=[{v:'C',c:'sp'},{v:'±',c:'sp'},{v:'%',c:'sp'},{v:'÷',c:'op'},{v:'7',c:''},{v:'8',c:''},{v:'9',c:''},{v:'×',c:'op'},{v:'4',c:''},{v:'5',c:''},{v:'6',c:''},{v:'-',c:'op'},{v:'1',c:''},{v:'2',c:''},{v:'3',c:''},{v:'+',c:'op'},{v:'0',c:'w2'},{v:'.',c:''},{v:'⌫',c:''},{v:'=',c:'eq'}];
 
-function pressNum(n) {
-  if (justEvaled) { display=''; justEvaled=false; }
-  display = (display==='0') ? n : display+n;
-  updateDisplay(display);
-}
-function pressDot() {
-  if (justEvaled) { display='0'; justEvaled=false; }
-  if (!display.includes('.')) display+='.';
-  updateDisplay(display);
-}
-function pressOp(op) {
-  justEvaled=false;
-  if (prevVal!==null && operator && display!=='') {
-    const r = calc(prevVal, parseFloat(display), operator);
-    prevVal=r; display=String(r); updateDisplay(display);
-  } else { prevVal=parseFloat(display); }
-  operator=op; display='';
-  const sym = opSym(op);
-  document.getElementById('exprLine').textContent = `${prevVal} ${sym}`;
-}
-function pressBack() {
-  if (display.length<=1) display='0';
-  else display=display.slice(0,-1);
-  updateDisplay(display);
-}
-
-function pressClear() {
-  display='0'; operator=''; prevVal=null; justEvaled=false;
-  updateDisplay('0');
-  document.getElementById('exprLine').textContent='\u00a0';
-  const msgs = [
-    "Yes! Do another calculation 😊",
-    "All clear! Let's go again 🚀",
-    "Ready for the next one! 🔢",
-    "Fresh start! What shall we solve? ✨",
-    "Cleared! Hit me with a new one 😄",
-    "All good! Next calculation? 💫",
-    "Clean slate! Type away 🧮",
-    "Done with that one — next? 🎯",
-  ];
-  setAiStrip(pickRandom(msgs));
-}
-
-function pressEqual() {
-  if (prevVal===null || operator==='' || display==='') return;
-  const a=prevVal, b=parseFloat(display), op=operator;
-  const result = calc(a,b,op);
-  const sym=opSym(op);
-  document.getElementById('exprLine').textContent=`${a} ${sym} ${b} =`;
-  updateDisplay(result);
-  display=String(result); prevVal=null; operator=''; justEvaled=true;
-
-  if (aiMode) {
-    const msg = getAiMsg(a,op,b,result);
-    setAiStrip(msg);
-    calcHistory.push({expr:`${a} ${sym} ${b}`, result, aiMsg:msg, ts:new Date()});
-  } else {
-    setAiStrip(`${a} ${sym} ${b} = <b>${result}</b>`);
-    calcHistory.push({expr:`${a} ${sym} ${b}`, result, aiMsg:`${a} ${sym} ${b} = <b>${result}</b>`, ts:new Date()});
-  }
-}
-
-function calc(a,b,op){
-  if(op==='+') return rnd(a+b);
-  if(op==='-') return rnd(a-b);
-  if(op==='*') return rnd(a*b);
-  if(op==='/') return b===0?'Error':rnd(a/b);
-  if(op==='%') return rnd(a*(b/100));
-  return b;
-}
-function rnd(n){ return typeof n!=='number'?n:Math.round(n*1e10)/1e10; }
-function opSym(op){ return{'+':'+','-':'−','*':'×','/':'÷','%':'%'}[op]||op; }
-
-// ============================================================
-// AI STRIP
-// ============================================================
-function setAiStrip(html) {
-  const el = document.getElementById('aiStripText');
-  el.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-  setTimeout(()=>{ el.innerHTML=html; }, 700);
-}
-
-// ============================================================
-// AI MESSAGES
-// ============================================================
-const aiAdd = (a,b,r) => [
-  `<b>${a}+${b}</b> = <b>${r}</b>. Take ${a}, add ${b} — together they make <b>${r}</b>! 🟢`,
-  `The answer is <b>${r}</b>! Adding ${a} and ${b} is like having ${a} slices and getting ${b} more — total: <b>${r}</b> 🍕`,
-  `<b>${r}</b>! You simply combined ${a} with ${b}. Easy win! ➕`,
-  `${a} plus ${b} gives <b>${r}</b>. Imagine ${a} stars, then ${b} more — boom, <b>${r}</b> stars! ⭐`,
-];
-const aiSub = (a,b,r) => [
-  `<b>${a}−${b}</b> = <b>${r}</b>. Start with ${a}, remove ${b}, and you're left with <b>${r}</b>. ➖`,
-  `The answer is <b>${r}</b>! Subtracting ${b} from ${a} tells us the gap between them. 📉`,
-  `<b>${r}</b>! You had ${a}, took away ${b}, now you have <b>${r}</b>. 🔵`,
-];
-const aiMul = (a,b,r) => [
-  `<b>${a}×${b}</b> = <b>${r}</b>. That's ${a} groups of ${b} — power move! ✖️`,
-  `Multiplying gives <b>${r}</b>! Think of ${b} added to itself ${a} times. 💪`,
-  `<b>${r}</b>! Multiplication is rapid addition — ${a} times ${b} = <b>${r}</b> ⚡`,
-];
-const aiDiv = (a,b,r) => [
-  `<b>${a}÷${b}</b> = <b>${r}</b>. Share ${a} equally among ${b} — each gets <b>${r}</b>. ➗`,
-  `The answer is <b>${r}</b>! Dividing breaks ${a} into ${b} equal parts. 🍰`,
-  `<b>${r}</b>! ${b} fits into ${a} exactly <b>${r}</b> times. 🔢`,
-];
-function getAiMsg(a,op,b,result) {
-  let pool;
-  if(op==='+') pool=aiAdd(a,b,result);
-  else if(op==='-') pool=aiSub(a,b,result);
-  else if(op==='*') pool=aiMul(a,b,result);
-  else if(op==='/') pool=aiDiv(a,b,result);
-  else pool=[`<b>${a}${opSym(op)}${b}</b> = <b>${result}</b>. Calculated! 🏆`];
-  const nxt=getNextSugg(op,result);
-  return pickRandom(pool)+`<br><span style="color:var(--muted);font-size:.73rem;">Continue with <b style="color:var(--gold)">${nxt}</b>?</span>`;
-}
-function getNextSugg(op,r){
-  const ops=['+','-','*','/'], sym={'+':'+','-':'−','*':'×','/':'÷'};
-  const o=pickRandom(ops), n=Math.floor(Math.random()*12)+1;
-  return `${r} ${sym[o]} ${n}`;
-}
-
-// ============================================================
-// HISTORY
-// ============================================================
-function renderHistory() {
-  const body = document.getElementById('historyBody');
-  const empty = document.getElementById('historyEmpty');
-  if (calcHistory.length===0) { empty.style.display='flex'; return; }
-  empty.style.display='none';
-  body.innerHTML='';
-  calcHistory.forEach(h=>{
-    const msg=document.createElement('div'); msg.className='ch-msg';
-    msg.innerHTML=`<div class="ch-av">T</div><div class="ch-bubble">${h.aiMsg}</div>`;
-    body.appendChild(msg);
+function buildBtns(){
+  var g=el('btn-grid'); if(!g) return;
+  g.innerHTML=''; var t=TH[S.theme];
+  BTNS.forEach(function(b){
+    var btn=document.createElement('button');
+    btn.className='cb '+b.c; btn.textContent=b.v; btn.type='button';
+    if(b.c==='eq'){btn.style.background=t.acc;btn.style.color='#000';btn.style.boxShadow='0 4px 20px '+t.acc+'55';}
+    else if(b.c==='op'){btn.style.background=t.op;btn.style.color=t.opc;}
+    else if(b.c==='sp'){btn.style.background=t.sp;btn.style.color=t.spc;}
+    else{btn.style.background=t.btn;btn.style.color=t.tx;}
+    btn.style.borderRadius=t.sh;
+    (function(v){ btn.addEventListener('click',function(){ cp(v); }); })(b.v);
+    g.appendChild(btn);
   });
-  body.scrollTop=body.scrollHeight;
-}
-function clearHistory() {
-  calcHistory=[];
-  document.getElementById('historyBody').innerHTML='<div class="empty-chat" id="historyEmpty"><div class="big">💬</div><p>No calculations yet.<br>Start calculating and history appears here.</p></div>';
+  document.documentElement.style.setProperty('--acc',t.acc);
 }
 
-// ============================================================
-// QUIZ — 500 QUESTIONS
-// ============================================================
-let quizQuestions=[], quizIdx=0, quizScore=0, quizStreak=0, quizAnswered=false;
+function setAI(on){
+  S.aiOn=on;
+  var n=el('btn-norm'),a=el('btn-ai'),b=el('c-badge'),x=el('ai-box');
+  if(n) n.className=on?'':'on';
+  if(a) a.className=on?'on':'';
+  if(b) b.style.display=on?'block':'none';
+  if(x&&!on) x.className='ai-box';
+}
 
-const correctReplies=[
-  "Great, you got it correct! 🎉","Niceee, you're too much — this is correct! 🔥","Ah yes, you're correct! 😎","Brilliant! That's spot on! ✨","Yes yes YES! Perfect answer! 🏆","You nailed it! I knew you could 💪","Absolutely correct! You're on fire! 🔥","Boom! Right answer! 💥","Wow, impressive! That's correct! 🌟","Genius! Totally right! 🧠","Perfecto! 100% correct! 🎯","You're crushing it! Correct! ⚡","Outstanding! That's the answer! 🏅","Right on the money! 💰","Excellent brain work! Correct! 🤩","Yassss! You got it! 🙌","Smart move! Absolutely correct! 📚","That's what I'm talking about! Correct! 🗣","Well well well, look who's smart! ✅","Top marks! That's right! 🥇","Incredible! You aced it! 🎊","Spot on, champion! 🏆","You're a math wizard! Correct! 🧙","Can't stop you! That's right! 🚀","Calculated and correct! Just like Tallen AI! 🤖","Oh wow, you really know your maths! ✅","Zero hesitation needed — you're right! 💯","A+ answer! Perfectly correct! 📝","You just made Tallen AI proud! 🙏","Unstoppable! Correct answer! 🌊",
-];
-const wrongReplies=[
-  "Oops! Not quite — the answer is <b>{a}</b>. Try again! 😅","Hmm, not this time! Correct is <b>{a}</b> 🤔","So close! But the answer is <b>{a}</b> 💭","Don't worry — the right answer is <b>{a}</b>. Keep going! 💪","Almost! The answer is actually <b>{a}</b> 😬","Math says <b>{a}</b> — let's keep practising! 📚","Tallen AI computed <b>{a}</b> — better luck next! 🤖","Not this one! Correct: <b>{a}</b>. You'll get the next! 🎯","The answer is <b>{a}</b> — but great effort! ✨","Incorrect, but that's okay! It's <b>{a}</b> 😊",
-];
+function upd(){
+  var r=el('c-res'); if(!r) return;
+  r.textContent=S.disp;
+  var l=S.disp.length; r.style.fontSize=l>12?'20px':l>9?'26px':l>6?'32px':'42px';
+  var ex=el('c-expr'); if(ex) ex.textContent=S.expr;
+}
 
-function genQuestions() {
-  const qs=[];
-  // EASY: single digit
-  for(let i=0;i<100;i++){
-    const a=ri(1,9),b=ri(1,9),ops=['+','-','*'];
-    const op=pickRandom(ops);
-    let ans,label='';
-    if(op==='+'){ans=a+b;label=`${a} + ${b}`;}
-    else if(op==='-'){const x=Math.max(a,b),y=Math.min(a,b);ans=x-y;label=`${x} - ${y}`;}
-    else{ans=a*b;label=`${a} × ${b}`;}
-    qs.push({q:`Solve: ${label} = ?`,ans,diff:'easy',hint:'Single digit'});
+function cp(v){
+  var ab=el('ai-box');
+  if(v==='C'){S.disp='0';S.expr='';if(ab)ab.className='ai-box';upd();return;}
+  if(v==='⌫'){S.disp=S.disp.length>1?S.disp.slice(0,-1):'0';upd();return;}
+  if(v==='='){
+    try{
+      var full=S.expr+S.disp;
+      var res=Function('"use strict";return('+full.replace(/×/g,'*').replace(/÷/g,'/')+')')();
+      var rs=Number.isInteger(res)?String(res):res.toFixed(10).replace(/\.?0+$/,'');
+      S.hist.push(full+' = '+rs);
+      if(S.aiOn){
+        var m2=full.match(/(\d+(?:\.\d+)?)\s*([+\-\u00d7\u00f7])\s*(\d+(?:\.\d+)?)$/);
+        if(m2){
+          var xt=el('ai-txt');
+          if(xt) xt.textContent=mkEx(parseFloat(m2[1]),m2[2],parseFloat(m2[3]),res);
+          if(ab) ab.className='ai-box on';
+        }
+      }
+      S.disp=rs; S.expr='';
+    }catch(e){S.disp='Error';S.expr='';}
+    upd();return;
   }
-  // MEDIUM: two digit
-  for(let i=0;i<200;i++){
-    const a=ri(10,99),b=ri(2,20),ops=['+','-','*','/'];
-    const op=pickRandom(ops);
-    let ans,label;
-    if(op==='+'){ans=a+b;label=`${a} + ${b}`;}
-    else if(op==='-'){ans=a-b;label=`${a} - ${b}`;}
-    else if(op==='*'){ans=a*b;label=`${a} × ${b}`;}
-    else{const m=ri(2,12),n=ri(1,12),product=m*n;ans=m;label=`${product} ÷ ${n}`;}
-    qs.push({q:`What is ${label}?`,ans,diff:'medium',hint:'Think carefully 🤔'});
-  }
-  // HARD: word problems & bigger numbers
-  const hardTemplates=[
-    ()=>{const a=ri(10,50),b=ri(10,50);return{q:`A shop has ${a} apples. ${b} are sold. How many remain?`,ans:a-b>=0?a-b:b-a,diff:'hard',hint:'Subtraction word problem'};},
-    ()=>{const a=ri(2,15),b=ri(2,15);return{q:`${a} rows of ${b} seats. Total seats?`,ans:a*b,diff:'hard',hint:'Multiplication'};},
-    ()=>{const tot=ri(20,100),n=ri(2,10);const each=Math.floor(tot/n);return{q:`${tot} sweets shared equally among ${n} children. Each gets?`,ans:each,diff:'hard',hint:'Division'};},
-    ()=>{const p=ri(50,500),pct=pickRandom([10,20,25,50]);const d=p*pct/100;return{q:`${pct}% of ${p} = ?`,ans:d,diff:'hard',hint:'Percentage'};},
-    ()=>{const a=ri(100,999),b=ri(10,99);return{q:`${a} + ${b} = ?`,ans:a+b,diff:'hard',hint:'Addition'};},
-    ()=>{const a=ri(100,500),b=ri(10,99);return{q:`${a} - ${b} = ?`,ans:a-b,diff:'hard',hint:'Subtraction'};},
-    ()=>{const a=ri(11,25),b=ri(11,25);return{q:`${a} × ${b} = ?`,ans:a*b,diff:'hard',hint:'Double digit multiplication'};},
-    ()=>{const sq=pickRandom([2,3,4,5,6,7,8,9,10,11,12]);return{q:`${sq}² (${sq} squared) = ?`,ans:sq*sq,diff:'hard',hint:'Squares'};},
-    ()=>{const a=ri(3,9),b=ri(3,9),c=ri(1,5);return{q:`(${a} + ${b}) × ${c} = ?`,ans:(a+b)*c,diff:'hard',hint:'Order of operations'};},
-  ];
-  for(let i=0;i<200;i++){
-    qs.push(hardTemplates[i%hardTemplates.length]());
-  }
-  // Shuffle
-  for(let i=qs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[qs[i],qs[j]]=[qs[j],qs[i]];}
-  return qs;
-}
-function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-
-function initQuiz(){
-  if(quizQuestions.length===0){quizQuestions=genQuestions();quizIdx=0;quizScore=0;quizStreak=0;}
-  renderQuestion();
-}
-function stopQuiz(){quizQuestions=[];quizIdx=0;quizScore=0;quizStreak=0;}
-
-function renderQuestion(){
-  if(quizIdx>=quizQuestions.length){showQuizEnd();return;}
-  quizAnswered=false;
-  const q=quizQuestions[quizIdx];
-  document.getElementById('qText').textContent=q.q;
-  document.getElementById('qDiff').textContent=q.diff.charAt(0).toUpperCase()+q.diff.slice(1);
-  document.getElementById('qDiff').className='quiz-difficulty '+q.diff;
-  document.getElementById('qSub').textContent=q.hint;
-  document.getElementById('qNum').textContent=`Question ${quizIdx+1} / ${quizQuestions.length}`;
-  document.getElementById('quizBar').style.width=`${(quizIdx/quizQuestions.length)*100}%`;
-  document.getElementById('quizInput').value='';
-  document.getElementById('quizInput').disabled=false;
-  document.getElementById('quizFeedback').textContent='Tallen AI is watching... 👀';
-  document.getElementById('quizFeedback').className='quiz-feedback';
-  document.getElementById('quizNext').style.display='none';
-  document.getElementById('quizInput').focus();
+  if('+-\u00d7\u00f7'.indexOf(v)>=0){S.expr=S.expr+S.disp+v;S.disp='0';upd();return;}
+  if(v==='.'){if(S.disp.indexOf('.')<0)S.disp+='.';upd();return;}
+  if(v==='%'){try{S.disp=String(parseFloat(S.disp)/100);}catch(e){S.disp='Error';}upd();return;}
+  if(v==='\u00b1'){S.disp=String(parseFloat(S.disp)*-1);upd();return;}
+  S.disp=S.disp==='0'?v:S.disp+v;
+  if(ab)ab.className='ai-box';
+  upd();
 }
 
-function checkAnswer(){
-  if(quizAnswered) return;
-  const val = document.getElementById('quizInput').value.trim();
-  if(val==='') return;
-  quizAnswered=true;
-  document.getElementById('quizInput').disabled=true;
-  const q=quizQuestions[quizIdx];
-  const userAns=parseFloat(val);
-  const correct = Math.abs(userAns - q.ans) < 0.01;
-  const fb=document.getElementById('quizFeedback');
-  if(correct){
-    quizScore++; quizStreak++;
-    fb.innerHTML=pickRandom(correctReplies);
-    fb.className='quiz-feedback correct';
-  } else {
-    quizStreak=0;
-    fb.innerHTML=pickRandom(wrongReplies).replace('{a}',`<b>${q.ans}</b>`);
-    fb.className='quiz-feedback wrong';
-  }
-  document.getElementById('quizScoreLabel').textContent=`Score: ${quizScore}`;
-  document.getElementById('qStreak').textContent=`🔥 ${quizStreak} streak`;
-  document.getElementById('quizNext').style.display='block';
+function mkEx(a,op,b,res){
+  var r=Number.isInteger(res)?res:parseFloat(res.toFixed(4));
+  var s={
+    '+':[a+' + '+b+' = '+r+'!\n\nImagine you have '+a+' coins and someone gives you '+b+' more — you now have '+r+' total. Addition combines two groups into one!',a+' + '+b+' = '+r+'! On a number line, start at '+a+', step forward '+b+' times — land on '+r+'. That is addition!'],
+    '-':[a+' - '+b+' = '+r+'!\n\nYou have '+a+' items and remove '+b+'. What remains? Exactly '+r+'! Subtraction takes away.',a+' minus '+b+' = '+r+'! Start at '+a+' on the number line, step back '+b+' — land on '+r+'.'],
+    '\u00d7':[a+' \u00d7 '+b+' = '+r+'!\n\nImagine '+a+' bags each with '+b+' items — '+a+' groups of '+b+' = '+r+' total. Multiplication is fast repeated addition!',a+' \u00d7 '+b+' = '+r+'! Picture a grid '+a+' wide and '+b+' tall — count every cell and you get '+r+'.'],
+    '\u00f7':[b===0?'Cannot divide by zero!':a+' \u00f7 '+b+' = '+r+'!\n\nShare '+a+' items among '+b+' people equally — each gets '+r+'. Division is fair sharing!',b===0?'Cannot divide by zero!':a+' \u00f7 '+b+' = '+r+'! How many times does '+b+' fit into '+a+'? Exactly '+r+' times!']
+  };
+  var arr=s[op]; if(!arr) return '= '+r;
+  return arr[Math.floor(Math.random()*arr.length)];
 }
 
-function nextQuestion(){ quizIdx++; renderQuestion(); }
-function skipQuestion(){ quizIdx++; quizStreak=0; document.getElementById('qStreak').textContent=`🔥 0 streak`; renderQuestion(); }
-
-function showQuizEnd(){
-  const card=document.getElementById('quizCard');
-  card.innerHTML=`
-    <div class="quiz-difficulty" style="background:rgba(241,196,15,.15);color:var(--gold);border-radius:20px;padding:3px 12px;font-size:.65rem;letter-spacing:2px;">QUIZ COMPLETE</div>
-    <div class="quiz-question" style="font-size:2rem;">🏆</div>
-    <div style="font-size:.95rem;font-weight:600;color:var(--text);">Final Score: ${quizScore}/${quizQuestions.length}</div>
-    <div style="font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5;">${quizScore>=400?'Outstanding! You\'re a math genius! 🧠':quizScore>=250?'Great work! Keep practising! 💪':'Keep going — practice makes perfect! 📚'}</div>
-    <button style="margin-top:8px;padding:10px 24px;background:linear-gradient(135deg,#f1c40f,#e67e22);border:none;border-radius:20px;font-family:'Orbitron',monospace;font-weight:700;font-size:.75rem;color:#000;cursor:pointer;letter-spacing:1px;" onclick="stopQuiz();initQuiz();">Play Again 🔄</button>
-  `;
-  document.getElementById('quizFeedback').style.display='none';
-  document.getElementById('quizNext').style.display='none';
-  document.getElementById('quizInput').style.display='none';
-  document.querySelector('.quiz-input-row').style.display='none';
-  document.querySelector('.quiz-skip').style.display='none';
-}
-
-// ============================================================
-// FAQ
-// ============================================================
-const faqs=[
-  {q:"Who made this calculator?",a:"This calculator was crafted by <b>Tallen</b> — a creative developer who wanted to make maths fun and personal. Tallen AI brings a smart personality to every calculation! 🧠"},
-  {q:"What is Tallen AI?",a:"<b>Tallen AI</b> is the smart assistant inside this calculator. It explains every calculation in a friendly, easy-to-understand way — like having your own maths tutor. 🤖"},
-  {q:"What does AI Mode do?",a:"In <b>AI Mode</b>, after every calculation Tallen AI gives you a friendly explanation of the result — how the numbers work and what it means. It makes learning natural! 📚"},
-  {q:"What is Normal Mode?",a:"<b>Normal Mode</b> gives you fast, clean answers without explanations. Perfect when you just need a quick result. ⚡"},
-  {q:"What is the Math Quiz?",a:"The <b>Math Quiz</b> has 500 questions — easy, medium, and hard. Tallen AI asks you to solve equations, and reacts to every answer with fun replies! 🎯"},
-  {q:"Can I change button colours?",a:"Yes! Head to <b>Settings → Button Color Theme</b> and choose from 8 stunning colours: Black, Gold, Gray, White, Blue, Red, Navy, and Purple. 🎨"},
-  {q:"Where is my calculation history?",a:"Every calculation is saved in <b>Settings → AI Chat History</b>. You can see all your previous calculations with Tallen AI's explanations! 💬"},
-  {q:"What operations are supported?",a:"Tallen AI Calculator supports <b>addition (+), subtraction (−), multiplication (×), division (÷), and percentages (%)</b>. Keyboard input works too! 🔢"},
-  {q:"Is this calculator free?",a:"Absolutely! <b>Tallen AI Calculator</b> is completely free. Tallen built it to make maths enjoyable and accessible for everyone. 🎁"},
-  {q:"What makes Tallen AI special?",a:"Most calculators only give numbers. <b>Tallen AI</b> gives you understanding. Every answer comes with an explanation, making maths feel like a conversation — not a chore! ✨"},
-];
-function renderFaq(){
-  const body=document.getElementById('faqBody');
-  if(body.children.length>0) return;
-  faqs.forEach((f,i)=>{
-    const item=document.createElement('div'); item.className='faq-item';
-    const q=document.createElement('div'); q.className='faq-q';
-    q.innerHTML=`<span style="color:var(--muted);font-size:.75rem;">0${i+1}</span><span style="flex:1;padding:0 8px;">${f.q}</span><span class="fq-icon" id="fqi${i}">▼</span>`;
-    const a=document.createElement('div'); a.className='faq-a'; a.id=`fqa${i}`; a.innerHTML=f.a;
-    q.onclick=()=>{
-      a.classList.toggle('open');
-      document.getElementById(`fqi${i}`).textContent=a.classList.contains('open')?'▲':'▼';
-    };
-    item.appendChild(q); item.appendChild(a); body.appendChild(item);
+// ── THEMES ────────────────────────────────────
+function renderThemes(){
+  var g=el('tg'); if(!g) return; g.innerHTML='';
+  TH.forEach(function(t,i){
+    var d=document.createElement('div');
+    d.className='tc'+(i===S.theme?' sel':''); d.style.background=t.bg;
+    if(i===S.theme) d.style.borderColor=t.acc;
+    d.innerHTML='<div class="tcb"><div class="tbp" style="background:'+t.btn+';color:'+t.tx+';border-radius:'+t.sh+'">7</div><div class="tbp" style="background:'+t.op+';color:'+t.opc+';border-radius:'+t.sh+'">+</div><div class="tbp" style="background:'+t.acc+';color:#000;border-radius:'+t.sh+'">=</div></div><div class="tnm" style="color:'+t.tx+'">'+t.n+'</div>'+(i===S.theme?'<div class="tck">\u2713</div>':'');
+    (function(idx){ d.addEventListener('click',function(){ pickTheme(idx); }); })(i);
+    g.appendChild(d);
   });
 }
 
-// ============================================================
-// COLOR THEMES
-// ============================================================
-const themes=[
-  {name:'Gold',   num:'#b8860b', eq:'#e67e22'},
-  {name:'Gray',   num:'#546e7a', eq:'#f39c12'},
-  {name:'White',  num:'#dce1e8', eq:'#e67e22'},
-  {name:'Blue',   num:'#1565c0', eq:'#f39c12'},
-  {name:'Red',    num:'#b71c1c', eq:'#f39c12'},
-  {name:'Navy',   num:'#0d2137', eq:'#f1c40f'},
-  {name:'Purple', num:'#6a1b9a', eq:'#f39c12'},
-  {name:'Black',  num:'#1c1c1c', eq:'#f39c12'},
+function pickTheme(i){
+  S.theme=i; buildBtns(); renderThemes(); setTxt('theme-lbl',TH[i].n);
+  var t=TH[i], cd=el('c-disp');
+  if(cd){ cd.style.background=t.dsp; }
+  document.documentElement.style.setProperty('--acc',t.acc);
+}
+
+// ── HISTORY ───────────────────────────────────
+function renderHist(){
+  var e=el('hist-list'); if(!e) return;
+  setTxt('hist-lbl',S.hist.length+' calculation'+(S.hist.length!==1?'s':''));
+  if(!S.hist.length){ e.innerHTML='<div class="hem"><div style="font-size:48px;">🔢</div><div style="color:var(--tx);font-size:16px;font-weight:700;margin-top:12px;">No calculations yet</div><div style="color:var(--sub);font-size:13px;margin-top:6px;">Use the main calculator first</div></div>'; return; }
+  var h='<div style="padding:12px 14px 4px;color:var(--sub);font-size:12px;">'+S.hist.length+' calculation'+(S.hist.length!==1?'s':'')+' recorded</div>';
+  S.hist.slice().reverse().forEach(function(x){ h+='<div class="hi"><span class="hex">'+esc(x)+'</span><span style="color:var(--acc);font-size:18px;flex-shrink:0;">📊</span></div>'; });
+  h+='<button class="clr" onclick="clrHist()">🗑\uFE0F CLEAR ALL HISTORY</button><div style="height:20px;"></div>';
+  e.innerHTML=h;
+}
+function clrHist(){ S.hist=[]; renderHist(); setTxt('hist-lbl','0 calculations'); }
+
+// ── DARK MODE ─────────────────────────────────
+function toggleDM(){
+  S.dark=!S.dark; document.body.className=S.dark?'':'light';
+  var t=el('dm-tog'); if(t) t.className='tog'+(S.dark?' on':'');
+  setTxt('dm-ico',S.dark?'🌙':'☀️'); setTxt('dm-lbl',S.dark?'Currently dark':'Currently light');
+}
+
+// ── QUIZ ──────────────────────────────────────
+var QQ=[
+  {q:'What is 2 + 2?',a:'4',d:'easy'},{q:'What is 5 + 3?',a:'8',d:'easy'},{q:'What is 10 - 4?',a:'6',d:'easy'},{q:'What is 3 \u00d7 3?',a:'9',d:'easy'},{q:'What is 8 \u00f7 2?',a:'4',d:'easy'},
+  {q:'What is 6 + 7?',a:'13',d:'easy'},{q:'What is 15 - 8?',a:'7',d:'easy'},{q:'What is 4 \u00d7 5?',a:'20',d:'easy'},{q:'What is 20 \u00f7 4?',a:'5',d:'easy'},{q:'What is 9 + 9?',a:'18',d:'easy'},
+  {q:'What is 12 \u00d7 12?',a:'144',d:'medium'},{q:'What is 7 \u00d7 8?',a:'56',d:'medium'},{q:'What is 36 \u00f7 6?',a:'6',d:'medium'},{q:'What is 25 + 37?',a:'62',d:'medium'},{q:'What is 100 - 43?',a:'57',d:'medium'},
+  {q:'What is 11 \u00d7 11?',a:'121',d:'medium'},{q:'What is 72 \u00f7 8?',a:'9',d:'medium'},{q:'What is 88 + 44?',a:'132',d:'medium'},{q:'What is 200 - 75?',a:'125',d:'medium'},{q:'What is 13 \u00d7 7?',a:'91',d:'medium'},
+  {q:'What is 144 \u00f7 12?',a:'12',d:'medium'},{q:'What is 56 + 78?',a:'134',d:'medium'},{q:'What is 300 - 157?',a:'143',d:'medium'},{q:'What is 15 \u00d7 15?',a:'225',d:'medium'},{q:'What is 256 \u00f7 16?',a:'16',d:'medium'},
+  {q:'What is 999 + 1?',a:'1000',d:'medium'},{q:'What is 500 - 234?',a:'266',d:'medium'},{q:'What is 23 \u00d7 12?',a:'276',d:'hard'},{q:'What is 625 \u00f7 25?',a:'25',d:'hard'},{q:'What is 347 + 689?',a:'1036',d:'hard'},
+  {q:'What is 1000 - 387?',a:'613',d:'hard'},{q:'What is 45 \u00d7 45?',a:'2025',d:'hard'},{q:'What is 1024 \u00f7 32?',a:'32',d:'hard'},{q:'What is 789 + 456?',a:'1245',d:'hard'},{q:'What is 2000 - 1337?',a:'663',d:'hard'},
+  {q:'What is 99 \u00d7 99?',a:'9801',d:'hard'},{q:'What is 4096 \u00f7 64?',a:'64',d:'hard'},{q:'What is 1234 + 5678?',a:'6912',d:'hard'},{q:'What is 5000 - 2468?',a:'2532',d:'hard'},{q:'What is 125 \u00d7 8?',a:'1000',d:'hard'},
+  {q:'What is 3600 \u00f7 45?',a:'80',d:'hard'},{q:'What is 875 + 125?',a:'1000',d:'hard'},{q:'What is 10000 - 4321?',a:'5679',d:'hard'},{q:'What is 37 \u00d7 43?',a:'1591',d:'hard'},{q:'What is 5040 \u00f7 7?',a:'720',d:'hard'},
+  {q:'What is 999 \u00d7 9?',a:'8991',d:'hard'},{q:'What is 7 squared?',a:'49',d:'hard'},{q:'What is \u221a144?',a:'12',d:'hard'},{q:'What is 2^10?',a:'1024',d:'hard'},{q:'What is 17 \u00d7 18?',a:'306',d:'hard'},
 ];
-function buildSwatches(){
-  const g=document.getElementById('colorGrid');
-  themes.forEach((t,i)=>{
-    const wrap=document.createElement('div');
-    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;';
-    const s=document.createElement('div');
-    s.className='c-swatch'+(i===0?' sel':'');
-    s.style.background=t.num;
-    s.onclick=()=>{
-      document.querySelectorAll('.c-swatch').forEach(x=>x.classList.remove('sel'));
-      s.classList.add('sel');
-      applyTheme(i);
-    };
-    const lbl=document.createElement('div'); lbl.className='c-name'; lbl.textContent=t.name;
-    wrap.appendChild(s); wrap.appendChild(lbl); g.appendChild(wrap);
+var CR=['🎉 Yes! Correct! You are sharp!','✅ Brilliant! Perfect answer!','🌟 Nailed it! You are a math star!','🔥 Correct! Impressive work!','💯 Exactly right! Well done!','🚀 Spot on! Elite skills!','👏 Perfect! Math suits you!','⭐ Excellent! 100% correct!'];
+
+function renderQuiz(){
+  var w=el('quiz-wrap'); if(!w) return;
+  if(S.qDone){
+    w.innerHTML='<div style="text-align:center;padding:40px 20px;"><div style="font-size:64px;">🏆</div><div style="font-family:\'Orbitron\',monospace;font-size:20px;font-weight:900;color:var(--tx);margin-top:16px;">QUIZ COMPLETE!</div><div style="color:var(--acc);font-size:20px;margin-top:8px;font-family:\'Orbitron\',monospace;">'+S.qScore+' / '+QQ.length+'</div><div style="color:var(--sub);font-size:14px;margin-top:8px;">'+(S.qScore>=40?'🌟 Legendary! Math genius!':S.qScore>=25?'👏 Great work! Solid skills!':'📚 Keep practicing!')+'</div><button onclick="resetQ()" style="margin-top:24px;background:var(--acc);border:none;border-radius:14px;padding:14px 32px;color:#000;font-family:\'Orbitron\',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">TRY AGAIN</button></div>';
+    return;
+  }
+  var q=QQ[S.qIdx], dc={easy:'#10b981',medium:'#f59e0b',hard:'#ef4444'};
+  var pct=Math.round((S.qIdx/QQ.length)*100);
+  w.innerHTML='<div style="padding:12px 14px 4px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-family:\'Orbitron\',monospace;font-size:10px;color:var(--acc);font-weight:700;">MATH QUIZ</span><span style="font-family:\'Orbitron\',monospace;font-size:10px;color:var(--sub);">SCORE: '+S.qScore+' | Q'+(S.qIdx+1)+'/'+QQ.length+'</span></div><div class="qpr"><div class="qpf" style="width:'+pct+'%"></div></div></div>'
+    +'<div class="qcard"><span class="qdiff" style="background:'+dc[q.d]+'22;color:'+dc[q.d]+';border:1px solid '+dc[q.d]+'44;">'+q.d.toUpperCase()+'</span><div class="qq">'+q.q+'</div></div>'
+    +'<div class="qrow"><input class="qinp" id="q-inp" type="text" inputmode="decimal" placeholder="Your answer..." autocomplete="off"/><button class="qsub" onclick="subQ()">\u2713</button></div>'
+    +'<div class="qfb" id="q-fb"></div>'
+    +'<div style="margin:10px 14px 0;background:var(--card);border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;border:1px solid var(--bdr);"><span style="color:var(--sub);font-size:13px;">💠 Tallen AI Quiz</span><span style="font-family:\'Orbitron\',monospace;color:var(--acc);font-size:10px;">'+pct+'% DONE</span></div>'
+    +'<div style="height:20px;"></div>';
+  setTimeout(function(){ var qi=el('q-inp'); if(qi){ qi.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault();subQ();} }); } },50);
+}
+
+function subQ(){
+  var qi=el('q-inp'); if(!qi) return;
+  var val=qi.value.trim(); if(!val) return;
+  var q=QQ[S.qIdx], ok=(val===q.a||val.toLowerCase()===q.a.toLowerCase());
+  var fb=el('q-fb'); if(!fb) return;
+  if(ok){ S.qScore++; fb.textContent=rnd(CR); fb.className='qfb on ok'; }
+  else{ fb.textContent=rnd(['Not quite! The answer is '+q.a+'. Every mistake is a lesson!','Almost! It is '+q.a+'. Keep going!','The answer is '+q.a+'. Practice makes perfect!']); fb.className='qfb on no'; }
+  qi.value='';
+  setTimeout(function(){ if(S.qIdx+1>=QQ.length){S.qDone=true;}else{S.qIdx++;} renderQuiz(); },2000);
+}
+function resetQ(){ S.qIdx=0; S.qScore=0; S.qDone=false; renderQuiz(); }
+
+// ── TALLEN AI BRAIN ───────────────────────────
+var SUGG_LIST=['How can I change calculator theme?','What is 25 + 75?','What can you do?','Show my calculation history','How do I use AI mode?','Tell me about this app','What is the Pythagoras theorem?','Quiz me now'];
+
+function buildSuggs(){
+  var r=el('sg-row'); if(!r) return; r.innerHTML='';
+  SUGG_LIST.forEach(function(s){
+    var c=document.createElement('div'); c.className='chip'; c.textContent=s;
+    (function(t){ c.addEventListener('click',function(){ send(t); }); })(s);
+    r.appendChild(c);
   });
 }
-function applyTheme(i){
-  document.documentElement.style.setProperty('--num',themes[i].num);
-  document.documentElement.style.setProperty('--eq',themes[i].eq);
-}
-buildSwatches();
 
-// ============================================================
-// KEYBOARD
-// ============================================================
-document.addEventListener('keydown',e=>{
-  if(currentScreen!=='screenMain') return;
-  if(e.key>='0'&&e.key<='9') pressNum(e.key);
-  else if(e.key==='.') pressDot();
-  else if(e.key==='+') pressOp('+');
-  else if(e.key==='-') pressOp('-');
-  else if(e.key==='*') pressOp('*');
-  else if(e.key==='/'){ e.preventDefault(); pressOp('/'); }
-  else if(e.key==='%') pressOp('%');
-  else if(e.key==='Enter'||e.key==='=') pressEqual();
-  else if(e.key==='Backspace') pressBack();
-  else if(e.key==='Escape') pressClear();
+function tallen(input){
+  var m=input.toLowerCase().replace(/[?!.,;'"]/g,' ').replace(/\s+/g,' ').trim();
+
+  // Quick quiz check
+  if(S.quickQ){ var qq=S.quickQ; S.quickQ=null; return (input.trim()===qq.a||m===qq.a.toLowerCase())?rnd(['🎉 YES! Correct! '+qq.q+' = '+qq.a+'. You are sharp! Want another?','✅ Perfect! Exactly right! Want to try another one?','🌟 Brilliant! You nailed it! Keep going!']):'Not quite! The answer to "'+qq.q+'" is '+qq.a+'. Every wrong answer is a step toward getting it right! Want another?'; }
+
+  // Greetings
+  var grts=['hi','hey','hello','howdy','sup','greetings','yo','hiya','morning'];
+  for(var g=0;g<grts.length;g++){ if(m===grts[g]||m.startsWith(grts[g]+' ')){ return rnd(["Hey there! 👋 I'm Tallen AI — your personal math companion! Ask me any calculation and I'll explain it. Or ask about any app feature. What's on your mind?","Hello! 💠 Great to meet you! I'm Tallen AI, created by Henry Tallen. I make math make sense. What can I help with?","Hi! I'm Tallen AI! 😄 Ask me maths, ask about the app, test me — I'm ready!"]); } }
+
+  // Farewells
+  var byes=['bye','goodbye','see you','later','cya','farewell','take care'];
+  for(var b=0;b<byes.length;b++){ if(m.includes(byes[b])){ return rnd(["Goodbye! 👋 Come back whenever you need math help. Math is your superpower! 💠","See you later! 😊 Keep practicing. I will be right here whenever you need me!"]); } }
+
+  // Identity
+  if(m.indexOf('who are you')>=0||m.indexOf('introduce yourself')>=0||m.indexOf('tell me about yourself')>=0) return "I'm Tallen AI — your intelligent math companion! 💠\n\nCreated by Henry Tallen, I can:\n• Explain any calculation step-by-step with real examples\n• Break down math formulas clearly\n• Quiz you with 50 questions\n• Guide you through every app feature\n• Chat about anything math-related\n\nMy purpose is to make every person feel like math is their superpower!";
+  if(m.indexOf('your name')>=0||m.indexOf('what are you called')>=0) return "My name is Tallen AI — you can call me Tallen! 💠 Named after my creator, Henry Tallen, who built both me and this entire calculator app.";
+  if((m.indexOf('who made you')>=0||m.indexOf('who created you')>=0||m.indexOf('who built you')>=0)) return rnd(["I was created by Henry Tallen! He built me with one vision: that everyone deserves to understand math, not just get answers. 💠","Henry Tallen created me! His goal was a calculator where users don't just compute — they learn. That's exactly why I exist. 💠"]);
+  if((m.indexOf('who made this app')>=0||m.indexOf('who created this app')>=0||m.indexOf('who built this app')>=0)) return "This app was created by Henry Tallen! He designed every screen, every theme, and built me — Tallen AI — to be the intelligent core. 💠";
+
+  // How are you
+  if(m.indexOf('how are you')>=0||m.indexOf('how are u')>=0||m.indexOf('you okay')>=0||m.indexOf('you good')>=0) return rnd(["I'm absolutely fantastic! 🌟 Ready to help you with anything. What's on your mind?","Doing great! Ready to crunch numbers, explain formulas, or just chat. What can I do? 💠","Feeling electric! ⚡ Every question makes me sharper. What can I help you with?"]);
+
+  // What can you do
+  if(m.indexOf('what can you do')>=0||m.indexOf('your abilities')>=0||m.indexOf('what do you know')>=0) return "Here's everything I can do! 💠\n\n🔢 MATH — Explain any calculation with real-world stories\n📐 FORMULAS — Pythagoras, quadratic, area, speed & more\n🎯 QUIZ — 50 questions from easy to expert\n📜 HISTORY — Recap every calculation you've done\n🎨 APP GUIDE — Help with themes, modes, settings\n💬 CHAT — Answer almost any question!\n\nI genuinely don't have an off button 😄";
+
+  // App features
+  if(m.indexOf('change theme')>=0||m.indexOf('calculator style')>=0||m.indexOf('change style')>=0||m.indexOf('customize')>=0) return "Here's how to change your calculator theme! 🎨\n\n1. Tap ⚙️ Settings in the bottom navigation\n2. Tap 'Calculator Style'\n3. Browse all 20 unique themes\n4. Tap any theme to apply instantly!\n\nThemes include Classic Cyber, Neon Matrix, Blood Moon, Cherry Blossom, Emerald City and 15 more — each totally different! Want to know about the AI mode too?";
+  if(m.indexOf('dark mode')>=0||m.indexOf('light mode')>=0) return "Toggling dark/light mode is easy! 🌙☀️\n\n1. Go to ⚙️ Settings\n2. Scroll to 'Dark Mode'\n3. Tap the toggle switch!\n\nThe whole app changes instantly. Dark mode is great at night, light mode in sunlight. What other feature can I explain?";
+  if(m.indexOf('ai mode')>=0||m.indexOf('solve with ai')>=0) return "The AI mode is my favourite feature! 💠\n\n1. On the main calculator, tap 'SOLVE WITH AI'\n2. Type your calculation and press =\n3. I'll explain the answer right below!\n\nIn normal mode you get just the number. In AI mode I give you a story and real-world example. It's like having a personal tutor!";
+  if(m.indexOf('history')>=0||m.indexOf('past calc')>=0||m.indexOf('my calc')>=0){
+    var hr="Your calculation history is in:\n\n1. 📜 History tab — bottom navigation\n2. ⚙️ Settings → Calculation History\n3. Just ask me — I'll tell you!\n";
+    if(S.hist.length>0){ hr+="\n🔢 YOUR RECENT CALCULATIONS:\n"; S.hist.slice(-5).forEach(function(h){ hr+="  • "+h+"\n"; }); }
+    else hr+="\nYou haven't made any calculations yet! Head to the calculator first. 💠";
+    return hr;
+  }
+  if(m.indexOf('quiz')>=0&&(m.indexOf('how')>=0||m.indexOf('where')>=0||m.indexOf('find')>=0)) return "The Math Quiz is in ⚙️ Settings → Math Quiz! 🎯\n\n50 questions from easy to expert with live scoring and my personal feedback! Or say 'quiz me now' to test right here!";
+  if(m.indexOf('quiz me now')>=0||m.indexOf('test me now')>=0||m.indexOf('quick quiz')>=0){ var rq=QQ[Math.floor(Math.random()*20)]; S.quickQ=rq; return "Okay! Quick quiz! 🎯\n\nQuestion: "+rq.q+"\n\nType your answer — I'll grade you! 💠"; }
+  if(m.indexOf('about')>=0&&(m.indexOf('app')>=0||m.indexOf('this')>=0)) return "Here's everything about this app! 💠\n\n📱 Tallen AI Calculator v2.0 Pro\n👨‍💻 Creator: Henry Tallen\n🤖 AI: Tallen AI (that's me!)\n\n✨ Features:\n• Full scientific calculator\n• 20 unique themes\n• AI-powered explanations\n• 50-question quiz\n• Calculation history\n• Dark & light mode\n\nMission: Make math understandable, not just computable.";
+  if(m.indexOf('settings')>=0&&(m.indexOf('where')>=0||m.indexOf('how')>=0||m.indexOf('find')>=0)) return "Settings is at the bottom of the screen! ⚙️\n\nThree bottom navigation buttons:\n• ⌨️ CALC\n• 📜 HISTORY\n• ⚙️ SETTINGS\n\nIn Settings you'll find: Chat with Tallen AI, Calculator Styles, History, Quiz, Dark Mode, and About App!";
+  if(m.indexOf('how')>=0&&(m.indexOf('use')>=0)&&(m.indexOf('app')>=0||m.indexOf('calculator')>=0)) return "Welcome to Tallen AI Calculator! Quick guide: 🗺️\n\n⌨️ CALC — Calculate normally or with AI explanation\n📜 HISTORY — All your past calculations\n⚙️ SETTINGS — Themes, quiz, dark mode, about\n💠 TALLEN AI — That's me! Chat anytime\n\nSimple but powerful. What would you like to explore?";
+
+  // MATH CALCULATIONS
+  // Addition
+  var addM=input.match(/(\d+(?:\.\d+)?)\s*(?:plus|\+)\s*(\d+(?:\.\d+)?)/i);
+  if(addM){ var a=parseFloat(addM[1]),b=parseFloat(addM[2]),r=a+b; return rnd(["Ah yes! So you're asking "+a+" + "+b+"? The answer is "+r+"! 🔢\n\nImagine you have "+a+" coins and someone hands you "+b+" more — count them all: "+r+" total. Addition combines two groups into one!",""+a+" plus "+b+" equals "+r+". 🎯\n\nOn a number line: start at "+a+", take "+b+" steps forward — land exactly on "+r+". Addition always moves forward!",""+a+" + "+b+" = "+r+"! 💡\n\nIf "+a+" students are in class and "+b+" more walk in, there are now "+r+". Addition grows your total every time!"]); }
+
+  // Subtraction
+  var subM=input.match(/(\d+(?:\.\d+)?)\s*(?:minus|-)\s*(\d+(?:\.\d+)?)/i);
+  if(subM){ var a=parseFloat(subM[1]),b=parseFloat(subM[2]),r=a-b; return rnd([""+a+" - "+b+" = "+r+"! 🎯\n\nYou have "+a+" chocolates and eat "+b+" — "+r+" remain. Subtraction removes from what you have!",""+a+" minus "+b+" = "+r+"! Start at "+a+" on the number line, walk back "+b+" steps — land on "+r+". Subtraction is addition in reverse!"]); }
+
+  // Multiplication
+  var mulM=input.match(/(\d+(?:\.\d+)?)\s*(?:times|multiplied by|\u00d7|\*|x)\s*(\d+(?:\.\d+)?)/i);
+  if(mulM){ var a=parseFloat(mulM[1]),b=parseFloat(mulM[2]),r=a*b; return rnd(["Multiplication! "+a+" \u00d7 "+b+" = "+r+"! \u26a1\n\nImagine "+a+" bags each with "+b+" items — that's "+r+" total. Multiplication is fast repeated addition!",""+a+" \u00d7 "+b+" = "+r+"! 🌟\n\nPicture a grid of "+a+" rows and "+b+" columns — count every dot and you get "+r+". That's what multiplication means!"]); }
+
+  // Division
+  var divM=input.match(/(\d+(?:\.\d+)?)\s*(?:divided by|\u00f7|\/)\s*(\d+(?:\.\d+)?)/i);
+  if(divM){ var a=parseFloat(divM[1]),b=parseFloat(divM[2]); if(b===0) return "Whoa! You cannot divide by zero — it's undefined in mathematics! 🚫 Try a different divisor!"; var r=a/b,rs=Number.isInteger(r)?r:r.toFixed(6).replace(/\.?0+$/,''); return rnd([""+a+" \u00f7 "+b+" = "+rs+"! ✅\n\nShare "+a+" items among "+b+" people equally — each gets "+rs+". Division is the mathematics of fair sharing!",""+a+" divided by "+b+" = "+rs+". 💡 How many times does "+b+" fit into "+a+"? Exactly "+rs+" times!"]); }
+
+  // General "what is X op Y"
+  var genM=input.match(/what\s+is\s+(\d+(?:\.\d+)?)\s*([\+\-\u00d7\u00f7\*\/])\s*(\d+(?:\.\d+)?)/i);
+  if(genM){ var a=parseFloat(genM[1]),op=genM[2],b=parseFloat(genM[3]),r; if(op==='+')r=a+b;else if(op==='-')r=a-b;else if(op==='\u00d7'||op==='*')r=a*b;else if(op==='\u00f7'||op==='/'){ if(b===0)return"Cannot divide by zero! 🚫"; r=a/b; } var rs=Number.isInteger(r)?r:r.toFixed(6).replace(/\.?0+$/,''); var opn={'+':'plus','-':'minus','\u00d7':'times','*':'times','\u00f7':'divided by','/':'divided by'}; return "So you're asking what is "+a+" "+opn[op]+" "+b+"? The answer is "+rs+"! 💠\n\nSimple: "+a+" "+opn[op]+" "+b+" = "+rs+". That's the beauty of mathematics — clear and precise!"; }
+
+  // Percentage
+  var pctM=input.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/i);
+  if(pctM){ var p=parseFloat(pctM[1]),tot=parseFloat(pctM[2]),r=(p/100)*tot; return p+"% of "+tot+" = "+r+"! ✅\n\nFormula: ("+p+" \u00f7 100) \u00d7 "+tot+" = "+(p/100)+" \u00d7 "+tot+" = "+r+"\n\nIf something costs $"+tot+" and there's a "+p+"% discount, you save $"+r+". Percentages are just fractions of 100!"; }
+
+  // Square root
+  var sqM=input.match(/(?:square root|sqrt|\u221a)\s*(?:of\s*)?(\d+(?:\.\d+)?)/i);
+  if(sqM){ var n=parseFloat(sqM[1]),r=Math.sqrt(n),rs=Number.isInteger(r)?r:r.toFixed(8).replace(/\.?0+$/,''); return "\u221a"+n+" = "+rs+"! 🎯\n\nThe square root asks: what number times itself equals "+n+"? The answer is "+rs+" because "+rs+" \u00d7 "+rs+" \u2248 "+n+"."; }
+
+  // Power
+  var sqSq=input.match(/(\d+)\s*squared/i); if(sqSq){ var b=parseFloat(sqSq[1]); return b+"\u00b2 = "+(b*b)+"! 🔢\n\n"+b+" squared = "+b+" \u00d7 "+b+" = "+(b*b)+". Used in area calculations, Pythagoras, and quadratic equations!"; }
+  var pwM=input.match(/(\d+)\s*(?:to the power of|power of|\^)\s*(\d+)/i); if(pwM){ var a=parseFloat(pwM[1]),b=parseFloat(pwM[2]); return a+"^"+b+" = "+Math.pow(a,b)+"! \u26a1\n\nExponents mean repeated multiplication: "+a+" multiplied by itself "+b+" times = "+Math.pow(a,b)+"."; }
+
+  // Formulas
+  if(m.indexOf('pythagoras')>=0||m.indexOf('pythagorean')>=0) return "The Pythagorean Theorem! 📐\n\na\u00b2 + b\u00b2 = c\u00b2\n\nFor right-angled triangles:\n• a and b = the two legs (shorter sides)\n• c = the hypotenuse (longest side)\n\nExample: a=3, b=4 \u2192 c\u00b2 = 9+16 = 25 \u2192 c = 5\n\nProven ~2,500 years ago — still used daily in engineering, construction and navigation! 💠";
+  if(m.indexOf('quadratic')>=0) return "The Quadratic Formula! 🧮\n\nx = (-b \u00b1 \u221a(b\u00b2-4ac)) / 2a\n\nSolves: ax\u00b2 + bx + c = 0\n\nThe \u00b1 means usually TWO solutions exist.\n\nExample: x\u00b2-5x+6=0 gives x=2 or x=3";
+  if(m.indexOf('area of circle')>=0) return "Area of a Circle! \u26aa\n\nA = \u03c0r\u00b2\n\n\u03c0 \u2248 3.14159, r = radius\n\nExample: radius 5cm \u2192 A = \u03c0 \u00d7 25 \u2248 78.54 cm\u00b2";
+  if(m.indexOf('area of rectangle')>=0||m.indexOf('area of square')>=0) return "Rectangle: A = length \u00d7 width 📏\nSquare: A = side\u00b2\n\nExample: 8cm \u00d7 5cm rectangle = 40cm\u00b2";
+  if(m.indexOf('area of triangle')>=0) return "Triangle Area! 📐\n\nA = \u00bd \u00d7 base \u00d7 height\n\nExample: base 10cm, height 6cm:\nA = \u00bd \u00d7 10 \u00d7 6 = 30cm\u00b2";
+  if(m.indexOf('simple interest')>=0) return "Simple Interest! 💰\n\nI = P \u00d7 R \u00d7 T / 100\n\nP = Principal, R = Rate(%), T = Time(years)\n\nExample: $1000 at 5% for 3 years = $150 interest";
+  if(m.indexOf('speed')>=0&&m.indexOf('distance')>=0) return "Speed-Distance-Time! 🚀\n\nSpeed = Distance \u00f7 Time\nDistance = Speed \u00d7 Time\nTime = Distance \u00f7 Speed\n\nExample: 120km in 2hrs \u2192 60 km/h";
+
+  // Math concepts
+  if(m.indexOf('what is math')>=0||m.indexOf('what is mathematics')>=0) return "Mathematics is the language of the universe! 🌌\n\nIt studies numbers, shapes, patterns, change, and data. Math is in music, art, nature, technology, finance, and every scientific equation. From the Greek 'mathema' meaning knowledge!";
+  if(m.indexOf('prime number')>=0) return "Prime Numbers! 🔢\n\nA prime is only divisible by 1 and itself.\nFirst primes: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29...\n\n• 2 is the ONLY even prime\n• There are infinitely many primes\n• Your bank's security uses them! 💠";
+  if(m.indexOf('even number')>=0||m.indexOf('odd number')>=0) return "Even: end in 0,2,4,6,8 — divisible by 2\nOdd: end in 1,3,5,7,9 — remainder 1 when \u00f72\n\nEven + Even = Even | Odd + Odd = Even | Even + Odd = Odd";
+  if(m.indexOf('fraction')>=0) return "Fractions! \u00bd 🍕\n\nnumerator/denominator\nExample: 3/4 = 3 out of 4 equal parts\n\nAdding: common denominator first!\n1/3 + 1/4 = 4/12 + 3/12 = 7/12";
+  if(m.indexOf('decimal')>=0) return "Decimals use base-10.\n• 0.5 = 1/2 • 0.25 = 1/4 • 0.1 = 1/10\n\nTo convert fraction \u2192 decimal: divide top by bottom!\n3/8 = 3 \u00f7 8 = 0.375";
+  if(m.indexOf('percentage')>=0) return "Percentages are fractions of 100! 💯\n\nFormula: (Part \u00f7 Whole) \u00d7 100\n\nExample: 45 out of 60 = (45\u00f760)\u00d7100 = 75%\n\nQuick: 50%=half, 25%=quarter, 10%=divide by 10";
+
+  // Thanks
+  if(m.indexOf('thank')>=0||m.indexOf('appreciate')>=0||m.indexOf('helpful')>=0) return rnd(["You're very welcome! 💠 That's exactly what I'm here for!","Anytime! 😄 Keep calculating and learning — I'm always here!","My pleasure! 🌟 Henry Tallen built me for users just like you. Ask more anytime!"]);
+  if(m.indexOf('hate math')>=0||m.indexOf('math is hard')>=0||m.indexOf('bad at math')>=0) return "That feeling is completely normal! 💪\n\nMath is often taught without real examples or context. That's exactly why I exist — I don't just give answers, I explain WHY with stories!\n\nEvery mathematician started where you are. Tell me what's giving you trouble — I can make it click. 💠";
+
+  // Fun
+  if(m.indexOf('joke')>=0) return rnd(["Why was the math book sad? It had too many problems! 😄","Why don't mathematicians need sunscreen? They have too many variables! 😂"]);
+  if(m.indexOf('what is the time')>=0||m.indexOf('current time')>=0) return "The time is: "+new Date().toLocaleTimeString()+" \u23f0";
+  if(m.indexOf('what is today')>=0||m.indexOf('current date')>=0||m.indexOf("today's date")>=0) return "Today is: "+new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+" 📅";
+
+  // Birth year
+  var bm=input.match(/born in (\d{4})/i); if(bm){ var yr=parseInt(bm[1]),ag=new Date().getFullYear()-yr; return "Born in "+yr+" = "+ag+" years old! 🎂\n\n"+new Date().getFullYear()+" - "+yr+" = "+ag+". Simple subtraction — the most practical math!"; }
+
+  // Default
+  return rnd(["Interesting! 💭 Try asking me something like 'What is 45 \u00d7 12?' or 'How do I change the theme?' I'm best at math and app guidance!","Hmm! 🧠 I'm great at math calculations, app features, formulas, and quizzes. What specifically do you need? 💠","I want to help! 💠 Try 'Explain 30 + 54' or 'What is the Pythagoras theorem' — watch me go! 😄"]);
+}
+
+// ── CHAT ──────────────────────────────────────
+function newChat(){
+  S.quickQ=null;
+  // Remove only .mb message blocks from #cmsg
+  var cm=el('cmsg'); if(!cm) return;
+  var nodes=Array.prototype.slice.call(cm.children);
+  nodes.forEach(function(n){ if(n.classList&&n.classList.contains('mb')) cm.removeChild(n); });
+  // Reset thinking
+  var th=el('thinking'); if(th){ th.className=''; }
+  // Suggestions
+  S.suggsOn=true; var sw=el('sg-wrap'); if(sw) sw.style.display='block';
+  buildSuggs();
+  addAI("Hey! 👋 Fresh start! I'm Tallen AI — ask me anything about maths, calculations, or this app. What's on your mind? 💠");
+}
+
+function showThink(on){
+  var t=el('thinking'); if(t) t.className=on?'on':'';
+}
+
+function addAI(text){
+  showThink(false);
+  var cm=el('cmsg'); if(!cm) return;
+  var th=el('thinking');
+  var d=document.createElement('div');
+  d.className='mb ai';
+  d.innerHTML='<div class="mm"><div class="mav ai">💠</div><span class="mwho ai">TALLEN AI</span><span class="mtime">'+nowT()+'</span></div><div class="mtxt">'+esc(text)+'</div>';
+  if(th&&th.parentNode===cm){ cm.insertBefore(d,th); } else { cm.appendChild(d); }
+  scrl();
+}
+
+function addUsr(text){
+  var cm=el('cmsg'); if(!cm) return;
+  var th=el('thinking');
+  var d=document.createElement('div');
+  d.className='mb usr';
+  d.innerHTML='<div class="mm"><div class="mav usr">YOU</div><span class="mwho usr">YOU</span><span class="mtime">'+nowT()+'</span></div><div class="mtxt usr">'+esc(text)+'</div>';
+  if(th&&th.parentNode===cm){ cm.insertBefore(d,th); } else { cm.appendChild(d); }
+  scrl();
+}
+
+function scrl(){ var c=el('cmsg'); if(c) setTimeout(function(){ c.scrollTop=c.scrollHeight; },60); }
+
+function send(preMsg){
+  var inp=el('cinput');
+  var msg=preMsg||(inp?inp.value.trim():'');
+  if(!msg) return;
+  if(!preMsg&&inp){ inp.value=''; inp.style.height='auto'; }
+  if(S.suggsOn){ var sw=el('sg-wrap'); if(sw) sw.style.display='none'; S.suggsOn=false; }
+  addUsr(msg);
+  showThink(true); scrl();
+  setTimeout(function(){
+    var resp=tallen(msg);
+    addAI(resp);
+    if(Math.random()<0.25&&msg.length>8){
+      setTimeout(function(){
+        showThink(true); scrl();
+        setTimeout(function(){ addAI(rnd(["I can also recap your calculation history — just ask! 💠","Want me to quiz you? Say 'quiz me now'! 🎯","Need help with any app feature? Just ask! ⚙️"])); },700);
+      },1800);
+    }
+  },500+Math.random()*500);
+}
+
+// ── INIT ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded',function(){
+  buildBtns();
+  buildSuggs();
+  go('main');
+  // Welcome message — #thinking is in DOM now
+  addAI("Hey! 👋 I'm Tallen AI, created by Henry Tallen. I'm here to explain maths, guide you through this app, and answer almost anything! What can I do for you today? 💠");
+
+  var inp=el('cinput'), snd=el('sndbtn');
+  if(inp){
+    inp.addEventListener('input',function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px'; });
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); setTimeout(function(){ inp.focus(); },20); } });
+  }
+  if(snd){
+    snd.addEventListener('mousedown',function(e){ e.preventDefault(); });
+    snd.addEventListener('touchstart',function(e){ e.preventDefault(); send(); },{passive:false});
+    snd.addEventListener('click',function(){ send(); if(inp) setTimeout(function(){ inp.focus(); },20); });
+  }
 });
-
-// ============================================================
-// UTILS
-// ============================================================
-function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 </script>
 </body>
 </html>
